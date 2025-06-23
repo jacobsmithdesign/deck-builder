@@ -53,7 +53,7 @@ const BoardContent = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "w-full rounded-xl h-full flex flex-col bg-dark/5 border border-darksecondary/15 p-1 overfolw-y-scroll",
+      "w-full rounded-xl h-full flex flex-col bg-dark/15 border border-darksecondary/15 overfolw-y-scroll",
       className
     )}
     {...props}
@@ -67,7 +67,7 @@ const Group = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("text-muted-foreground md:text-md text-sm", className)}
+    className={cn("text-muted-foreground md:text-md text-sm ", className)}
     {...props}
   />
 ));
@@ -80,7 +80,7 @@ const GroupTitle = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "p-3 pt-0 lg:text-xl md:text-lg sm:text-md text-sm",
+      " lg:text-xl md:text-lg sm:text-md text-sm font-bold",
       className
     )}
     {...props}
@@ -94,26 +94,22 @@ const GroupHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex items-center p-6 pt-0", className)}
-    {...props}
-  />
-));
-GroupHeader.displayName = "GroupHeader";
-
-const GroupItem = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
     className={cn(
-      "rounded-xl bg-Board text-Board-foreground overflow-x-scroll cursor-pointer active:cursor-grabbing",
+      "flex items-center py-3 pl-5 pr-3 border-t border-darksecondary/15 justify-between",
       className
     )}
     {...props}
   />
 ));
-GroupItem.displayName = "GroupItem";
+GroupHeader.displayName = "GroupHeader";
+
+const GroupItems = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn("flex flex-wrap mb-1", className)} {...props} />
+));
+GroupItems.displayName = "GroupItems";
 
 export {
   Board,
@@ -121,7 +117,7 @@ export {
   BoardTitle,
   BoardContent,
   Group,
-  GroupItem,
+  GroupItems,
   GroupHeader,
   GroupTitle,
 };

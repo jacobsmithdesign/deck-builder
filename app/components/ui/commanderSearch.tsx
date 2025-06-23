@@ -15,6 +15,7 @@ export default function CommanderSearch({
   onSelect: (commanderName: string) => void;
 }) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchSelection, setSearchSelection] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
@@ -67,7 +68,7 @@ export default function CommanderSearch({
           />
 
           {/* Dropdown of filtered commander results from Scryfall */}
-          {searchResults.length > 0 && (
+          {searchResults?.length > 0 && (
             <ul className="absolute z-50 w-full bg-light shadow border rounded-xl overflow-clip">
               {searchResults.map((card) => (
                 <li
@@ -75,7 +76,7 @@ export default function CommanderSearch({
                   className="p-2 hover:bg-lightsecondary/20 cursor-pointer"
                   onClick={() => {
                     onSelect(card.name);
-                    setSearchTerm(card.name);
+                    setSearchSelection(card.name);
                     setSearchResults([]);
                   }}
                 >

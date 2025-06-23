@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 118.997 69.5" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g id="down arrow" transform="translate(10 10)">
+    <line id="Line" x1="0" y1="0" x2="49.497" y2="49.497" fill="none" stroke-width="20" stroke="currentColor" stroke-linecap="round" />
+    <line id="Line" x1="0" y1="49.5" x2="49.5" y2="0" fill="none" stroke-width="20" stroke="currentColor" stroke-linecap="round" transform="translate(49.497 0)" />
+  </g>
+</svg>

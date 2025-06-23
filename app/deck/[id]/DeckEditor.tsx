@@ -1,6 +1,6 @@
 "use client";
 import { useCommander } from "@/app/context/CommanderContext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -17,40 +17,61 @@ import {
   BoardTitle,
   Group,
   GroupHeader,
-  GroupItem,
+  GroupItems,
   GroupTitle,
 } from "../components/Board";
+import PerspectiveCard from "../components/perspectiveCard";
+import { ChevronDown, Plus, Minus } from "lucide-react";
+const groupByCardType = (cards: any[]) => {
+  const typeCategories = [
+    "Creature",
+    "Land",
+    "Enchantment",
+    "Artifact",
+    "Instant",
+    "Sorcery",
+    "Planeswalker",
+  ];
+  const grouped: Record<string, any[]> = {};
+
+  for (const card of cards) {
+    const baseType =
+      typeCategories.find((type) =>
+        card.type?.toLowerCase().includes(type.toLowerCase())
+      ) || "Other";
+
+    if (!grouped[baseType]) {
+      grouped[baseType] = [];
+    }
+    grouped[baseType].push(card);
+  }
+
+  // Convert to array of { type, cards } for display
+  return Object.entries(grouped).map(([type, cards]) => ({ type, cards }));
+};
 
 export const DeckEditor = ({ deck }: { deck: Deck }) => {
-  // cards: {
-  //       id: string;
-  //       count: number;
-  //       type: string;
-  //       name: string;
-  //       manaCost: string | null;
-  //       ... 4 more ...;
-  //       imageUrl: string | null;
-  //   }[];
+  const [visibleGroups, setVisibleGroups] = useState<Set<string>>(new Set());
+  const groupedCardsArray = groupByCardType(deck.cards);
 
-  // Organise the deck cards into groups based on their type
-  const groupedCardsMap = deck.cards.reduce((acc, card) => {
-    const type = card.type || "Unknown";
-    if (!acc[type]) {
-      acc[type] = [];
-    }
-    acc[type].push(card);
-    return acc;
-  }, {} as Record<string, typeof deck.cards>);
+  // Function to toggle visibility of a group
+  const toggleGroupVisibility = (type: string) => {
+    setVisibleGroups((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(type)) {
+        newSet.delete(type);
+      } else {
+        newSet.add(type);
+      }
+      return newSet;
+    });
+  };
 
-  const groupedCardsArray = Object.entries(groupedCardsMap).map(
-    ([type, cards]) => ({
-      type,
-      cards,
-    })
-  );
-
-  console.log("Grouped Cards:", groupedCardsArray);
-
+  // Populate visibleGroups with all types initially
+  useEffect(() => {
+    const allTypes = groupByCardType(deck.cards).map((group) => group.type);
+    setVisibleGroups(new Set(allTypes));
+  }, [deck.cards]);
   return (
     <Board className="">
       <BoardHeader>
@@ -60,26 +81,40 @@ export const DeckEditor = ({ deck }: { deck: Deck }) => {
       <BoardContent className="overflow-y-auto">
         {groupedCardsArray.map((group, index) => (
           <Group key={index}>
-            <GroupHeader>
+            <GroupHeader
+              className={`${index !== 0 ? "" : "border-t-0"} `}
+              onClick={() => console.log(`Clicked on group: ${group.type}`)}
+            >
               <GroupTitle>{group.type}</GroupTitle>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation(); // prevent header click from firing too
+                  toggleGroupVisibility(group.type);
+                }}
+                className="text-dark/40 hover:text-dark/60 bg-darksecondary/10 hover:bg-light/60 rounded-md w-7 h-7  transition-all duration-100 cursor-pointer items-center justify-center flex"
+              >
+                {visibleGroups.has(group.type) ? <Minus /> : <ChevronDown />}
+              </button>
             </GroupHeader>
-            <div className="flex flex-wrap gap-4">
-              {group.cards.map((card) => (
-                <GroupItem key={card.id}>
-                  <Card className=" bg-lightsecondary/30 p-2">
-                    {card.imageUrl && (
-                      <Image
-                        src={card.imageUrl}
-                        width={200}
-                        height={200}
-                        alt={`Image of ${card.name} card`}
-                        className="w-40 rounded shadow"
-                      />
-                    )}
-                  </Card>
-                </GroupItem>
-              ))}
-            </div>
+            {visibleGroups.has(group.type) && (
+              <GroupItems>
+                {group.cards.map((card) => (
+                  <PerspectiveCard key={card.id}>
+                    <Card className="p-1">
+                      {card.imageUrl && (
+                        <Image
+                          src={card.imageUrl}
+                          width={200}
+                          height={200}
+                          alt={`Image of ${card.name} card`}
+                          className="w-50 rounded-lg shadow"
+                        />
+                      )}
+                    </Card>
+                  </PerspectiveCard>
+                ))}
+              </GroupItems>
+            )}
           </Group>
         ))}
       </BoardContent>
