@@ -23,7 +23,7 @@ const BoardHeader = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "w-full h-10 flex justify-between items-center p-1 pl-3 rounded-xl",
+      "w-full h-10 flex gap-6 items-center p-1 pl-3 rounded-xl",
       className
     )}
     {...props}

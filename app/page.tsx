@@ -26,9 +26,9 @@ export default function DeckBuilder() {
 
   return (
     <CommanderProvider>
-      <div className="flex flex-col items-center min-h-screen px-4 bg-light text-dark">
+      <div className="flex flex-col items-center min-h-screen px-4 bg-light text-dark pt-13">
         <SearchBox />
-        <CommanderOverview />
+        {/* <CommanderOverview /> */}
         <CommanderDeckList />
       </div>
     </CommanderProvider>

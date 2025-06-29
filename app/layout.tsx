@@ -4,6 +4,8 @@ import "./globals.css";
 import { MyThemeContextProvider } from "./context/themeContext";
 import { PageTransitionProvider } from "./context/PageTransitionContext";
 import AnimateLayout from "./components/General/AnimateLayout";
+import Navbar from "./components/navbar";
+import { UserProvider } from "./context/userContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,9 +33,12 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <PageTransitionProvider>
-            <AnimateLayout>{children}</AnimateLayout>
-          </PageTransitionProvider>
+          <UserProvider>
+            <Navbar />
+            <PageTransitionProvider>
+              <AnimateLayout>{children}</AnimateLayout>
+            </PageTransitionProvider>
+          </UserProvider>
         </body>
       </MyThemeContextProvider>
     </html>

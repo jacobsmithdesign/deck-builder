@@ -86,7 +86,7 @@ export default function CommanderDeckList() {
   useEffect(() => {
     if (deckDetails?.name) {
       fetchDecksForCommander(deckDetails.name);
-      testQuery(); // Run this to see if the database is set up correctly
+      // testQuery(); // Run this to see if the database is set up correctly
     }
   }, [deckDetails]);
 
