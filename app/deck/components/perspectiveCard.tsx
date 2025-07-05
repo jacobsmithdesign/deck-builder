@@ -57,7 +57,7 @@ const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
           ev.currentTarget.style.setProperty("--x", `${xPct * 100}%`);
           ev.currentTarget.style.setProperty("--y", `${yPct * 100}%`);
         }}
-        className="relative w-60 h-80 transition-transform duration-300 ease-out [transform-style:preserve-3d] md:hover:[transform:rotateX(var(--y-rotation))_rotateY(var(--x-rotation))] justify-center items-center flex group "
+        className="relative w-60 h-80 transition-transform duration-300 ease-out [transform-style:preserve-3d] md:hover:[transform:rotateX(var(--y-rotation))_rotateY(var(--x-rotation))] justify-center items-center flex"
       >
         {/* Base card content */}
         <div className=" inset-0 [transform:translateZ(0px)] z-0 pointer-events-none">

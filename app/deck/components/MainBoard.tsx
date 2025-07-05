@@ -93,14 +93,13 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
           {visibleGroups.has(group.type) && (
             <GroupItems>
               {group.cards.map((card) => (
-                <div key={card.id} className="relative">
-                  <PerspectiveCard
-                    id={card.id}
-                    image={card.imageUrl}
-                    label={card.name}
-                    isEditMode={isEditMode}
-                  />
-                </div>
+                <PerspectiveCard
+                  key={card.id}
+                  id={card.id}
+                  image={card.imageUrl}
+                  label={card.name}
+                  isEditMode={isEditMode}
+                />
               ))}
             </GroupItems>
           )}
