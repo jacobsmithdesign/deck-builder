@@ -10,9 +10,9 @@ import {
 } from "@/app/components/ui/card";
 import { Deck } from "@/lib/schemas";
 import Image from "next/image";
-import { Board } from "../components/Board";
-import { Panel } from "../components/Panel";
-import { Button } from "../components/button";
+import { Board } from "./Board";
+import { Panel } from "./Panel";
+import { Button } from "./button";
 
 // Temporary array of buttons for the Commander panel
 const buttons = [

@@ -86,6 +86,7 @@ const Card = z.object({
   manaCost: z.string().nullable(), // Mana cost of the card, nullable if not applicable
   colorIdentity: z.array(z.string()), // Color identity of the card
   cmc: z.number(), // Converted mana cost of the card
+  board_section: z.string(), // Board section where the card is placed
   oracleText: z.string().nullable(), // Oracle text of the card, nullable if not applicable
   flavourText: z.string().nullable(), // Flavour text of the card, nullable if not applicable
   imageUrl: z.string().nullable(), // URL to the card image, nullable if not available
@@ -105,3 +106,16 @@ const deckSchema = z.object({
 });
 
 export type Deck = z.infer<typeof deckSchema>;
+
+const userDeckSchema = z.object({
+  id: z.string().uuid(), // UUID of the deck
+  user_id: z.string().uuid(), // UUID of the user who owns the deck
+  code: z.string(), // Set or deck code
+  name: z.string(), // Name of the deck
+  release_date: z.string().nullable(), // ISO date string, nullable
+  type: z.string(), // Type of deck (e.g., Commander Deck)
+  sealed_product: z.string().nullable(), // Optional sealed product reference
+  cards: z.array(Card), // Array of cards in the deck
+});
+
+export type UserDeck = z.infer<typeof userDeckSchema>;

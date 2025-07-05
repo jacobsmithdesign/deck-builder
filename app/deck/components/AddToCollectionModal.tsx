@@ -24,10 +24,8 @@ export default function AddToCollectionModal({
 
   const handleSave = async () => {
     if (!profile) return;
-
     setLoading(true);
-
-    const { data: newDeck, error } = await supabase
+    const { data: newDeck, error: error } = await supabase
       .from("user_decks")
       .insert({
         user_id: profile.id,

@@ -72,7 +72,7 @@ export default function UserDeckList() {
       <CardHeader className="p-3 md:px-6">
         <CardTitle>Your Deck Collection</CardTitle>
       </CardHeader>
-      <CardContent className="px-6 overflow-y-auto max-h-96">
+      <CardContent className="px-6 overflow-y-auto max-h-96 flex">
         {userDecks.length > 0 ? (
           <ul className="space-y-3">
             {userDecks.map((deck) => (

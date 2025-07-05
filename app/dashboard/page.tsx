@@ -6,7 +6,7 @@ import {
 } from "@/app/context/CommanderContext";
 import { CardType, Deck } from "@/lib/schemas";
 import { DeckEditor } from "../deck/[id]/DeckEditor";
-import { CommanderPanel } from "../deck/[id]/CommanderPanel";
+import { CommanderPanel } from "../deck/components/CommanderPanel";
 
 // asynchronous wrapper function to fetch the deck by ID as "use client" is not supported
 export default async function Dashboard({

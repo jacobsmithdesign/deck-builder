@@ -77,7 +77,7 @@ const CardContainer = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-xl bg-card text-card-foreground overflow-x-scroll cursor-pointer active:cursor-grabbing",
+      "rounded-xl bg-card text-card-foreground overflow-x-scroll",
       className
     )}
     {...props}
