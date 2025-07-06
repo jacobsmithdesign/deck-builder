@@ -3,16 +3,12 @@ import { useEffect, useState } from "react";
 import { Board, BoardHeader, BoardTitle } from "./components/Board";
 import { useUser } from "@/app/context/userContext";
 import { MainBoard } from "./components/MainBoard";
-import { EditBoard } from "./components/EditBoard";
-import { CardListProvider } from "../context/CardListContext";
 import { useCardList } from "../context/CardListContext";
 import { motion, AnimatePresence } from "framer-motion";
 import AddToCollectionModal from "./components/AddToCollectionModal";
-import { set } from "zod";
 import { Button } from "./components/button";
 import { RxArrowRight, RxCheck, RxCheckCircled } from "react-icons/rx";
 import Link from "next/link";
-import { AnimatedButton } from "./components/AnimatedButton";
 
 export const DeckOverview = () => {
   // Get deck and user info from context

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, ReactNode } from "react";
 import { Commander } from "@/lib/schemas";
-import { Deck } from "@/lib/schemas";
+import { DeckRecord } from "@/lib/schemas";
 interface CommanderContextProps {
   deckDetails: Commander | null;
   setDeckDetails: (deck: Commander | null) => void;
@@ -20,8 +20,8 @@ interface CommanderContextProps {
   setError: (error: boolean) => void;
 
   // Commander deck list
-  decks: Deck[];
-  setDecks: (decks: Deck[]) => void;
+  decks: DeckRecord[];
+  setDecks: (decks: DeckRecord[]) => void;
 }
 
 const CommanderContext = createContext<CommanderContextProps | undefined>(
@@ -38,7 +38,7 @@ export function CommanderProvider({ children }: { children: ReactNode }) {
   const [commanderCardImage, setCommanderCardImage] = useState<string | null>(
     null
   );
-  const [decks, setDecks] = useState<Deck[]>([]);
+  const [decks, setDecks] = useState<DeckRecord[]>([]);
 
   return (
     <CommanderContext.Provider

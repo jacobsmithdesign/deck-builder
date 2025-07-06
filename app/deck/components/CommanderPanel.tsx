@@ -8,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/app/components/ui/card";
-import { Deck } from "@/lib/schemas";
 import Image from "next/image";
 import { Board } from "./Board";
 import { Panel } from "./Panel";
