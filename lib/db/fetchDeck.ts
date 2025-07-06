@@ -3,63 +3,60 @@ import { supabase } from "@/lib/supabaseClient";
 export async function fetchDeckById(deckId: string) {
   if (!deckId) throw new Error("Missing deck ID");
 
-  // Try user_decks first
-  const { data: userDeck, error: userError } = await supabase
-    .from("user_decks")
-    .select("*, user_deck_cards(*)")
-    .eq("id", deckId)
-    .single();
-
-  if (userDeck && !userError) {
-    return {
-      source: "user",
-      deck: {
-        id: userDeck.id,
-        user_id: userDeck.user_id,
-        name: userDeck.deck_name,
-        type: userDeck.type,
-        isUserDeck: true,
-        cards: userDeck.user_deck_cards.map((c: any) => ({
-          id: c.card_uuid,
-          name: c.name,
-          type: c.type,
-          manaCost: c.mana_cost,
-          colorIdentity: c.color_identity,
-          cmc: c.mana_value,
-          oracleText: c.text,
-          imageUrl: c.image_url ?? null,
-          count: c.count || 1,
-        })),
-      },
-    };
-  }
-
-  // Try official decks
-  const { data: preconDeck, error: preconError } = await supabase
+  const { data: deckData, error } = await supabase
     .from("decks")
-    .select("*, deck_cards(*)")
+    .select("*, deck_cards(*, cards(*))")
     .eq("id", deckId)
     .single();
 
-  if (preconDeck && !preconError) {
+  if (deckData && !error) {
+    const isUserDeck = !!deckData.user_id;
+
     return {
-      source: "official",
+      source: isUserDeck ? "user" : "official",
       deck: {
-        id: preconDeck.id,
-        name: preconDeck.name,
-        type: preconDeck.type,
-        isUserDeck: false,
-        cards: preconDeck.deck_cards.map((c: any) => ({
-          id: c.card_uuid,
-          name: c.name,
-          type: c.type,
-          manaCost: c.mana_cost,
-          colorIdentity: c.color_identity,
-          cmc: c.mana_value,
-          oracleText: c.text,
-          imageUrl: c.image_url ?? null,
-          count: c.count || 1,
-        })),
+        id: deckData.id,
+        user_id: deckData.user_id ?? null,
+        name: deckData.name,
+        code: deckData.code ?? null,
+        type: deckData.type,
+        release_date: deckData.release_date ?? null,
+        sealed_product: deckData.sealed_product ?? null,
+        isUserDeck,
+        display_card_uuid: deckData.display_card_uuid ?? null,
+        commander_uuid: deckData.commander_uuid ?? null,
+        cards: deckData.deck_cards.map((c: any) => {
+          const card = c.cards;
+          const identifiers = card.identifiers ?? {};
+          const scryfallId = identifiers.scryfallId ?? null;
+          const scryfallBackId = identifiers.scryfallCardBackId ?? null;
+
+          return {
+            id: card.uuid,
+            name: card.name,
+            type: card.type,
+            manaCost: card.mana_cost,
+            colorIdentity: card.color_identity ?? [],
+            cmc: card.mana_value ?? 0,
+            oracleText: card.oracle_text ?? "",
+            flavourText: card.flavor_text,
+            setCode: card.set_code,
+            rarity: card.rarity,
+            count: c.count || 1,
+            board_section: c.board_section || "mainboard",
+            imageFrontUrl: scryfallId
+              ? `https://cards.scryfall.io/normal/front/${scryfallId[0]}/${scryfallId[1]}/${scryfallId}.jpg`
+              : null,
+            imageBackUrl: scryfallBackId
+              ? `https://cards.scryfall.io/normal/front/${scryfallBackId.slice(
+                  0,
+                  2
+                )}/${scryfallBackId}.jpg`
+              : null,
+            isDoubleFaced: !!scryfallBackId,
+            identifiers,
+          };
+        }),
       },
     };
   }

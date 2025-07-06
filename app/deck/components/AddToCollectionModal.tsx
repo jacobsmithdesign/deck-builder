@@ -5,15 +5,25 @@ import { useUser } from "@/app/context/userContext";
 import { useRouter } from "next/navigation";
 import { Checkbox, Field, Label } from "@headlessui/react";
 import { RxCheck } from "react-icons/rx";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/app/components/ui/button";
+import { AnimatedButton } from "./AnimatedButton";
+import { handleSave } from "@/lib/db/saveDeck";
 
 export default function AddToCollectionModal({
   preconDeckId,
   preconDeckName,
-  onClose,
+  showModal,
+  closeModal,
+  saveDeck,
+  onDeckCreated,
 }: {
   preconDeckId: string;
   preconDeckName: string;
-  onClose: () => void;
+  showModal: boolean;
+  closeModal: () => void;
+  saveDeck: () => void;
+  onDeckCreated?: (id: string) => void;
 }) {
   const { profile } = useUser();
   const [name, setName] = useState(preconDeckName);
@@ -21,105 +31,84 @@ export default function AddToCollectionModal({
   const [isPublic, setIsPublic] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [createdDeckId, setCreatedDeckId] = useState<string | null>(null);
 
-  const handleSave = async () => {
-    if (!profile) return;
+  const handleSaveClick = async () => {
     setLoading(true);
-    const { data: newDeck, error: error } = await supabase
-      .from("user_decks")
-      .insert({
-        user_id: profile.id,
-        deck_name: name,
-        description: description,
-        is_public: isPublic,
-        original_deck_id: preconDeckId,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error creating user deck:", error);
+    const { success, error, newDeckId } = await handleSave({
+      profileId: profile?.id,
+      preconDeckId,
+      name,
+      description,
+      isPublic,
+    });
+    if (success) {
+      onDeckCreated?.(newDeckId);
+      saveDeck();
       setLoading(false);
-      return;
     }
-
-    const { data: cards, error: cardError } = await supabase
-      .from("deck_cards")
-      .select("*")
-      .eq("deck_id", preconDeckId);
-
-    if (cardError) {
-      console.error("Error fetching precon cards:", cardError);
-    } else {
-      const clonedCards = cards.map(({ deck_id, ...rest }) => ({
-        ...rest,
-        user_deck_id: newDeck.id,
-      }));
-      const { error: insertError } = await supabase
-        .from("user_deck_cards")
-        .insert(clonedCards)
-        .select();
-      if (insertError) {
-        console.error("Error inserting:", insertError);
-      } else {
-        console.log("Inserted card:", clonedCards.length);
-      }
-    }
-
-    setLoading(false);
-    onClose();
-    router.push(`/deck/${newDeck.id}`);
   };
-
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50">
-      <div className="bg-light/70 border border-darksecondary/20 backdrop-blur-lg p-6 rounded-xl w-full max-w-lg">
-        <h2 className="text-xl font-bold mb-4">Save to Your Collection</h2>
-        <div>
-          <p>Name</p>
+    <AnimatePresence>
+      {showModal && (
+        <motion.div
+          initial={{
+            opacity: 0,
+            scale: 0.9,
+          }}
+          animate={{
+            opacity: 100,
+            scale: 1,
+          }}
+          exit={{
+            opacity: 0,
+            scale: 0.9,
+          }}
+          transition={{ duration: 0.05 }}
+          className="absolute top-0 mt-11 z-50 overflow-clip hide-scrollbar bg-light/80 border justify-between flex flex-col border-darksecondary/20 p-1 backdrop-blur-md px-3 pb-3 rounded-xl max-w-lg drop-shadow-xl"
+        >
+          <h2 className="text-lg font-bold">Save new deck</h2>
           <input
             type="text"
             placeholder="Deck Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full p-2 border border-darksecondary/20 bg-light/50 rounded mb-2"
+            className="w-96 p-1 border border-darksecondary/20 bg-light/50 rounded mb-2 "
           />
-        </div>
-        <div>
-          <p>Description</p>
           <textarea
             placeholder="Optional description..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="w-full p-2 border border-darksecondary/20 bg-light/50 rounded mb-2"
           />
-        </div>
-        <Field className="flex items-center gap-2 group cursor-pointer">
-          <Checkbox
-            checked={isPublic}
-            onChange={setIsPublic}
-            className="group size-6 rounded-md bg-light/50 p-1 ring-1 ring-light/30 ring-inset focus:not-data-focus:outline-none data-checked:bg-light data-focus:outline data-focus:outline-offset-2 data-focus:outline-light group-active:scale-90 transition-all duration-100"
-          >
-            <RxCheck className="hidden size-4 fill-black group-data-checked:block" />
-          </Checkbox>
-          <Label>Make this deck public</Label>
-        </Field>
-        <div className="flex justify-end gap-2">
-          <button
-            className="px-4 py-2 rounded bg-darksecondary/30 md:hover:bg-darksecondary/20 cursor-pointer transition-all duration-100"
-            onClick={onClose}
-          >
-            Cancel
-          </button>
-          <button
-            disabled={loading}
-            className="px-4 py-2 rounded bg-buttonBlue md:hover:bg-buttonBlue/80 text-light cursor-pointer"
-            onClick={handleSave}
-          >
-            {loading ? "Saving..." : "Save Deck"}
-          </button>
-        </div>
-      </div>
-    </div>
+          <Field className="flex items-center gap-2 group cursor-pointer">
+            <Checkbox
+              checked={isPublic}
+              onChange={setIsPublic}
+              className="group size-6 rounded-md bg-light/50 p-1 ring-1 ring-light/30 ring-inset focus:not-data-focus:outline-none data-checked:bg-light data-focus:outline data-focus:outline-offset-2 data-focus:outline-light group-active:scale-90 transition-all duration-100"
+            >
+              <RxCheck className="hidden size-4 fill-black group-data-checked:block" />
+            </Checkbox>
+            <Label>Make this deck public</Label>
+          </Field>
+          <div className="flex justify-end gap-2">
+            <AnimatedButton>
+              <Button className="" onClick={closeModal}>
+                Cancel
+              </Button>
+            </AnimatedButton>
+            <button
+              disabled={loading}
+              className="px-2 py-1 rounded-md h-8 bg-buttonBlue md:hover:bg-buttonBlue/80 text-light cursor-pointer"
+              onClick={() => {
+                handleSaveClick();
+              }}
+            >
+              {loading ? "Saving..." : "Save Deck"}
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

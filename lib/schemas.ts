@@ -79,43 +79,60 @@ export const suggestedUpgradesSchema = z.object({
   cardId: z.string(),
 });
 
-const Card = z.object({
-  id: z.string(), // Unique identifier for the card
-  name: z.string(), // Name of the card
-  type: z.string(), // Type of the card (e.g., Creature, Instant)
-  manaCost: z.string().nullable(), // Mana cost of the card, nullable if not applicable
-  colorIdentity: z.array(z.string()), // Color identity of the card
-  cmc: z.number(), // Converted mana cost of the card
-  board_section: z.string(), // Board section where the card is placed
-  oracleText: z.string().nullable(), // Oracle text of the card, nullable if not applicable
-  flavourText: z.string().nullable(), // Flavour text of the card, nullable if not applicable
-  imageUrl: z.string().nullable(), // URL to the card image, nullable if not available
-  count: z.number().default(1), // Count of the card in the deck, default to 1
+export const CardSchema = z.object({
+  uuid: z.string().uuid(),
+
+  name: z.string().nullable(),
+  mana_cost: z.string().nullable(),
+  mana_value: z.number().nullable(),
+  converted_mana_cost: z.number().nullable(),
+  power: z.string().nullable(),
+  toughness: z.string().nullable(),
+  loyalty: z.string().nullable(),
+  life: z.string().nullable(),
+  defense: z.string().nullable(),
+  layout: z.string().nullable(),
+  rarity: z.string().nullable(),
+  color_identity: z.array(z.string()).nullable(),
+  types: z.array(z.string()).nullable(),
+  frame_version: z.string().nullable(),
+  finishes: z.array(z.string()).nullable(),
+  flavor_text: z.string().nullable(),
+  flavor_name: z.string().nullable(),
+  is_reprint: z.boolean().nullable(),
+  is_online_only: z.boolean().nullable(),
+  keywords: z.array(z.string()).nullable(),
+  original_printings: z.array(z.string()).nullable(),
+  other_face_ids: z.array(z.string()).nullable(),
+  variations: z.array(z.string()).nullable(),
+  side: z.string().nullable(),
+  artist: z.string().nullable(),
+  artist_ids: z.array(z.string()).nullable(),
+  edhrec_rank: z.number().int().nullable(),
+  edhrec_saltiness: z.number().nullable(),
+  identifiers: z.record(z.any()).nullable(), // jsonb
+  purchase_urls: z.record(z.any()).nullable(), // jsonb
+  type: z.string().nullable(),
+  text: z.string(),
+  count: z.number().default(1),
 });
 
-export type CardType = z.infer<typeof Card>;
+export type CardRecord = z.infer<typeof CardSchema>;
 
-const deckSchema = z.object({
-  id: z.string().uuid(), // UUID of the deck
-  code: z.string(), // Set or deck code
-  name: z.string(), // Name of the deck
-  release_date: z.string().nullable(), // ISO date string, nullable
-  type: z.string(), // Type of deck (e.g., Commander Deck)
-  sealed_product: z.string().nullable(), // Optional sealed product reference
-  cards: z.array(Card), // Array of cards in the deck
+export const DeckSchema = z.object({
+  id: z.string(), // primary key, MTGJSON deck UUID or custom user deck ID
+  code: z.string().nullable(),
+  name: z.string(),
+  type: z.string(),
+  board_section: z.string(),
+  user_id: z.string().uuid().nullable(), // nullable for official decks
+  release_date: z.string().nullable(), // ISO format from Supabase
+  sealed_product: z.string().nullable(),
+  is_public: z.boolean().nullable().default(false),
+  description: z.string().nullable(),
+  original_deck_id: z.string().nullable(),
+  commander_uuid: z.string().uuid().nullable(),
+  display_card_uuid: z.string().uuid().nullable(),
 });
 
-export type Deck = z.infer<typeof deckSchema>;
-
-const userDeckSchema = z.object({
-  id: z.string().uuid(), // UUID of the deck
-  user_id: z.string().uuid(), // UUID of the user who owns the deck
-  code: z.string(), // Set or deck code
-  name: z.string(), // Name of the deck
-  release_date: z.string().nullable(), // ISO date string, nullable
-  type: z.string(), // Type of deck (e.g., Commander Deck)
-  sealed_product: z.string().nullable(), // Optional sealed product reference
-  cards: z.array(Card), // Array of cards in the deck
-});
-
-export type UserDeck = z.infer<typeof userDeckSchema>;
+export type DeckRecord = z.infer<typeof DeckSchema>;

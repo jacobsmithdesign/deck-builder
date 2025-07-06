@@ -30,57 +30,62 @@ export default function CommanderDeckList() {
 
   // queries the supabase database for decks that use the commander
   const fetchDecksForCommander = async (commanderName: string) => {
-    // Step 1: find all deck IDs that contain the commander
-    const { data: deckCards, error: cardError } = await supabase
-      .from("deck_cards")
-      .select("deck_id")
-      .eq("name", commanderName)
-      .eq("board_section", "commander"); // optional: limit to commander slot
+    // Step 1: Find all cards with this name and get their UUIDs
+    const { data: matchingCards, error: cardFetchError } = await supabase
+      .from("cards")
+      .select("uuid")
+      .ilike("name", commanderName); // Case-insensitive match
 
-    if (cardError) {
-      console.error("Failed to find matching deck_ids:", cardError);
+    if (cardFetchError || !matchingCards?.length) {
+      console.error("❌ Could not find matching cards:", cardFetchError);
       return;
     }
 
-    const deckIds = deckCards.map((c) => c.deck_id);
+    const commanderUUIDs = matchingCards.map((card) => card.uuid);
 
-    // Step 2: fetch decks with their cards included
-    const { data: fetchedDecks, error: deckError } = await supabase
+    // Step 2: Find decks where any of these UUIDs are the commander
+    const { data: decksWithCommander, error: deckError } = await supabase
       .from("decks")
-      .select("*, deck_cards(*)") // this embeds the deck_cards
-      .in("id", deckIds);
+      .select("*, deck_cards(*, card:card_uuid(*))")
+      .in("commander_uuid", commanderUUIDs);
 
-    if (deckError) {
-      console.error("Failed to fetch decks:", deckError);
+    if (deckError || !decksWithCommander) {
+      console.error("❌ Failed to fetch decks:", deckError);
       return;
     }
 
-    // Step 3: map the results into your expected schema
-    const formattedDecks = fetchedDecks.map((deck) => ({
+    // Step 3: Format the decks
+    const formattedDecks = decksWithCommander.map((deck) => ({
       id: deck.id,
       code: deck.code,
       name: deck.name,
       release_date: deck.release_date,
       type: deck.type,
       sealed_product: deck.sealed_product,
-      cards: deck.deck_cards.map((c: any) => ({
-        id: c.card_uuid,
-        name: c.name,
-        type: c.type,
-        manaCost: c.mana_cost,
-        colorIdentity: c.color_identity,
-        cmc: c.mana_value,
-        oracleText: c.text,
-        flavourText: null,
-        imageUrl: null, // you can add Scryfall image support later
-        count: c.count || 1, // default to 1 if count is not provided
-        scryfallId: c.identifiers.scryfallId || null, // optional Scryfall ID
-      })),
+      cards: (deck.deck_cards ?? []).map((deckCard: any) => {
+        const card = deckCard.card ?? {};
+        return {
+          id: card.uuid,
+          name: card.name,
+          type: card.type,
+          manaCost: card.mana_cost,
+          colorIdentity: card.color_identity,
+          cmc: card.mana_value,
+          oracleText: card.text,
+          flavourText: null,
+          imageUrl: card.identifiers?.scryfallId
+            ? `https://cards.scryfall.io/normal/front/${card.identifiers.scryfallId.slice(
+                0,
+                1
+              )}/${card.identifiers.scryfallId}.jpg`
+            : null,
+          count: deckCard.count ?? 1,
+          scryfallId: card.identifiers?.scryfallId ?? null,
+        };
+      }),
     }));
 
     setDecks(formattedDecks);
-
-    console.log("Fetching decks for commander:", decks);
   };
 
   useEffect(() => {

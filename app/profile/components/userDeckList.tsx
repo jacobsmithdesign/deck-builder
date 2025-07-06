@@ -23,10 +23,10 @@ export default function UserDeckList() {
 
   const fetchUserDecks = async () => {
     const { data, error } = await supabase
-      .from("user_decks")
-      .select("id, deck_name, description, is_public")
+      .from("decks")
+      .select("id, name, description, is_public")
       .eq("user_id", profile.id)
-      .order("created_at", { ascending: false });
+      .order("release_date", { ascending: false });
 
     if (error) {
       console.error("Error fetching user decks:", error);
@@ -79,7 +79,7 @@ export default function UserDeckList() {
               <li key={deck.id}>
                 <Link href={`/deck/${deck.id}`}>
                   <Card className="flex flex-col gap-1">
-                    <CardTitle>{deck.deck_name}</CardTitle>
+                    <CardTitle>{deck.name}</CardTitle>
                     <div className="bg-dark/10 p-2 rounded-md flex items-center justify-center">
                       <p>{deck.is_public ? "Public" : "Private"}</p>
                     </div>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { CardContent } from "@/app/components/ui/card";
 import { supabase } from "@/lib/supabaseClient";
-
+import { searchCommander } from "@/lib/db/searchCommander";
 /**
  * CommanderSearch allows users to search for a commander (legendary creature)
  * using the Scryfall API. Once a commander is selected, their name is passed
@@ -32,24 +32,16 @@ export default function CommanderSearch({
       }
 
       setIsSearching(true);
-
-      fetch(
-        `https://api.scryfall.com/cards/search?q=${encodeURIComponent(
-          `type:legendary type:creature ${searchTerm}`
-        )}`
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          const commanders = data.data?.filter(
-            (card: any) =>
-              card.type_line?.toLowerCase().includes("legendary") &&
-              card.type_line?.toLowerCase().includes("creature")
-          );
-
-          setSearchResults(commanders);
-        })
-        .catch(console.error)
-        .finally(() => setIsSearching(false));
+      (async () => {
+        try {
+          const results = await searchCommander(searchTerm);
+          setSearchResults(results);
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setIsSearching(false);
+        }
+      })();
     }, 400);
 
     return () => clearTimeout(delayDebounce);
@@ -72,7 +64,7 @@ export default function CommanderSearch({
             <ul className="absolute z-50 w-full bg-light shadow border rounded-xl overflow-clip">
               {searchResults.map((card) => (
                 <li
-                  key={card.id}
+                  key={`${card.uuid}-${card.collector_number}`}
                   className="p-2 hover:bg-lightsecondary/20 cursor-pointer"
                   onClick={() => {
                     onSelect(card.name);
@@ -80,7 +72,13 @@ export default function CommanderSearch({
                     setSearchResults([]);
                   }}
                 >
-                  {card.name}
+                  <div className="flex flex-col">
+                    <span className="font-medium">{card.name}</span>
+                    <span className="text-xs text-gray-500">
+                      {card.set_name} ({card.set?.toUpperCase()}) #
+                      {card.collector_number}
+                    </span>
+                  </div>
                 </li>
               ))}
             </ul>

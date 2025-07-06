@@ -1,6 +1,4 @@
-import { supabase } from "@/lib/supabaseClient";
 import { notFound } from "next/navigation";
-import { Deck, UserDeck } from "@/lib/schemas";
 import { DeckOverview } from "../DeckOverview";
 import { CardListProvider } from "@/app/context/CardListContext";
 import { fetchDeckById } from "@/lib/db/fetchDeck";

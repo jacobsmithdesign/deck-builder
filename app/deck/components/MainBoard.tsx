@@ -13,6 +13,7 @@ import PerspectiveCard from "./perspectiveCard";
 import { ChevronDown, Minus } from "lucide-react";
 import { useCardList } from "@/app/context/CardListContext";
 import { RxCross2 } from "react-icons/rx";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface MainBoardProps {
   isEditMode: boolean;
@@ -54,6 +55,7 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
 
   const groupedCardsArray = groupByCardType(cards);
 
+  // Hide / show card groups
   const toggleGroupVisibility = (type: string) => {
     setVisibleGroups((prev) => {
       const newSet = new Set(prev);
@@ -65,44 +67,72 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
       return newSet;
     });
   };
-
+  // Group cards by similar types
   useEffect(() => {
     const allTypes = groupByCardType(cards).map((group) => group.type);
     setVisibleGroups(new Set(allTypes));
   }, [cards]);
 
+  console.log(cards);
   return (
-    <BoardContent className="overflow-y-auto relative">
+    <BoardContent className="hide-scrollbar relative">
       {groupedCardsArray.map((group, index) => (
         <Group key={index}>
           <GroupHeader
-            className={`${index !== 0 ? "" : "border-t-0"}`}
+            className={`${index !== 0 ? "" : "border-t-0"} w-`}
             onClick={() => console.log(`Clicked on group: ${group.type}`)}
           >
-            <GroupTitle>{group.type}</GroupTitle>
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 toggleGroupVisibility(group.type);
               }}
-              className="text-dark/40 hover:text-dark/60 bg-darksecondary/10 hover:bg-light/60 rounded-md w-7 h-7 transition-all duration-100 cursor-pointer items-center justify-center flex active:scale-90 hover:shadow-sm"
+              className="flex w-full items-center justify-between cursor-pointer transition-colors duration-150 md:hover:bg-dark/15 bg-dark/5 mx-3 py-1 px-2 rounded-md group"
             >
-              {visibleGroups.has(group.type) ? <Minus /> : <ChevronDown />}
+              <GroupTitle>{group.type}</GroupTitle>
+              <div className="md:group-hover:text-dark/80 text-dark/40 transition-colors duration-150 w-7 h-7 items-center justify-center flex">
+                {visibleGroups.has(group.type) ? <Minus /> : <ChevronDown />}
+              </div>
             </button>
           </GroupHeader>
-          {visibleGroups.has(group.type) && (
-            <GroupItems>
-              {group.cards.map((card) => (
-                <PerspectiveCard
-                  key={card.id}
-                  id={card.id}
-                  image={card.imageUrl}
-                  label={card.name}
-                  isEditMode={isEditMode}
-                />
-              ))}
-            </GroupItems>
-          )}
+          <AnimatePresence>
+            {visibleGroups.has(group.type) && (
+              <motion.div
+                key={`group-${group.type}`}
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 100 }}
+                exit={{ height: 0 }}
+                className="overflow-clip flex"
+              >
+                <GroupItems className="mt-2">
+                  {group.cards.map((card, index) => (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.85 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 250,
+                        damping: 12,
+                        bounce: 0.1,
+                        delay: 0.03 * index,
+                        duration: 0.2,
+                      }}
+                      key={card.id}
+                    >
+                      <PerspectiveCard
+                        key={card.id}
+                        id={card.id}
+                        image={card.imageFrontUrl}
+                        label={card.name}
+                        isEditMode={isEditMode}
+                      />
+                    </motion.div>
+                  ))}
+                </GroupItems>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </Group>
       ))}
     </BoardContent>

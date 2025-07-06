@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from "react";
+import { createContext, useContext, useState, ReactNode } from "react";
 
 export interface Card {
   id: string;
@@ -17,7 +11,11 @@ export interface Card {
   cmc: number;
   oracleText: string;
   flavourText: string | null;
-  imageUrl: string | null;
+  board_section: string;
+  imageFrontUrl: string | null;
+  imageBackUrl: string | null;
+  isDoubleFaced: boolean;
+  identifiers: Record<string, any>;
   count: number;
 }
 
@@ -27,6 +25,11 @@ export interface DeckMetadata {
   userId?: string | null;
   type?: string;
   isUserDeck: boolean;
+  code?: string | null;
+  release_date?: string | null;
+  sealed_product?: string | null;
+  commander_uuid?: string | null;
+  display_card_uuid?: string | null;
 }
 
 interface CardListContextType {

@@ -46,15 +46,19 @@
 
   --color-light: #fcfaf2;
   --color-lightsecondary: #e0ccb7;
+  --color-lightHover: #e8e6df;
   --color-secondary: #b9755d;
   --color-dark: #1e2020;
   --color-darksecondary: #342e2e;
   --color-accent: #b75240;
   --color-accent-highlight: #bc6759;
+  --color-buttonLight: #e8e6df;
+  --color-buttonHover: #d9d7d2;
   --color-buttonBlue: #4b80e4;
   --color-buttonBlueBorder: #9ac6ff;
-  --color-buttonRed: #d4463b;
-  --color-buttonRedBorder: #f05d52;
+  --color-buttonRed: #881313;
+  --color-buttonRedHover: #fdc3bd;
+  --color-buttonRedHoverDark: #f2b1aa;
   --color-buttonYellow: #e7c558;
   --color-buttonYellowBorder: #ffeba1;
   --color-buttonGreen: #39b25b;
