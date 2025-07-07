@@ -60,8 +60,8 @@ const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
               {image && typeof image === "string" ? (
                 <Image
                   src={image}
-                  width={300}
-                  height={300}
+                  width={488}
+                  height={680}
                   alt={`Image of ${label} card`}
                   className="w-50 rounded-lg select-none"
                 />
