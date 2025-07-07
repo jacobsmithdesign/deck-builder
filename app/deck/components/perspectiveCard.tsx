@@ -20,6 +20,7 @@ interface PerspectiveCardProps {
   image: React.ReactNode;
   label: React.ReactNode;
   isEditMode: boolean;
+  inspectCard: (id: string) => void;
 }
 
 const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
@@ -27,6 +28,7 @@ const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
   image,
   label,
   isEditMode = false,
+  inspectCard,
 }) => {
   const boundingRef = useRef<DOMRect | null>(null);
   const [hovered, setHovered] = useState(false);
@@ -40,7 +42,7 @@ const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
   }, [isEditMode]);
   return (
     <div className="flex flex-col [perspective:1500px] ">
-      <div onClick={() => console.log(image)}>
+      <div>
         <Tilt
           perspective={1500}
           tiltMaxAngleX={6}
@@ -138,6 +140,7 @@ const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
                   className={`will-change-[transform,opacity] absolute cursor-pointer justify-center z-10 drop-shadow-xl rounded-lg bg-light w-8 text-dark/80 hover:text-dark top-2 right-2 ${
                     isEditMode ? "mr-9 " : ""
                   }`}
+                  onClick={() => inspectCard(id)}
                 >
                   <div className="w-full h-8 font-bold text-sm flex items-center overflow-x-clip relative">
                     <RxInfoCircled className="w-6 h-6 ml-1" />

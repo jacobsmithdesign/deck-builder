@@ -8,7 +8,7 @@ import { RxCheck } from "react-icons/rx";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/app/components/ui/button";
 import { AnimatedButton } from "./AnimatedButton";
-import { handleSave } from "@/lib/db/saveDeck";
+import { handleSave } from "@/lib/db/saveDeckForEditor";
 
 export default function AddToCollectionModal({
   preconDeckId,

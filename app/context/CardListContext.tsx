@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, ReactNode } from "react";
 
+import { CardRecord } from "@/lib/schemas";
 export interface Card {
   id: string;
   name: string;
@@ -33,11 +34,11 @@ export interface DeckMetadata {
 }
 
 interface CardListContextType {
-  cards: Card[];
-  setCards: (cards: Card[]) => void;
-  addCard: (card: Card) => void;
+  cards: CardRecord[];
+  setCards: (cards: CardRecord[]) => void;
+  addCard: (card: CardRecord) => void;
   removeCard: (cardId: string) => void;
-  updateCard: (card: Card) => void;
+  updateCard: (card: CardRecord) => void;
 
   deck: DeckMetadata | null;
   setDeck: (deck: DeckMetadata) => void;
@@ -48,22 +49,22 @@ const CardListContext = createContext<CardListContextType | undefined>(
 );
 
 export const CardListProvider = ({ children }: { children: ReactNode }) => {
-  const [cards, setCardsState] = useState<Card[]>([]);
+  const [cards, setCardsState] = useState<CardRecord[]>([]);
   const [deck, setDeck] = useState<DeckMetadata | null>(null);
 
-  const setCards = (newCards: Card[]) => setCardsState(newCards);
+  const setCards = (newCards: CardRecord[]) => setCardsState(newCards);
 
-  const addCard = (card: Card) => {
+  const addCard = (card: CardRecord) => {
     setCardsState((prev) => [...prev, card]);
   };
 
   const removeCard = (cardId: string) => {
-    setCardsState((prev) => prev.filter((c) => c.id !== cardId));
+    setCardsState((prev) => prev.filter((c) => c.uuid !== cardId));
   };
 
   const updateCard = (updated: Card) => {
     setCardsState((prev) =>
-      prev.map((c) => (c.id === updated.id ? updated : c))
+      prev.map((c) => (c.uuid === updated.id ? updated : c))
     );
   };
 

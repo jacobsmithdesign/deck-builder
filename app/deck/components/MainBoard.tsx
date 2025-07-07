@@ -52,6 +52,8 @@ const groupByCardType = (cards: any[] = []) => {
 export const MainBoard = ({ isEditMode }: MainBoardProps) => {
   const { cards, removeCard } = useCardList();
   const [visibleGroups, setVisibleGroups] = useState<Set<string>>(new Set());
+  const [openCardModal, setOpenCardModal] = useState<boolean>(false);
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
   const groupedCardsArray = groupByCardType(cards);
 
@@ -73,7 +75,11 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
     setVisibleGroups(new Set(allTypes));
   }, [cards]);
 
-  console.log(cards);
+  // function for handling the opening of the modal with card info
+  const handleInspectCard = (id: string) => {
+    setSelectedCardId(id);
+    setOpenCardModal(true);
+  };
   return (
     <BoardContent className="hide-scrollbar relative">
       {groupedCardsArray.map((group, index) => (
@@ -104,7 +110,7 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
                 exit={{ height: 0 }}
                 className="overflow-clip flex"
               >
-                <GroupItems className="mt-2">
+                <GroupItems key={group.type} className="mt-2">
                   {group.cards.map((card, index) => (
                     <motion.div
                       initial={{ opacity: 0, scale: 0.85 }}
@@ -126,6 +132,7 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
                         image={card.imageFrontUrl}
                         label={card.name}
                         isEditMode={isEditMode}
+                        inspectCard={handleInspectCard}
                       />
                     </motion.div>
                   ))}

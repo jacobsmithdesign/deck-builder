@@ -27,15 +27,23 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
       const scryfallBackId = c.identifiers?.scryfallCardBackId ?? null;
 
       return {
-        id: c.uuid ?? crypto.randomUUID(),
-        name: c.name ?? "Unknown",
-        type: c.type ?? "Unknown",
-        manaCost: c.mana_cost ?? null,
-        colorIdentity: c.color_identity ?? [],
-        cmc: c.converted_mana_cost ?? 0,
-        oracleText: c.text ?? "",
-        flavourText: c.flavor_text ?? null,
-        board_section: c.board_section ?? "mainboard",
+        id: c.uuid,
+        name: c.name,
+        type: c.type,
+        manaCost: c.mana_cost,
+        colorIdentity: c.color_identity,
+        power: c.power,
+        toughness: c.toughness,
+        loyalty: c.loyalty,
+        keywords: c.keywords,
+        variations: c.variations,
+        edhrec_rank: c.edhrec_rank,
+        edhrec_saltiness: c.edhrec_saltiness,
+        purchase_urls: c.purchase_urls,
+        cmc: c.converted_mana_cost,
+        oracleText: c.text,
+        flavourText: c.flavor_text,
+        board_section: c.board_section,
         imageFrontUrl: scryfallId
           ? `https://cards.scryfall.io/normal/front/${scryfallId[0]}/${scryfallId[1]}/${scryfallId}.jpg`
           : null,
