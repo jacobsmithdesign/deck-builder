@@ -114,15 +114,20 @@ export default function CommanderOverview() {
                         />
                         {/* Card with title and oracle text*/}
                         <Card className="sm:col-span-2 col-span-3 sm:ml-0 ml-20 flex flex-col grid-cols-1 sm:grid-rows-3">
-                          <div>
+                          <div className="w-full  flex flex-col">
                             <CardTitle className="pb-0 flex justify-between items-center bg-light/40 pl-2 pr-1 md:rounded-xl rounded-md col-span-2">
                               <h2 className="font-bold truncate">
                                 {commanderCard?.name}
                               </h2>
                               {commanderCard?.mana_cost && <ManaCost />}
                             </CardTitle>
-                            <p className=" md:text-sm lg:text-base text-xs text-dark/70 font-bold pl-2 pt-1">
-                              {deckDetails.name}
+                            <p className="flex py-2 md:text-sm lg:text-base text-xs text-dark/70 font-bold pl-2w-full">
+                              <span className="font-normal bg-light/10 px-1 rounded mr-2 whitespace-nowrap">
+                                {deckDetails.type}
+                              </span>
+                              <span className="text-ellipsis whitespace-nowrap overflow-hidden block w-full">
+                                {deckDetails.name}
+                              </span>
                             </p>
                           </div>
 
