@@ -9,7 +9,7 @@ const Spell = React.forwardRef<
   <button
     ref={ref}
     className={cn(
-      "flex justify-between items-center px-4 bg-zinc-500/15 rounded-xl py-2 cursor-pointer hover:bg-zinc-500/30 transition-all duration-200 ease-in-out lg:text-lg md:text-md text-sm text-dark/70",
+      "flex justify-between items-center px-4 bg-zinc-500/15 rounded-xl py-2 cursor-pointer hover:bg-zinc-500/30 transition-all duration-200 ease-in-out lg:text-lg md:text-base text-sm text-dark/70",
       className
     )}
     {...props}
@@ -23,7 +23,7 @@ const SpellType = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("font-bold lg:text-lg md:text-md text-sm", className)}
+    className={cn("font-bold lg:text-lg md:text-base text-sm", className)}
     {...props}
   />
 ));
@@ -35,7 +35,7 @@ const SpellCount = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("lg:text-lg md:text-md text-sm", className)}
+    className={cn("lg:text-lg md:text-base text-sm", className)}
     {...props}
   />
 ));
@@ -48,7 +48,7 @@ const Strength = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "flex justify-between items-center px-4 bg-green-500/20 md:pt-0 py-1 rounded-lg text-center lg:text-lg md:text-md text-sm text-green-900",
+      "flex justify-between items-center px-4 bg-green-500/20 md:pt-0 py-1 rounded-lg text-center lg:text-lg md:text-base text-sm text-green-900",
       className
     )}
     {...props}
@@ -62,7 +62,7 @@ const Weakeness = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "justify-between items-center px-4 bg-red-600/25 md:pt-0 py-1 rounded-lg text-center lg:text-lg md:text-md text-sm text-red-900",
+      "justify-between items-center px-4 bg-red-600/25 md:pt-0 py-1 rounded-lg text-center lg:text-lg md:text-base text-sm text-red-900",
       className
     )}
     {...props}

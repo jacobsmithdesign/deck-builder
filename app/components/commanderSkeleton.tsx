@@ -88,7 +88,7 @@ export const CommanderSkeleton = () => {
               </Spell>
             </CardContent>
             {/* Strengths and Weaknesses */}
-            <div className="pt-2 flex lg:text-lg md:text-md text-sm font-bold flex-col">
+            <div className="pt-2 flex lg:text-lg md:text-base text-sm font-bold flex-col">
               <p>Strengths:</p>
               <ScrollingLabels>
                 <div className="w-10">Loading...</div>

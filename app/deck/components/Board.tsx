@@ -38,7 +38,7 @@ const BoardTitle = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "font-semibold leading-none tracking-tight lg:text-2xl md:text-lg sm:text-sm text-xs",
+      "font-semibold leading-none tracking-tight lg:text-2xl md:text-base sm:text-sm text-xs",
       className
     )}
     {...props}
@@ -67,7 +67,7 @@ const Group = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("text-muted-foreground md:text-md text-sm ", className)}
+    className={cn("text-muted-foreground md:text-base text-sm ", className)}
     {...props}
   />
 ));
@@ -80,7 +80,7 @@ const GroupTitle = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      " lg:text-xl md:text-lg sm:text-md text-sm font-bold",
+      " lg:text-xl md:text-base sm:text-base text-sm font-bold",
       className
     )}
     {...props}

@@ -39,8 +39,13 @@ export default function CommanderOverview() {
   useEffect(() => {
     async function fetchColor() {
       if (commanderCard?.artwork) {
-        const color = await getAverageColorFromImage(commanderCard.artwork);
+        console.log("Commander artwork found");
+        const proxiedUrl = `/api/proxy?url=${encodeURIComponent(
+          commanderCard.artwork
+        )}`;
+        const color = await getAverageColorFromImage(proxiedUrl);
         setArtworkColor(color);
+        console.log("colour:", color);
         setBgColor(color);
       }
     }
@@ -78,7 +83,7 @@ export default function CommanderOverview() {
           <motion.div
             key="height-container-div"
             layout
-            animate={{ height: compactView ? 80 : 384 }}
+            animate={{ height: compactView ? 80 : 324 }}
             transition={{
               type: "spring",
               stiffness: 250,
@@ -100,7 +105,7 @@ export default function CommanderOverview() {
                 <CardDescription className="text-lg text-dark/70 h-full">
                   <CardContent className="text-dark grid md:grid-cols-2 grid-cols-1 gap-2 p-0 h-full ">
                     <CardHeader className="md:px-3 px-0">
-                      <div className="md:flex grid grid-cols-3 gap-2 flex-col h-full">
+                      <div className="md:flex grid grid-cols-3 gap-2 flex-col">
                         {/* Mobile card image */}
                         <img
                           src={commanderCard?.imageFrontUrl || null}
@@ -108,16 +113,16 @@ export default function CommanderOverview() {
                           className={`object-contain sm:w-full  sm:h-full h-20 md:rounded-2xl sm:rounded-xl rounded-sm block md:hidden sm:static absolute `}
                         />
                         {/* Card with title and oracle text*/}
-                        <Card className="sm:col-span-2 col-span-3 sm:ml-0 ml-20 grid grid-cols-1 sm:grid-rows-3">
+                        <Card className="sm:col-span-2 col-span-3 sm:ml-0 ml-20 flex flex-col grid-cols-1 sm:grid-rows-3">
                           <div>
                             <CardTitle className="pb-0 flex justify-between items-center bg-light/40 pl-2 pr-1 md:rounded-xl rounded-md col-span-2">
                               <h2 className="font-bold truncate">
-                                {deckDetails?.name}
+                                {commanderCard?.name}
                               </h2>
                               {commanderCard?.mana_cost && <ManaCost />}
                             </CardTitle>
-                            <p className="lg:text-lg md:text-sm text-xs text-dark/70 pl-2 pt-1">
-                              {deckDetails.type}
+                            <p className=" md:text-sm lg:text-base text-xs text-dark/70 font-bold pl-2 pt-1">
+                              {deckDetails.name}
                             </p>
                           </div>
 
@@ -132,13 +137,13 @@ export default function CommanderOverview() {
                                 transition={{ duration: 0.25 }}
                                 className={`p-0 row-span-2 bg-light/20 rounded-sm`}
                               >
-                                <div className="p-2 my-auto overflow-scroll flex flex-col md:h-58">
+                                <div className="p-2 my-auto overflow-scroll hide-scrollbar flex flex-col md:h-58">
                                   {commanderCard.text
                                     ?.split("\n")
                                     .map((line, index) => (
                                       <p
                                         key={index}
-                                        className="mb-2 lg:text-lg text-sm"
+                                        className="mb-2 lg:text-base md:text-sm text-xs"
                                       >
                                         {line}
                                       </p>
@@ -158,12 +163,12 @@ export default function CommanderOverview() {
                             .map((line, index) => (
                               <p
                                 key={index}
-                                className="mb-2 md:text-lg text-xs"
+                                className="mb-2 md:text-base text-xs"
                               >
                                 {line}
                               </p>
                             ))}
-                          <p className="md:text-lg text-xs italic font-serif my-auto">
+                          <p className="md:text-base text-xs italic font-serif my-auto">
                             {commanderCard.flavourText}
                           </p>
                         </div>

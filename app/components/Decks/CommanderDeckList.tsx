@@ -71,11 +71,11 @@ export default function CommanderDeckList() {
     };
   }, [hasMore, loading]);
   return (
-    <CardContainer className="w-full flex flex-col text-dark/90 relative overflow-clip mt-2 bg-darksecondary/10">
+    <CardContainer className="w-full h-full flex flex-col text-dark/90 relative overflow-clip bg-darksecondary/10">
       <CardHeader className="py-3 md:px-4 bg-dark/5 m-2 rounded-md">
         <CardTitle>Commander Decks</CardTitle>
       </CardHeader>
-      <CardContent className="px-2 overflow-y-auto flex flex-col gap-2 ">
+      <CardContent className="px-2 overflow-y-scroll hide-scrollbar flex flex-col gap-2 ">
         {decks.map((deck, index) => (
           <Link
             href={`/deck/${deck.id}`}

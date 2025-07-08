@@ -13,7 +13,7 @@ const buttonVariants = cva("flex items-center justify-center cursor-pointer", {
         "bg-primary text-primary-foreground hover:bg-primary/90 bg-buttonLight hover:bg-buttonHover",
       save: "bg-green-500/10 text-green-700 md:hover:bg-green-500/20 md:hover:text-green-600 transition-colors duration-150",
       cardGroup:
-        "w-full rounded-xl bg-light/0 md:hover:bg-light md:hover:shadow-md shadow-darksecondary/5 ease-in-out duration-150 text-dark text-sm md:text-md font-bold ",
+        "w-full rounded-xl bg-light/0 md:hover:bg-light md:hover:shadow-md shadow-darksecondary/5 ease-in-out duration-150 text-dark text-sm md:text-base font-bold ",
 
       ghost: "hover:bg-accent hover:text-accent-foreground",
       link: "text-primary underline-offset-4 hover:underline",

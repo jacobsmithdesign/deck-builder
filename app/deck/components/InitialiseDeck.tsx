@@ -83,7 +83,6 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
       isDoubleFaced: !!commanderCardRecord.identifiers?.scryfallCardBackId,
       identifiers: commanderCardRecord.identifiers,
     };
-
     setCommanderCard(commanderCard);
 
     // Initialise the cards to be displayed in the deck table

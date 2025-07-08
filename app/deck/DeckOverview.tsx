@@ -55,7 +55,9 @@ export const DeckOverview = () => {
   // state to manage modal visibility and group visibility
 
   return (
-    <Board className={`relative z-10 overflow-y-scroll px-2 pb-2`}>
+    <Board
+      className={`relative z-10 overflow-y-scroll hide-scrollbar px-2 pb-2`}
+    >
       <BoardHeader className="pl-0 rounded-lg relative flex my-1">
         <AnimatePresence>
           {/* Conditionally render add to collection or edit button */}

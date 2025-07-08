@@ -45,7 +45,7 @@ export default function UserIcon() {
       <MenuItems
         transition
         anchor="bottom end"
-        className="bg-light mt-2 text-dark rounded-md border border-darksecondary/20 w-48 p-1 data-closed:opacity-0 data-closed:-translate-y-2 transition duration-150 focus:outline-none ml-2"
+        className="bg-light mt-2 text-dark rounded-md border border-darksecondary/20 w-48 p-1 data-closed:opacity-0 data-closed:-translate-y-2 transition duration-150 focus:outline-none ml-2 z-50"
       >
         <MenuItem
           as="button"

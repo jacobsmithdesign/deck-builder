@@ -35,7 +35,7 @@ export default async function DeckPage({
           <InitialiseDeck deck={deck.deck} />
           <div className="bg-light relative">
             <div
-              className={`w-screen h-lvh items-center text-dark pt-12 overflow-y-scroll flex flex-col`}
+              className={`w-screen h-lvh items-center text-dark pt-12 overflow-y-scroll hide-scrollbar flex flex-col`}
             >
               <CompactViewProvider>
                 <CommanderOverview />

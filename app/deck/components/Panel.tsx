@@ -38,7 +38,7 @@ const PanelTitle = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "font-semibold leading-none tracking-tight lg:text-2xl md:text-lg sm:text-sm text-xs",
+      "font-semibold leading-none tracking-tight lg:text-2xl md:text-base sm:text-sm text-xs",
       className
     )}
     {...props}
@@ -53,7 +53,7 @@ const PanelContent = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "font-semibold leading-none tracking-tight lg:text-2xl md:text-lg sm:text-sm text-xs",
+      "font-semibold leading-none tracking-tight lg:text-2xl md:text-base sm:text-sm text-xs",
       className
     )}
     {...props}

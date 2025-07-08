@@ -26,7 +26,7 @@ export default function DeckBuilder() {
 
   return (
     <CommanderProvider>
-      <div className="flex flex-col items-center min-h-screen px-4 bg-light text-dark pt-13">
+      <div className="flex flex-col h-lvh overflow-scroll hide-scrollbar items-center max-h-lvh px-2 pb-2 bg-light text-dark pt-15">
         <CommanderDeckList />
       </div>
     </CommanderProvider>
