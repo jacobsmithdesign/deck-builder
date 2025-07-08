@@ -3,15 +3,15 @@ import { useEffect, useState } from "react";
 
 export const ManaCost = () => {
   const { commanderCard } = useCommander();
-  const [manaCostString, setManaCostString] = useState<string | null>();
+  const [mana_costString, setmana_costString] = useState<string | null>();
 
   useEffect(() => {
     if (commanderCard) {
-      setManaCostString(commanderCard.manaCost);
-      console.log(manaCostString);
+      setmana_costString(commanderCard.mana_cost);
+      console.log(mana_costString);
     }
   }, [commanderCard]);
-  const manaSymbols = manaCostString
+  const manaSymbols = mana_costString
     ?.match(/\{([^}]+)\}/g)
     ?.map((s) => s.replace(/[{}]/g, ""));
 

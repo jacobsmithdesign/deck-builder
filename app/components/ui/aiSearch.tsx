@@ -108,7 +108,7 @@ export default function AISearch() {
           );
           // Isolate the cardLists array from the EDHREC data
           const cardList = await edhrecData.data.container.json_dict.cardlists;
-          const manaCost = scryfallData.mana_cost;
+          const mana_cost = scryfallData.mana_cost;
           if (scryfallData.mana_cost) {
             console.log("Mana Cost:", scryfallData.mana_cost);
           }
@@ -131,7 +131,7 @@ export default function AISearch() {
             commanderName: object?.slug,
             edhrecData: edhrecData,
             cardList: cardList,
-            manaCost: manaCost,
+            mana_cost: mana_cost,
           });
         }
       }

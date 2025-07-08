@@ -12,8 +12,8 @@ function slugify(name: string) {
 }
 
 export async function POST(req: Request) {
-  const { commanderName, edhrecData, manaCost } = await req.json();
-  "Mana Cost:", manaCost;
+  const { commanderName, edhrecData, mana_cost } = await req.json();
+  "Mana Cost:", mana_cost;
 
   if (!edhrecData) {
     return new Response("Commander not found.", { status: 404 });
@@ -29,7 +29,7 @@ You are an expert Magic: The Gathering deck builder.
 Given a commander's name, an API call from EDHREC for that commander, and a mana cost from scryfall, output a JSON object including:
 - name
 - type
-- manaCost (e,g. "2GWR")
+- mana_cost (e,g. "2GWR")
 - colorIdentity
 - health
 -robustness
@@ -44,7 +44,7 @@ Return strictly JSON matching the schema.`,
         role: "user",
         content: `Commander: ${commanderName}\nEDHREC API response: ${JSON.stringify(
           edhrecData
-        )}\nMana cost: ${manaCost}\n`,
+        )}\nMana cost: ${mana_cost}\n`,
       },
     ],
     schema: commanderSchema,

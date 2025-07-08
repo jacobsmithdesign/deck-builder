@@ -114,7 +114,7 @@ export default function CommanderOverview() {
                               <h2 className="font-bold truncate">
                                 {deckDetails?.name}
                               </h2>
-                              {commanderCard?.manaCost && <ManaCost />}
+                              {commanderCard?.mana_cost && <ManaCost />}
                             </CardTitle>
                             <p className="lg:text-lg md:text-sm text-xs text-dark/70 pl-2 pt-1">
                               {deckDetails.type}

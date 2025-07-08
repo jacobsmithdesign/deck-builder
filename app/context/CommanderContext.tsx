@@ -8,7 +8,7 @@ export type CommanderCard = {
   id: string;
   name: string;
   type: string;
-  manaCost: string | null;
+  mana_cost: string | null;
   colorIdentity: string[];
   cmc: number;
   text: string;

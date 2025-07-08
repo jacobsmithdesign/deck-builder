@@ -13,7 +13,7 @@ export const commanderSchema = z.object({
     .describe(
       "The type of commander (e.g. Legendary Creature - Human Knight)."
     ),
-  manaCost: z
+  mana_cost: z
     .object({ mana: z.string() })
     .describe(
       "The mana cost of the commander (e.g. {2}{G}{W} = 2GW. {U}{U}{U}{R}{R}{R} = UUURRR)."
@@ -71,7 +71,7 @@ export type CommanderSlug = z.infer<typeof commanderSlugSchema>;
 export const suggestedUpgradesSchema = z.object({
   name: z.string(),
   type: z.string(),
-  manaCost: z.string(),
+  mana_cost: z.string(),
   colorIdentity: z.array(z.string()),
   cmc: z.number(),
   text: z.string(),

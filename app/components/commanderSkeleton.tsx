@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card";
-import { ManaCost } from "./ui/manaCost";
+import { mana_cost } from "./ui/mana_cost";
 import {
   Spell,
   SpellCount,

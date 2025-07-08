@@ -70,7 +70,7 @@ export default function SearchBox() {
       setDeckDetails({
         name: commanderName,
         type: scryfallData.data.type_line,
-        manaCost: { mana: scryfallData.data.mana_cost },
+        mana_cost: { mana: scryfallData.data.mana_cost },
         colorIdentity: scryfallData.color_identity,
         artifact: deckStats.artifact,
         enchantment: deckStats.enchantment,

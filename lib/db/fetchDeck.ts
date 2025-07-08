@@ -35,7 +35,7 @@ export async function fetchDeckById(deckId: string) {
             uuid: card.uuid,
             name: card.name,
             type: card.type,
-            manaCost: card.mana_cost,
+            mana_cost: card.mana_cost,
             colorIdentity: card.color_identity ?? [],
             cmc: card.mana_value ?? 0,
             text: card.text ?? "",
