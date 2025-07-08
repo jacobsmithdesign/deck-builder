@@ -14,6 +14,7 @@ import { ChevronDown, Minus } from "lucide-react";
 import { useCardList } from "@/app/context/CardListContext";
 import { RxCross2 } from "react-icons/rx";
 import { motion, AnimatePresence } from "framer-motion";
+import { useCompactView } from "@/app/context/compactViewContext";
 
 interface MainBoardProps {
   isEditMode: boolean;
@@ -54,7 +55,7 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
   const [visibleGroups, setVisibleGroups] = useState<Set<string>>(new Set());
   const [openCardModal, setOpenCardModal] = useState<boolean>(false);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
-
+  const { bgColor } = useCompactView();
   const groupedCardsArray = groupByCardType(cards);
 
   // Hide / show card groups
@@ -81,9 +82,12 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
     setOpenCardModal(true);
   };
   return (
-    <BoardContent className="hide-scrollbar relative">
+    <BoardContent
+      style={{ background: bgColor }}
+      className="hide-scrollbar relative border border-light/60"
+    >
       {groupedCardsArray.map((group, index) => (
-        <Group key={index}>
+        <Group key={index} className="bg-light/70">
           <GroupHeader
             className={`${index !== 0 ? "" : "border-t-0"} w-`}
             onClick={() => console.log(`Clicked on group: ${group.type}`)}
@@ -113,6 +117,7 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
                 <GroupItems key={group.type} className="mt-2">
                   {group.cards.map((card, index) => (
                     <motion.div
+                      key={card + index}
                       initial={{ opacity: 0, scale: 0.85 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
@@ -124,7 +129,6 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
                         delay: 0.03 * index,
                         duration: 0.2,
                       }}
-                      key={card.id}
                     >
                       <PerspectiveCard
                         key={card.id}
@@ -142,6 +146,7 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
           </AnimatePresence>
         </Group>
       ))}
+      <div className="w-full h-full bg-light/70" />
     </BoardContent>
   );
 };

@@ -44,7 +44,6 @@ export default function CommanderDeckList() {
       setLoading(false);
       return;
     }
-    console.log(data);
     setDecks((prev) => [...prev, ...(data ?? [])]);
     setHasMore((data ?? []).length === PAGE_SIZE);
     setLoading(false);
@@ -81,8 +80,7 @@ export default function CommanderDeckList() {
           <Link
             href={`/deck/${deck.id}`}
             key={`${deck.id}-${index}`}
-            onClick={() => console.log(deck)}
-            className="p-2 px-4 transition-all md:hover:bg-light cursor-pointer rounded-sm flex flex-col text-left border-b"
+            className="p-2 px-4 transition-all md:hover:bg-light cursor-pointer rounded-sm flex flex-col text-left "
           >
             <h3 className="font-bold">{deck.name}</h3>
             <p className="text-sm text-muted-foreground">{deck.release_date}</p>

@@ -32,13 +32,13 @@ export async function fetchDeckById(deckId: string) {
           const scryfallBackId = identifiers.scryfallCardBackId ?? null;
 
           return {
-            id: card.uuid,
+            uuid: card.uuid,
             name: card.name,
             type: card.type,
             manaCost: card.mana_cost,
             colorIdentity: card.color_identity ?? [],
             cmc: card.mana_value ?? 0,
-            oracleText: card.oracle_text ?? "",
+            text: card.text ?? "",
             flavourText: card.flavor_text,
             setCode: card.set_code,
             rarity: card.rarity,

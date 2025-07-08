@@ -2,63 +2,59 @@
 
 import { createContext, useContext, useState, ReactNode } from "react";
 import { Commander } from "@/lib/schemas";
-import { DeckRecord } from "@/lib/schemas";
-interface CommanderContextProps {
-  deckDetails: Commander | null;
-  setDeckDetails: (deck: Commander | null) => void;
-  oracleText: string | null;
-  setOracleText: (text: string | null) => void;
-  flavorText: string | null;
-  setFlavorText: (text: string | null) => void;
-  commanderCardImage: string | null;
-  setCommanderCardImage: (url: string) => void;
+import { DeckRecord, CardRecord } from "@/lib/schemas";
+
+export type CommanderCard = {
+  id: string;
+  name: string;
+  type: string;
+  manaCost: string | null;
+  colorIdentity: string[];
+  cmc: number;
+  text: string;
+  flavourText?: string | null;
+  imageFrontUrl: string | null;
+  imageBackUrl?: string | null;
   artwork: string | null;
-  setArtwork: (colour: string | null) => void;
-  artworkColor: string | null;
-  setArtworkColor: (colour: string | null) => void;
-  error: boolean;
-  setError: (error: boolean) => void;
+  isDoubleFaced?: boolean;
+  identifiers?: Record<string, any>;
+};
 
-  // Commander deck list
-  decks: DeckRecord[];
-  setDecks: (decks: DeckRecord[]) => void;
-}
+export type CommanderDeckDetails = {
+  id: string;
+  name: string;
+  userId?: string | null;
+  type: string;
+  isUserDeck: boolean;
+  cards: CommanderCard[];
+};
 
+type CommanderContextProps = {
+  deckDetails: CommanderDeckDetails | null;
+  setDeckDetails: (deck: CommanderDeckDetails | null) => void;
+  commanderCard: CommanderCard | null;
+  setCommanderCard: (card: CommanderCard | null) => void;
+  // other fields...
+};
 const CommanderContext = createContext<CommanderContextProps | undefined>(
   undefined
 );
 
 export function CommanderProvider({ children }: { children: ReactNode }) {
-  const [error, setError] = useState<boolean>(false);
-  const [artworkColor, setArtworkColor] = useState<string | null>(null);
-  const [artwork, setArtwork] = useState<string | null>(null);
-  const [deckDetails, setDeckDetails] = useState<Commander | null>(null);
-  const [oracleText, setOracleText] = useState<string | null>(null);
-  const [flavorText, setFlavorText] = useState<string | null>(null);
-  const [commanderCardImage, setCommanderCardImage] = useState<string | null>(
+  const [deckDetails, setDeckDetails] = useState<CommanderDeckDetails | null>(
     null
   );
-  const [decks, setDecks] = useState<DeckRecord[]>([]);
+  const [commanderCard, setCommanderCard] = useState<CommanderCard | null>(
+    null
+  );
 
   return (
     <CommanderContext.Provider
       value={{
-        deckDetails,
         setDeckDetails,
-        oracleText,
-        setOracleText,
-        flavorText,
-        setFlavorText,
-        commanderCardImage,
-        setCommanderCardImage,
-        artwork,
-        setArtwork,
-        artworkColor,
-        setArtworkColor,
-        error,
-        setError,
-        decks,
-        setDecks,
+        deckDetails,
+        setCommanderCard,
+        commanderCard,
       }}
     >
       {children}

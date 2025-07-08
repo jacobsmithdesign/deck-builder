@@ -3,6 +3,14 @@ import { DeckOverview } from "../DeckOverview";
 import { CardListProvider } from "@/app/context/CardListContext";
 import { fetchDeckById } from "@/lib/db/fetchDeck";
 import InitialiseDeck from "../components/InitialiseDeck";
+import CommanderOverview from "@/app/components/ui/commanderOverview";
+import {
+  CommanderProvider,
+  useCommander,
+} from "@/app/context/CommanderContext";
+import { CompactViewProvider } from "@/app/context/compactViewContext";
+import { useEffect, useState } from "react";
+import { getAverageColorFromImage } from "@/lib/getAverageColour";
 
 export default async function DeckPage({
   params,
@@ -18,16 +26,24 @@ export default async function DeckPage({
     console.error("Error fetching deck:", error);
     notFound();
   }
-  console.log("Deck fetched:", deck);
   if (!deck) {
     return <div className="text-center text-lg">Deck not found</div>;
   } else
     return (
       <CardListProvider>
-        <InitialiseDeck deck={deck.deck} />
-        <div className="w-screen h-lvh flex gap-2 items-center p-2 bg-light text-dark pt-14">
-          <DeckOverview />
-        </div>
+        <CommanderProvider>
+          <InitialiseDeck deck={deck.deck} />
+          <div className="bg-light relative">
+            <div
+              className={`w-screen h-lvh items-center text-dark pt-12 overflow-y-scroll flex flex-col`}
+            >
+              <CompactViewProvider>
+                <CommanderOverview />
+                <DeckOverview />
+              </CompactViewProvider>
+            </div>
+          </div>
+        </CommanderProvider>
       </CardListProvider>
     );
 }

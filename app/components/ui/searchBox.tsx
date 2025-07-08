@@ -25,7 +25,7 @@ export default function SearchBox() {
     setArtwork,
     setArtworkColor,
     setFlavorText,
-    setOracleText,
+    settext,
     setError,
   } = useCommander();
 
@@ -63,7 +63,7 @@ export default function SearchBox() {
       setArtworkColor(averageColor);
       setArtwork(imageUris[0].art_crop);
       setCommanderCardImage(imageUris[0].normal);
-      setOracleText(scryfallData.data.oracle_text);
+      settext(scryfallData.data.oracle_text);
       setFlavorText(scryfallData.data.flavor_text);
 
       // This is the whole deck details object that will be set in the context

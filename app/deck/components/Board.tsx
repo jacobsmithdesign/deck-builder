@@ -8,7 +8,7 @@ const Board = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "w-full bg-dark/10 h-full rounded-xl bg-board text-board-foreground flex flex-col",
+      "w-full h-full bg-dark/10 rounded-xl bg-board text-board-foreground flex flex-col",
       className
     )}
     {...props}
@@ -23,7 +23,7 @@ const BoardHeader = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "w-full h-10 flex gap-6 items-center p-1 pl-3 rounded-xl",
+      "w-full h-10 flex  gap-2 items-center p-1 pl-3 rounded-xl",
       className
     )}
     {...props}

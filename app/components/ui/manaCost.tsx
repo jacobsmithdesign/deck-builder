@@ -1,9 +1,16 @@
 import { useCommander } from "@/app/context/CommanderContext";
+import { useEffect, useState } from "react";
 
 export const ManaCost = () => {
-  const { deckDetails } = useCommander();
-  const manaCostString = deckDetails?.manaCost.mana;
-  console.log("Mana Cost String:", manaCostString);
+  const { commanderCard } = useCommander();
+  const [manaCostString, setManaCostString] = useState<string | null>();
+
+  useEffect(() => {
+    if (commanderCard) {
+      setManaCostString(commanderCard.manaCost);
+      console.log(manaCostString);
+    }
+  }, [commanderCard]);
   const manaSymbols = manaCostString
     ?.match(/\{([^}]+)\}/g)
     ?.map((s) => s.replace(/[{}]/g, ""));

@@ -74,7 +74,7 @@ export const suggestedUpgradesSchema = z.object({
   manaCost: z.string(),
   colorIdentity: z.array(z.string()),
   cmc: z.number(),
-  oracleText: z.string(),
+  text: z.string(),
   imageUrl: z.string(),
   cardId: z.string(),
 });

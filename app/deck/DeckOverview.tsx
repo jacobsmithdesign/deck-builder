@@ -9,6 +9,7 @@ import AddToCollectionModal from "./components/AddToCollectionModal";
 import { Button } from "./components/button";
 import { RxArrowRight, RxCheck, RxCheckCircled } from "react-icons/rx";
 import Link from "next/link";
+import { useCompactView } from "../context/compactViewContext";
 
 export const DeckOverview = () => {
   // Get deck and user info from context
@@ -19,8 +20,8 @@ export const DeckOverview = () => {
   const [editMode, setEditMode] = useState<boolean>(false); // Toggle for edit mode
   const [isEditing, setIsEditing] = useState<boolean>(false); // State to manage if the deck is being edited (isOwner && editMode)
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [inCollection, setInCollection] = useState<boolean>(false); // State to manage if the deck is in user collection
   const [newCreatedDeck, setNewCreatedDeck] = useState<string>();
+  const { compactView, toggleCompactView, bgColor } = useCompactView();
   const toggleEditing = () => {
     setEditMode((prev) => !prev); // Toggle edit mode
     console.log(editMode);
@@ -31,7 +32,6 @@ export const DeckOverview = () => {
       setIsEditing(false);
     }
   };
-
   useEffect(() => {
     if (editMode && isOwner) {
       setIsEditing(true);
@@ -55,14 +55,14 @@ export const DeckOverview = () => {
   // state to manage modal visibility and group visibility
 
   return (
-    <Board className="relative bg-light">
-      <BoardHeader className="mb-1 rounded-lg relative">
-        <BoardTitle className="text-2xl font-bold">{deck.name}</BoardTitle>
+    <Board className={`relative z-10 overflow-y-scroll px-2 pb-2`}>
+      <BoardHeader className="pl-0 rounded-lg relative flex my-1">
         <AnimatePresence>
           {/* Conditionally render add to collection or edit button */}
           {isOwner ? (
             <div className=" flex gap-2">
               <motion.div
+                key="edit/cancel-button"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
@@ -84,6 +84,7 @@ export const DeckOverview = () => {
               </motion.div>
               {editMode && (
                 <motion.div
+                  key="save-button"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
@@ -108,6 +109,7 @@ export const DeckOverview = () => {
             <div>
               {newCreatedDeck ? (
                 <motion.div
+                  key="go-to-collection-button"
                   initial={{ opacity: 0, scale: 0.95, width: 0 }}
                   animate={{ opacity: 1, scale: 1, width: 200 }}
                   exit={{ opacity: 0, scale: 0.95, width: 0 }}
@@ -132,6 +134,7 @@ export const DeckOverview = () => {
                 </motion.div>
               ) : (
                 <motion.div
+                  key="add-to-collection-button"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95, width: 0 }}
@@ -164,6 +167,12 @@ export const DeckOverview = () => {
               />
             </div>
           )}
+          <Button
+            className=""
+            onClick={toggleCompactView}
+            variant="secondary"
+            title={compactView ? "Show overview" : "Minimise overview"}
+          />
         </AnimatePresence>
       </BoardHeader>
       <MainBoard isEditMode={isEditing} />

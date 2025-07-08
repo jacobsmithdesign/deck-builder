@@ -13,7 +13,7 @@ function slugify(name: string) {
 
 export async function POST(req: Request) {
   const { commanderName, edhrecData, manaCost } = await req.json();
-  console.log("Mana Cost:", manaCost);
+  "Mana Cost:", manaCost;
 
   if (!edhrecData) {
     return new Response("Commander not found.", { status: 404 });

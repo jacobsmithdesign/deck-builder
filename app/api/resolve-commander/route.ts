@@ -7,7 +7,6 @@ export const maxDuration = 30;
 export async function POST(req: Request) {
   const body = await req.json();
   const userInput = body.input.userInput;
-  console.log("User Input:", userInput);
 
   const result = streamObject({
     model: google("gemini-2.0-flash"),

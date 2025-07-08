@@ -8,7 +8,7 @@ const buttonVariants = cva("flex items-center justify-center cursor-pointer", {
   variants: {
     variant: {
       default:
-        "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:shadow-lg bg-light/0 hover:bg-light dropshadow-md",
+        "bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-lg bg-light/0 hover:bg-light dropshadow-md",
       secondary:
         "bg-primary text-primary-foreground hover:bg-primary/90 bg-buttonLight hover:bg-buttonHover",
       save: "bg-green-500/10 text-green-700 md:hover:bg-green-500/20 md:hover:text-green-600 transition-colors duration-150",

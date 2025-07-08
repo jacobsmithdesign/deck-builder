@@ -10,7 +10,7 @@ export interface Card {
   manaCost: string | null;
   colorIdentity: string[];
   cmc: number;
-  oracleText: string;
+  text: string;
   flavourText: string | null;
   board_section: string;
   imageFrontUrl: string | null;

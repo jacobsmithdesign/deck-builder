@@ -5,7 +5,7 @@ import { google } from "@ai-sdk/google";
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
-  const { commanderName, oracleText } = await req.json();
+  const { commanderName, text } = await req.json();
   const result = streamObject({
     model: google("gemini-1.5-flash"),
     messages: [
