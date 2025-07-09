@@ -52,7 +52,7 @@ const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
           tiltReverse={true}
           onEnter={() => setHovered(true)}
           onLeave={() => setHovered(false)}
-          className="relative w-52 h-72 transition-transform duration-300 ease-out [transform-style:preserve-3d] md:hover:[transform:rotateX(var(--y-rotation))_rotateY(var(--x-rotation))] justify-center items-center flex"
+          className="relative w-46 h-64 transition-transform duration-300 ease-out [transform-style:preserve-3d] md:hover:[transform:rotateX(var(--y-rotation))_rotateY(var(--x-rotation))] justify-center items-center flex"
         >
           {/* Base card content */}
           <div className=" inset-0 [transform:translateZ(0px)] z-0 pointer-events-none">
@@ -63,7 +63,7 @@ const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
                   width={488}
                   height={680}
                   alt={`Image of ${label} card`}
-                  className="w-50 rounded-lg select-none"
+                  className="w-44 rounded-lg select-none"
                 />
               ) : (
                 <></>
@@ -179,7 +179,7 @@ const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
                   bounce: 1,
                   duration: 0.005,
                 }}
-                className={`will-change-[transform,opacity] absolute justify-center z-10 drop-shadow-xl border border-light/40 rounded-lg bg-light/70 text-dark p-2 flex flex-col items-between text-center`}
+                className={`will-change-[transform,opacity] absolute justify-center z-10 drop-shadow-xl border border-light/40 rounded-lg bg-light/70 text-dark p-2 flex flex-col items-between text-center md:text-sm text-xs`}
               >
                 <p>Confirm</p>
                 {/* Remove button */}
@@ -212,7 +212,7 @@ const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
                         bounce: 3,
                         duration: 0.005,
                       }}
-                      className=" cursor-pointer justify-center z-10 rounded-sm hover:bg-buttonRedHoverDark text-buttonRed p-1 items-center flex h-6 px-2 transition-colors duration-150"
+                      className=" cursor-pointer justify-center z-10 rounded-sm hover:bg-buttonRedHoverDark text-buttonRed p-1 items-center flex h-6 px-2 transition-colors duration-150 pt-1.5"
                       onClick={() => removeCard(id)}
                     >
                       <p>Remove</p>
@@ -245,7 +245,7 @@ const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
                         bounce: 3,
                         duration: 0.005,
                       }}
-                      className="cursor-pointer z-10 rounded-sm md:hover:bg-light text-dark justify-center flex items-center  p-1 h-6 px-2 transition-colors duration-150"
+                      className="cursor-pointer z-10 rounded-sm md:hover:bg-light text-dark justify-center flex items-center  p-1 h-6 px-2 transition-colors duration-150 pt-1.5"
                       onClick={() => setDeleteClicked(false)}
                     >
                       <p>Cancel</p>

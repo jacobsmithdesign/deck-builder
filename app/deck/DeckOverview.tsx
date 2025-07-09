@@ -10,6 +10,7 @@ import { Button } from "./components/button";
 import { RxArrowRight, RxCheck, RxCheckCircled } from "react-icons/rx";
 import Link from "next/link";
 import { useCompactView } from "../context/compactViewContext";
+import { isDeepStrictEqual } from "util";
 
 export const DeckOverview = () => {
   // Get deck and user info from context
@@ -56,19 +57,30 @@ export const DeckOverview = () => {
 
   return (
     <Board
-      className={`relative z-10 overflow-y-scroll hide-scrollbar px-2 pb-2`}
+      className={` bg-light relative z-10 overflow-y-scroll hide-scrollbar px-2 pb-2 rounded-none`}
     >
-      <BoardHeader className="pl-0 rounded-lg relative flex my-1">
+      <BoardHeader className="pl-0 flex my-1 relative justify-between">
         <AnimatePresence>
+          <div
+            style={{ background: bgColor }}
+            className="w-full h-full z-0 absolute pointer-events-none transition-all duration-700 opacity-30 rounded-xl"
+          />
           {/* Conditionally render add to collection or edit button */}
           {isOwner ? (
-            <div className=" flex gap-2">
+            <div className="flex ml-1 rounded-lg z-20 overflow-hidden relative gap-1">
+              <button
+                onClick={() => toggleEditing()}
+                className={`drop-shadow-none h-6 rounded-lg active:scale-95 transition-all duration-300 text-ellipsis whitespace-nowrap overflow-hidden md:text-sm pt-0.5 text-xs bg-light/40 border border-light/20 ${
+                  isEditing ? "w-16" : "w-20"
+                }`}
+              >
+                <span className="">{isEditing ? "Cancel" : "Edit deck"}</span>
+              </button>
               <motion.div
-                key="edit/cancel-button"
-                initial={{ opacity: 0, scale: 0.95 }}
+                key="save-button"
+                initial={{ opacity: 0, scale: 0.85 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.95 }}
                 transition={{
                   type: "spring",
@@ -77,45 +89,25 @@ export const DeckOverview = () => {
                   stiffness: 450,
                 }}
               >
-                <Button
-                  variant="secondary"
-                  onClick={() => toggleEditing()}
-                  title={isEditing ? "Cancel" : "Edit deck"}
-                  className="drop-shadow-none"
-                />
-              </motion.div>
-              {editMode && (
-                <motion.div
-                  key="save-button"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{
-                    type: "spring",
-                    duration: 0.005,
-                    damping: 18,
-                    stiffness: 450,
-                  }}
-                >
+                {isEditing && (
                   <Button
+                    className=""
                     variant="save"
                     onClick={() => toggleEditing()}
                     title="Save changes"
                   />
-                </motion.div>
-              )}
+                )}
+              </motion.div>
             </div>
           ) : (
-            <div>
+            <div className="pl-1 z-20">
               {newCreatedDeck ? (
                 <motion.div
                   key="go-to-collection-button"
                   initial={{ opacity: 0, scale: 0.95, width: 0 }}
                   animate={{ opacity: 1, scale: 1, width: 200 }}
                   exit={{ opacity: 0, scale: 0.95, width: 0 }}
-                  whileHover={{ scale: 1.03, width: 210 }}
+                  whileHover={{ width: 210 }}
                   whileTap={{ scale: 0.95 }}
                   transition={{
                     type: "spring",
@@ -126,9 +118,9 @@ export const DeckOverview = () => {
                 >
                   <Link
                     href={`/deck/${newCreatedDeck}`}
-                    className="w-full flex justify-between items-center gap-2 h-8 bg-green-500/20 md:hover:bg-green-500/30 transition-colors duration-150 text-green-600 rounded-lg px-3 pl-4 cursor-pointer"
+                    className="w-full flex justify-between items-center gap-2 bg-green-200/70 md:hover:bg-green-300/20 transition-colors duration-150 text-green-400 rounded-lg px-3 pl-4 cursor-pointer h-6 text-xs md:text-sm"
                   >
-                    <span className="overflow-ellipsis">
+                    <span className="overflow-ellipsis pt-0.5">
                       Added to collection!
                     </span>
                     <RxArrowRight className="w-5 h-5" />
@@ -149,12 +141,12 @@ export const DeckOverview = () => {
                   }}
                 >
                   <button
-                    className="w-full cursor-pointer p-2 items-center justify-center text-light font-bold flex gap-1 bg-buttonBlue md:hover:bg-buttonBlue/90 h-8 rounded-md transition-all duration-100 ease-out active:scale-[97%]"
+                    className="w-full cursor-pointer items-center px-2 h-6  justify-center text-light font-bold flex bg-buttonBlue md:hover:bg-buttonBlue/90 rounded-lg transition-all duration-100 ease-out active:scale-[97%] text-xs md:text-sm"
                     onClick={() => {
                       setShowModal(true);
                     }}
                   >
-                    <p className="drop-shadow-sm">+ Add to collection</p>
+                    <p className="pt-0.5">+ Add to collection</p>
                   </button>
                 </motion.div>
               )}
@@ -169,12 +161,25 @@ export const DeckOverview = () => {
               />
             </div>
           )}
-          <Button
-            className=""
-            onClick={toggleCompactView}
-            variant="secondary"
-            title={compactView ? "Show overview" : "Minimise overview"}
-          />
+          <motion.div
+            key="minimise-button"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{
+              type: "spring",
+              duration: 0.005,
+              damping: 18,
+              stiffness: 450,
+            }}
+          >
+            <Button
+              className="pt-1.5 text-xs md:text-sm rounded-lg"
+              onClick={toggleCompactView}
+              title={compactView ? "Show overview" : "Minimise overview"}
+            />
+          </motion.div>
         </AnimatePresence>
       </BoardHeader>
       <MainBoard isEditMode={isEditing} />

@@ -4,33 +4,36 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
-const buttonVariants = cva("flex items-center justify-center cursor-pointer", {
-  variants: {
-    variant: {
-      default:
-        "bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-lg bg-light/0 hover:bg-light dropshadow-md",
-      secondary:
-        "bg-primary text-primary-foreground hover:bg-primary/90 bg-buttonLight hover:bg-buttonHover",
-      save: "bg-green-500/10 text-green-700 md:hover:bg-green-500/20 md:hover:text-green-600 transition-colors duration-150",
-      cardGroup:
-        "w-full rounded-xl bg-light/0 md:hover:bg-light md:hover:shadow-md shadow-darksecondary/5 ease-in-out duration-150 text-dark text-sm md:text-base font-bold ",
+const buttonVariants = cva(
+  "flex items-center justify-center cursor-pointer transition-all duration-200",
+  {
+    variants: {
+      variant: {
+        default:
+          "bg-primary text-primary-foreground hover:bg-primary/90 hover:drop-shadow-sm bg-light/0 md:hover:bg-light/70 dropshadow-md border border-light/0 md:hover:border-light/60",
+        secondary:
+          "bg-primary text-primary-foreground hover:bg-primary/90 bg-buttonLight hover:bg-buttonHover",
+        save: "bg-green-200/40 text-green-400 md:hover:bg-green-300/40 md:hover:text-green-600 transition-colors duration-150",
+        cardGroup:
+          "w-full rounded-xl bg-light/0 md:hover:bg-light md:hover:shadow-md shadow-darksecondary/5 ease-in-out duration-150 text-dark text-sm md:text-base font-bold ",
 
-      ghost: "hover:bg-accent hover:text-accent-foreground",
-      link: "text-primary underline-offset-4 hover:underline",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
+      },
+      size: {
+        default: "h-6 px-2 py-1 rounded-md md:text-sm text-xs",
+        sm: "h-8 rounded-md px-3 text-xs",
+        cardGroup: "h-9 pl-6 md:hover:pl-7",
+        lg: "h-10 rounded-md px-8",
+        icon: "h-9 w-9",
+      },
     },
-    size: {
-      default: "h-8 px-2 py-1 rounded-md",
-      sm: "h-8 rounded-md px-3 text-xs",
-      cardGroup: "h-9 pl-6 md:hover:pl-7",
-      lg: "h-10 rounded-md px-8",
-      icon: "h-9 w-9",
+    defaultVariants: {
+      variant: "default",
+      size: "default",
     },
-  },
-  defaultVariants: {
-    variant: "default",
-    size: "default",
-  },
-});
+  }
+);
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,

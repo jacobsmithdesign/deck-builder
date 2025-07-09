@@ -188,7 +188,7 @@ export default function CommanderOverview() {
                         exit={{ opacity: 0, translateY: -20 }}
                         transition={{ duration: 0.25 }}
                       >
-                        <CardTitle className={`font-bold text-dark`}>
+                        <CardTitle className={`font-bold text-dark mt-1`}>
                           Deck Overview
                         </CardTitle>
 

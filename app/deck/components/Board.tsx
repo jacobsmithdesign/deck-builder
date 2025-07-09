@@ -23,7 +23,7 @@ const BoardHeader = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "w-full h-10 flex  gap-2 items-center p-1 pl-3 rounded-xl",
+      "w-full h-8 flex gap-1 items-center p-1 rounded-xl",
       className
     )}
     {...props}
@@ -53,7 +53,7 @@ const BoardContent = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "w-full rounded-xl h-full flex flex-col bg-dark/15 border border-darksecondary/15 overflow-y-scroll",
+      "w-full rounded-xl h-full flex flex-col overflow-y-scroll",
       className
     )}
     {...props}
@@ -79,10 +79,7 @@ const GroupTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn(
-      " lg:text-xl md:text-base sm:text-base text-sm font-bold",
-      className
-    )}
+    className={cn(" lg:text-base md:text-base sm:text-sm font-bold", className)}
     {...props}
   />
 ));

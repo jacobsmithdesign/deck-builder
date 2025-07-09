@@ -9,7 +9,7 @@ const Spell = React.forwardRef<
   <button
     ref={ref}
     className={cn(
-      "flex justify-between items-center px-4 bg-zinc-500/15 rounded-xl py-2 cursor-pointer hover:bg-zinc-500/30 transition-all duration-200 ease-in-out lg:text-lg md:text-base text-sm text-dark/70",
+      "flex justify-between items-center px-2 bg-zinc-500/15 rounded-lg py-1 cursor-pointer hover:bg-zinc-500/30 transition-all duration-200 ease-in-out lg:text-lg md:text-base text-sm text-dark/70",
       className
     )}
     {...props}
@@ -23,7 +23,7 @@ const SpellType = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("font-bold lg:text-lg md:text-base text-sm", className)}
+    className={cn("font-bold lg:text-base md:text-sm text-xs", className)}
     {...props}
   />
 ));

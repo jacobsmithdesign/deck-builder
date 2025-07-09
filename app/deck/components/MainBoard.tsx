@@ -85,12 +85,12 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
     <AnimatePresence>
       <BoardContent
         style={{ background: bgColor }}
-        className="hide-scrollbar relative border border-light/60 transition-all duration-700"
+        className="hide-scrollbar relative transition-all duration-700"
       >
         {groupedCardsArray.map((group, index) => (
           <Group key={index} className="bg-light/70">
             <GroupHeader
-              className={`${index !== 0 ? "" : "border-t-0"} w-`}
+              className={`${index !== 0 ? "" : "border-t-0"} py-2`}
               onClick={() => console.log(`Clicked on group: ${group.type}`)}
             >
               <button
@@ -98,7 +98,7 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
                   e.stopPropagation();
                   toggleGroupVisibility(group.type);
                 }}
-                className="flex w-full items-center justify-between cursor-pointer transition-colors duration-150 md:hover:bg-dark/15 bg-dark/5 mx-3 py-1 px-2 rounded-md group"
+                className="flex w-full items-center justify-between cursor-pointer transition-colors duration-150 md:hover:bg-dark/15 bg-dark/5 mx-2 py-0 px-2 rounded-md group"
               >
                 <GroupTitle>{group.type}</GroupTitle>
                 <div className="md:group-hover:text-dark/80 text-dark/40 transition-colors duration-150 w-7 h-7 items-center justify-center flex">
@@ -113,7 +113,7 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 100 }}
                   exit={{ height: 0 }}
-                  className="overflow-clip flex"
+                  className="overflow-clip flex px-2"
                 >
                   <GroupItems key={group.type} className="mt-2">
                     {group.cards.map((card, index) => (
