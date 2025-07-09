@@ -70,7 +70,7 @@ export const DeckOverview = () => {
             <div className="flex ml-1 rounded-lg z-20 overflow-hidden relative gap-1">
               <button
                 onClick={() => toggleEditing()}
-                className={`drop-shadow-none h-6 rounded-lg active:scale-95 transition-all duration-300 text-ellipsis whitespace-nowrap overflow-hidden md:text-sm pt-0.5 text-xs bg-light/40 border border-light/20 ${
+                className={`drop-shadow-none h-6 rounded-lg active:scale-95 transition-all duration-300 text-ellipsis whitespace-nowrap overflow-hidden md:text-sm text-xs bg-light/40 border border-light/20 ${
                   isEditing ? "w-16" : "w-20"
                 }`}
               >
