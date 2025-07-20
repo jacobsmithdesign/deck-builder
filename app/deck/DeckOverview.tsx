@@ -11,22 +11,25 @@ import { RxArrowRight, RxCheck, RxCheckCircled } from "react-icons/rx";
 import Link from "next/link";
 import { useCompactView } from "../context/compactViewContext";
 import { isDeepStrictEqual } from "util";
+import NewCardModal from "./components/NewCardModal";
 
 export const DeckOverview = () => {
   // Get deck and user info from context
   const { profile } = useUser();
-  const { cards, deck } = useCardList();
+  const { cards, deck, resetCards } = useCardList();
   // states to determine deck ownership and render "edit" / "add to collection" buttons appropriately
   const isOwner = deck?.userId === profile?.id; // check if the current user is the owner of the deck
   const [editMode, setEditMode] = useState<boolean>(false); // Toggle for edit mode
   const [isEditing, setIsEditing] = useState<boolean>(false); // State to manage if the deck is being edited (isOwner && editMode)
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [openNewCardModal, setOpenNewCardModal] = useState<boolean>(true);
   const [newCreatedDeck, setNewCreatedDeck] = useState<string>();
   const { compactView, toggleCompactView, bgColor } = useCompactView();
   const toggleEditing = () => {
     setEditMode((prev) => !prev); // Toggle edit mode
     console.log(editMode);
     if (isOwner && editMode) {
+      resetCards();
       setIsEditing(true);
       console.log(isEditing);
     } else {
@@ -49,13 +52,17 @@ export const DeckOverview = () => {
     setShowModal(false); // Toggle modal visibility
   };
 
+  const toggleNewCardModal = () => {
+    setOpenNewCardModal((prev) => (prev = !prev));
+  };
+
   if (!deck) {
     return <div className="text-center text-lg">Loading deck...</div>;
   }
 
-  // state to manage modal visibility and group visibility
-
   return (
+    // This is the entire deck preview board, starting with the header containing edit/ save/ minimise buttons etc.
+    // and then the MainBoard itself which is categorised card groups (e.g. lands, enchantments, creatures, etc.)
     <Board
       className={` bg-light relative z-10 overflow-y-scroll hide-scrollbar px-2 pb-2 rounded-none`}
     >
@@ -70,7 +77,7 @@ export const DeckOverview = () => {
             <div className="flex ml-1 rounded-lg z-20 overflow-hidden relative gap-1">
               <button
                 onClick={() => toggleEditing()}
-                className={`drop-shadow-none h-6 rounded-lg active:scale-95 transition-all duration-300 text-ellipsis whitespace-nowrap overflow-hidden md:text-sm text-xs bg-light/40 border border-light/20 ${
+                className={`drop-shadow-none h-6 rounded-lg active:scale-95 transition-all duration-300 text-ellipsis whitespace-nowrap overflow-hidden md:text-sm text-xs bg-light/40 md:hover:bg-light/70 border border-light/20 cursor-pointer ${
                   isEditing ? "w-16" : "w-20"
                 }`}
               >
@@ -141,12 +148,12 @@ export const DeckOverview = () => {
                   }}
                 >
                   <button
-                    className="w-full cursor-pointer items-center px-2 h-6  justify-center text-light font-bold flex bg-buttonBlue md:hover:bg-buttonBlue/90 rounded-lg transition-all duration-100 ease-out active:scale-[97%] text-xs md:text-sm"
+                    className="w-full cursor-pointer items-center px-2 h-6 justify-center text-light font-bold flex bg-buttonBlue md:hover:bg-buttonBlue/90 rounded-lg transition-all duration-100 ease-out active:scale-[97%] text-xs md:text-sm"
                     onClick={() => {
                       setShowModal(true);
                     }}
                   >
-                    <p className="pt-0.5">+ Add to collection</p>
+                    <p>+ Add to collection</p>
                   </button>
                 </motion.div>
               )}
@@ -182,6 +189,8 @@ export const DeckOverview = () => {
           </motion.div>
         </AnimatePresence>
       </BoardHeader>
+      {/* This is the modal for choosing new cards */}
+
       <MainBoard isEditMode={isEditing} />
     </Board>
   );

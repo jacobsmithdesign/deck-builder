@@ -21,7 +21,7 @@ export const ManaCost = () => {
         if (!isNaN(Number(symbol))) {
           return (
             <div
-              key={index}
+              key={`${symbol}-${index}`}
               className="sm:w-5 sm:h-5 w-4 h-4 rounded-full bg-manaAny flex items-center justify-center text-dark font-normal  text-xs sm:text-sm"
             >
               {symbol}
@@ -51,7 +51,7 @@ export const ManaCost = () => {
 
           return (
             <div
-              key={index}
+              key={`${symbol}-${index}`}
               className={`sm:w-5 sm:h-5 w-4 h-4 rounded-full ${color} flex items-center bg- justify-center text-white font-bold`}
             ></div>
           );

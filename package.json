@@ -52,5 +52,8 @@
     "eslint-config-next": "15.1.0",
     "tailwindcss": "^4",
     "typescript": "^5.7.2"
+  },
+  "overrides": {
+    "@supabase/supabase-js": "^2.50.0"
   }
 }

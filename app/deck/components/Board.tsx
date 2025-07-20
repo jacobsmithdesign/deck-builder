@@ -1,6 +1,13 @@
 import * as React from "react";
-
 import { cn } from "@/lib/utils";
+import { ChevronDown, Minus } from "lucide-react";
+
+type GroupTitleProps = {
+  type: string;
+  visibleGroups: Set<string>;
+  toggleGroupVisibility: (type: string) => void;
+} & React.HTMLAttributes<HTMLDivElement>;
+
 const Board = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -53,7 +60,7 @@ const BoardContent = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "w-full rounded-xl h-full flex flex-col overflow-y-scroll",
+      "w-full h-full rounded-xl flex flex-col overflow-y-scroll",
       className
     )}
     {...props}
@@ -73,16 +80,42 @@ const Group = React.forwardRef<
 ));
 Group.displayName = "Group";
 
-const GroupTitle = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(" lg:text-base md:text-base sm:text-sm font-bold", className)}
-    {...props}
-  />
-));
+const GroupTitle = React.forwardRef<HTMLDivElement, GroupTitleProps>(
+  (
+    { className, type, visibleGroups, toggleGroupVisibility, ...props },
+    ref
+  ) => {
+    const isVisible = visibleGroups.has(type);
+
+    return (
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          toggleGroupVisibility(type);
+        }}
+        className={cn(
+          "flex w-full items-center justify-between cursor-pointer transition-colors duration-150 md:hover:bg-dark/15 bg-dark/5 mx-2 py-0 px-2 rounded-md group",
+          className
+        )}
+      >
+        <div
+          ref={ref}
+          className={cn(
+            "lg:text-base md:text-base sm:text-sm font-bold",
+            className
+          )}
+          {...props}
+        >
+          {type}
+        </div>
+        <div className="md:group-hover:text-dark/80 text-dark/40 transition-colors duration-150 w-7 h-7 items-center justify-center flex">
+          {isVisible ? <Minus /> : <ChevronDown />}
+        </div>
+      </button>
+    );
+  }
+);
+
 GroupTitle.displayName = "GroupTitle";
 
 const GroupHeader = React.forwardRef<

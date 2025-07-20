@@ -26,7 +26,7 @@ export type CommanderDeckDetails = {
   userId?: string | null;
   type: string;
   isUserDeck: boolean;
-  cards: CommanderCard[];
+  cards: CardRecord[];
 };
 
 type CommanderContextProps = {

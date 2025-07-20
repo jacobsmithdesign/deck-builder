@@ -27,55 +27,55 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      setLoading(true);
+  const fetchUserProfile = async () => {
+    setLoading(true);
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
 
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (user && user.id) {
-        const { data: profileData, error: profileError } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .single();
-
-        if (!profileError) {
-          setProfile(profileData);
-        }
-      }
-
+    if (sessionError) {
+      console.error("Session error:", sessionError.message);
       setLoading(false);
-    };
+      return;
+    }
 
-    fetchUserProfile();
-  }, []);
-  // Check to see if user has logged out and clear profile if so
-  useEffect(() => {
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === "SIGNED_IN" && session?.user) {
-          const { data: profileData, error } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", session.user.id)
-            .single();
+    const user = session?.user;
+    if (user) {
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
 
-          if (!error) {
-            setProfile(profileData);
-          }
-        }
-
-        if (event === "SIGNED_OUT") {
-          setProfile(null);
-        }
+      if (profileError) {
+        console.error("Profile fetch error:", profileError.message);
+      } else {
+        setProfile(profileData);
       }
-    );
+    } else {
+      setProfile(null);
+    }
 
-    return () => listener.subscription.unsubscribe();
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchUserProfile(); // initial session check
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session?.user) {
+        fetchUserProfile();
+      } else if (event === "SIGNED_OUT") {
+        setProfile(null);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   return (

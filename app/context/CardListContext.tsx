@@ -35,7 +35,9 @@ export interface DeckMetadata {
 
 interface CardListContextType {
   cards: CardRecord[];
+  setInitialCards: (cards: CardRecord[]) => void;
   setCards: (cards: CardRecord[]) => void;
+  resetCards: () => void;
   addCard: (card: CardRecord) => void;
   removeCard: (cardId: string) => void;
   updateCard: (card: CardRecord) => void;
@@ -51,7 +53,11 @@ const CardListContext = createContext<CardListContextType | undefined>(
 export const CardListProvider = ({ children }: { children: ReactNode }) => {
   const [cards, setCardsState] = useState<CardRecord[]>([]);
   const [deck, setDeck] = useState<DeckMetadata | null>(null);
+  const [originalCards, setOriginalCards] = useState<CardRecord[]>([]); // optional
 
+  const setInitialCards = (cards: CardRecord[]) => {
+    setOriginalCards(cards); // save a snapshot for cancelling
+  };
   const setCards = (newCards: CardRecord[]) => setCardsState(newCards);
 
   const addCard = (card: CardRecord) => {
@@ -61,7 +67,9 @@ export const CardListProvider = ({ children }: { children: ReactNode }) => {
   const removeCard = (cardId: string) => {
     setCardsState((prev) => prev.filter((c) => c.uuid !== cardId));
   };
-
+  const resetCards = () => {
+    setCards(originalCards);
+  };
   const updateCard = (updated: Card) => {
     setCardsState((prev) =>
       prev.map((c) => (c.uuid === updated.id ? updated : c))
@@ -72,7 +80,9 @@ export const CardListProvider = ({ children }: { children: ReactNode }) => {
     <CardListContext.Provider
       value={{
         cards,
+        setInitialCards,
         setCards,
+        resetCards,
         addCard,
         removeCard,
         updateCard,

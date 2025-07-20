@@ -18,7 +18,7 @@ type DeckWithCards = DeckRecord & {
 // It validates the card data and sets it in the useCardList context.
 // It also sets the data for the commander overview section above the card table.
 export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
-  const { setCards, setDeck } = useCardList();
+  const { setCards, setDeck, setInitialCards } = useCardList();
   const { setDeckDetails, setCommanderCard } = useCommander();
 
   // console.log(
@@ -29,7 +29,6 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
   //     scryfallId: c.identifiers?.scryfallId,
   //   }))
   // );
-
   useEffect(() => {
     // Initialise the commander details overview. This gets sloppy around the image section but whatever.
     const commanderDeckDetails: CommanderDeckDetails = {
@@ -43,7 +42,7 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
         name: c.name,
         type: c.type,
         mana_cost: c.mana_cost,
-        colorIdentity: c.color_identity ?? [],
+        color_identity: c.color_identity,
         cmc: c.mana_value ?? 0,
         text: c.text ?? "",
         flavourText: c.flavor_text ?? null,
@@ -66,15 +65,13 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
     const commanderCardRecord = deck.cards.find(
       (card) => card.uuid === deck.commander_uuid
     );
-
-    console.log("commanderCardRecord: ", commanderCardRecord);
     const commanderCard: CommanderCard = {
       id: commanderCardRecord.uuid ?? crypto.randomUUID(),
       name: commanderCardRecord.name,
       type: commanderCardRecord.type,
       mana_cost: commanderCardRecord.mana_cost,
       colorIdentity: commanderCardRecord.color_identity,
-      cmc: commanderCardRecord.mana_value,
+      cmc: commanderCardRecord.converted_mana_cost,
       text: commanderCardRecord.text,
       imageFrontUrl: `https://cards.scryfall.io/normal/front/${commanderCardRecord.identifiers.scryfallId[0]}/${commanderCardRecord.identifiers.scryfallId[1]}/${commanderCardRecord.identifiers.scryfallId}.jpg`,
 
@@ -84,7 +81,6 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
       identifiers: commanderCardRecord.identifiers,
     };
     setCommanderCard(commanderCard);
-
     // Initialise the cards to be displayed in the deck table
     const validatedCards = deck.cards.map((c) => {
       const scryfallId = c.identifiers.scryfallId;
@@ -119,7 +115,7 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
         count: c.count ?? 1,
       };
     });
-
+    setInitialCards(validatedCards);
     setCards(validatedCards);
     setDeck({
       id: deck.id,
