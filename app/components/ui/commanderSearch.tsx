@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { CardContent } from "@/app/components/ui/card";
-import { supabase } from "@/lib/supabaseClient";
 import { searchCommander } from "@/lib/db/searchCommander";
 /**
  * CommanderSearch allows users to search for a commander (legendary creature)

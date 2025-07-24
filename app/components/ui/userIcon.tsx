@@ -6,7 +6,7 @@ import DefaultAvatar from "@/public/default-avatar.svg";
 import { useState } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { RxAvatar, RxExit } from "react-icons/rx";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
 export default function UserIcon() {

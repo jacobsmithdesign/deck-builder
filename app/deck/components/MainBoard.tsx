@@ -9,7 +9,7 @@ import {
   GroupItems,
   GroupTitle,
 } from "./Board";
-import PerspectiveCard from "./perspectiveCard";
+import PerspectiveCard from "./card/perspectiveCard";
 import { ChevronDown, Minus } from "lucide-react";
 import { useCardList } from "@/app/context/CardListContext";
 import { RxCross2, RxInfoCircled, RxPlus } from "react-icons/rx";
@@ -167,6 +167,7 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
                                 image={card.imageFrontUrl}
                                 label={card.name}
                                 isEditMode={isEditMode}
+                                card={card}
                                 inspectCard={handleInspectCard}
                               />
                             </motion.div>

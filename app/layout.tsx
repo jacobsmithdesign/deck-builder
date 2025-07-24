@@ -7,7 +7,6 @@ import AnimateLayout from "./components/General/AnimateLayout";
 import Navbar from "./components/navbar";
 import { UserProvider } from "./context/userContext";
 import SuppressKeyWarning from "./components/SuppressKeyWarning";
-import { supabase } from "@/lib/supabaseClient";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

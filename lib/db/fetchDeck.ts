@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/client";
 
 export async function fetchDeckById(deckId: string) {
   if (!deckId) throw new Error("Missing deck ID");

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCommander } from "@/app/context/CommanderContext";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Card,
@@ -17,6 +17,7 @@ import { count } from "console";
 import { DeckRecord } from "@/lib/schemas";
 import Image from "next/image";
 import Tilt from "react-parallax-tilt";
+import { UuidToScryfall } from "@/lib/uuidToScryfall";
 
 const PAGE_SIZE = 30;
 
@@ -26,28 +27,31 @@ export default function CommanderDeckList() {
   const [hasMore, setHasMore] = useState(true);
   const [decks, setDecks] = useState<DeckRecord[]>([]);
   const loadMoreRef = useRef<HTMLDivElement>(null);
+
   // queries the supabase database for decks that use the commander
   const fetchAllCommanderDecks = useCallback(async () => {
     setLoading(true);
-    const from = page * PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
-    const { data, error } = await supabase
-      .from("decks")
-      .select("*")
-      .is("user_id", null)
-      .eq("type", "Commander Deck")
-      .order("release_date", { ascending: false })
-      .range(from, to);
+    try {
+      const res = await fetch(
+        `/api/supabase/decks/fetch-commander-decks?page=${page}`
+      );
+      const json = await res.json();
 
-    if (error) {
-      console.error("Error loading decks:", error);
+      if (!res.ok) {
+        console.error("Error loading decks:", json.error);
+        setLoading(false);
+        return;
+      }
+
+      setDecks((prev) => [...prev, ...(json.data ?? [])]);
+      setHasMore(json.hasMore);
+    } catch (err) {
+      console.error("Network error loading decks:", err);
+    } finally {
       setLoading(false);
-      return;
     }
-    setDecks((prev) => [...prev, ...(data ?? [])]);
-    setHasMore((data ?? []).length === PAGE_SIZE);
-    setLoading(false);
   }, [page]);
+
   useEffect(() => {
     fetchAllCommanderDecks();
   }, [fetchAllCommanderDecks]);
@@ -62,7 +66,6 @@ export default function CommanderDeckList() {
       },
       { threshold: 1 }
     );
-
     const currentRef = loadMoreRef.current;
     if (currentRef) observer.observe(currentRef);
 

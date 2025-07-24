@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/client";
 
 const fetchDecks = async () => {
   const { data, error } = await supabase.from("decks").select("*").limit(10);

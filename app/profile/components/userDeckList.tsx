@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser } from "@/app/context/userContext";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 import {
   Card,

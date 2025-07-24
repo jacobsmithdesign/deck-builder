@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/client";
 import { CardRecord } from "@/lib/schemas";
 
 // All known filters and their Supabase column mappings

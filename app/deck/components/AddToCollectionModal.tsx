@@ -1,6 +1,6 @@
 "use client";
+
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
 import { useUser } from "@/app/context/userContext";
 import { useRouter } from "next/navigation";
 import { Checkbox, Field, Label } from "@headlessui/react";
@@ -8,14 +8,13 @@ import { RxCheck } from "react-icons/rx";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/app/components/ui/button";
 import { AnimatedButton } from "./AnimatedButton";
-import { handleSave } from "@/lib/db/saveDeckForEditor";
+import { saveNewDeckClient } from "@/lib/api/decks/client/saveNewDeckClient";
 
 export default function AddToCollectionModal({
   preconDeckId,
   preconDeckName,
   showModal,
   closeModal,
-  saveDeck,
   onDeckCreated,
 }: {
   preconDeckId: string;
@@ -25,46 +24,38 @@ export default function AddToCollectionModal({
   saveDeck: () => void;
   onDeckCreated?: (id: string) => void;
 }) {
-  const { profile } = useUser();
   const [name, setName] = useState(preconDeckName);
   const [description, setDescription] = useState("");
   const [isPublic, setIsPublic] = useState(false);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
-  const [createdDeckId, setCreatedDeckId] = useState<string | null>(null);
 
   const handleSaveClick = async () => {
     setLoading(true);
-    const { success, error, newDeckId } = await handleSave({
-      profileId: profile?.id,
-      preconDeckId,
-      name,
-      description,
-      isPublic,
-    });
-    if (success) {
+    try {
+      const { newDeckId } = await saveNewDeckClient({
+        preconDeckId,
+        name,
+        description,
+        isPublic,
+      });
+
       onDeckCreated?.(newDeckId);
-      saveDeck();
+      closeModal();
+    } catch (e) {
+      console.error(e);
+    } finally {
       setLoading(false);
     }
   };
+
   return (
     <AnimatePresence>
       {showModal && (
         <motion.div
           key="addToCollectionModal"
-          initial={{
-            opacity: 0,
-            scale: 0.9,
-          }}
-          animate={{
-            opacity: 100,
-            scale: 1,
-          }}
-          exit={{
-            opacity: 0,
-            scale: 0.9,
-          }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
           transition={{ duration: 0.05 }}
           className="absolute top-0 mt-9 z-50 overflow-clip hide-scrollbar bg-light/80 justify-between flex flex-col p-1 backdrop-blur-md px-3 pb-3 -translate-x-1 rounded-xl max-w-lg drop-shadow-xl"
         >
@@ -104,9 +95,7 @@ export default function AddToCollectionModal({
             <button
               disabled={loading}
               className="px-2 lg:text-base text-sm rounded-md h-6 bg-buttonBlue md:hover:bg-buttonBlue/80 text-light cursor-pointer"
-              onClick={() => {
-                handleSaveClick();
-              }}
+              onClick={handleSaveClick}
             >
               {loading ? "Saving..." : "Save Deck"}
             </button>

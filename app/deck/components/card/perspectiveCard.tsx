@@ -14,12 +14,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { useCardList } from "@/app/context/CardListContext";
 import Tilt from "react-parallax-tilt";
+import { CardInfoPanel } from "./cardInfoPanel";
+import { CardRecord } from "@/lib/schemas";
 
 interface PerspectiveCardProps {
   id: string;
   image: React.ReactNode;
   label: React.ReactNode;
   isEditMode: boolean;
+  card: CardRecord;
   inspectCard: (id: string) => void;
 }
 
@@ -28,18 +31,24 @@ const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
   image,
   label,
   isEditMode = false,
+  card,
   inspectCard,
 }) => {
   const boundingRef = useRef<DOMRect | null>(null);
   const [hovered, setHovered] = useState(false);
   const [deleteClicked, setDeleteClicked] = useState(false);
   const { removeCard } = useCardList();
+  const [openInfo, setOpenInfo] = useState<boolean>(false);
 
   useEffect(() => {
     if (!isEditMode) {
       setDeleteClicked(false); // Reset deleteClicked when not in edit mode
     }
   }, [isEditMode]);
+
+  const toggleInfoPanel = () => {
+    setOpenInfo((prev) => !prev);
+  };
   return (
     <div className="flex flex-col [perspective:1500px] ">
       <div>
@@ -73,7 +82,7 @@ const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
 
           {/* Floating delete button */}
           <AnimatePresence>
-            {isEditMode && (
+            {isEditMode && !openInfo && (
               <motion.div
                 key="close"
                 initial={{
@@ -109,7 +118,7 @@ const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
             )}
 
             {/* Floating info button */}
-            {hovered && !deleteClicked && (
+            {hovered && !deleteClicked && !openInfo && (
               <>
                 <motion.div
                   key="info"
@@ -140,7 +149,10 @@ const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
                   className={`will-change-[transform,opacity] absolute cursor-pointer justify-center z-10 drop-shadow-xl rounded-lg bg-light w-8 text-dark/80 hover:text-dark top-2 right-2 ${
                     isEditMode ? "mr-9 " : ""
                   }`}
-                  onClick={() => inspectCard(id)}
+                  onClick={() => {
+                    inspectCard(id);
+                    toggleInfoPanel();
+                  }}
                 >
                   <div className="w-full h-8 font-bold text-sm flex items-center overflow-x-clip relative">
                     <RxInfoCircled className="w-6 h-6 ml-1" />
@@ -255,6 +267,14 @@ const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
               </motion.div>
             )}
           </AnimatePresence>
+          {/* Card information panel */}
+          {openInfo && (
+            <CardInfoPanel
+              closeInfoPanel={openInfo}
+              card={card}
+              setCloseInfoPanel={toggleInfoPanel}
+            />
+          )}
         </Tilt>
       </div>
     </div>

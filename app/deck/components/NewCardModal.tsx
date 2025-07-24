@@ -14,7 +14,15 @@ import { FilterPanel } from "./FilterPanel";
 import { filterConfigByCardType } from "@/lib/utils";
 import { useCardList } from "@/app/context/CardListContext";
 import { CardRecord } from "@/lib/schemas";
-import { RxCheck, RxCross1, RxCross2, RxPlus } from "react-icons/rx";
+import {
+  RxCheck,
+  RxCross1,
+  RxCross2,
+  RxOpenInNewWindow,
+  RxPlus,
+  RxSize,
+  RxSquare,
+} from "react-icons/rx";
 
 export default function NewCardModal({
   closeModal,
@@ -37,7 +45,8 @@ export default function NewCardModal({
   const [filters, setFilters] = useState<Record<string, string[]>>({});
   const [selectedCards, setSelectedCards] = useState<any[]>([]);
   const [saving, setSaving] = useState<boolean>(false);
-
+  const [maximise, setMaximise] = useState<boolean>(false);
+  const [changingSize, setChangingSize] = useState<boolean>(false);
   const PAGE_SIZE = 90;
 
   const dynamicFilterConfig = useMemo(() => {
@@ -134,6 +143,16 @@ export default function NewCardModal({
     setSaving(false);
   };
 
+  const toggleMaximise = () => {
+    setChangingSize(true);
+    setTimeout(() => {
+      setMaximise((prev) => !prev);
+    }, 80);
+
+    setTimeout(() => {
+      setChangingSize(false);
+    }, 450);
+  };
   return (
     <AnimatePresence>
       {showModal && (
@@ -141,8 +160,12 @@ export default function NewCardModal({
           key="newCardModal"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
-          transition={{ duration: 0.15 }}
+          exit={{
+            opacity: 0,
+            backdropFilter: "blur(0px)",
+            transition: { duration: 0.1 },
+          }}
+          transition={{ duration: 0.2 }}
           className="z-20 h-full w-full flex pointer-events-auto bg-dark/40"
         >
           <button
@@ -152,19 +175,36 @@ export default function NewCardModal({
 
           <motion.div
             initial={{ width: 0, backdropFilter: "blur(0px)" }}
-            animate={{ width: "50%", backdropFilter: "blur(7px)" }}
+            animate={{
+              width: maximise ? "50%" : "100%",
+              backdropFilter: "blur(7px)",
+            }}
             exit={{ width: 0, backdropFilter: "blur(7px)" }}
             transition={{ type: "spring", stiffness: 250, damping: 25 }}
             className="z-50 bg-light/60 flex flex-col p-2 rounded-xl drop-shadow-xl h-full"
           >
             <div className="">
-              <input
-                type="text"
-                placeholder={`Search ${cardType}s`}
-                value={cardName}
-                onChange={(e) => setCardName(e.target.value)}
-                className="w-full px-3 py-1 bg-light/80 rounded-lg mb-2"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder={`Search ${cardType}s`}
+                  value={cardName}
+                  onChange={(e) => setCardName(e.target.value)}
+                  className="w-full px-3 py-1 bg-light/80 rounded-md mb-2"
+                />
+                <button
+                  className="transition-all duration-100 rounded-md cursor-pointer md:hover:bg-light  bg-light/40 w-8 h-8 flex justify-center items-center"
+                  onClick={toggleMaximise}
+                >
+                  <RxSize />
+                </button>
+                <button
+                  className="transition-all duration-100 rounded-md cursor-pointer md:hover:bg-red-600/60 md:hover:text-light bg-light/40 w-8 h-8 flex justify-center items-center"
+                  onClick={closeModal}
+                >
+                  <RxCross2 />
+                </button>
+              </div>
               <div className="flex">
                 {Object.entries(dynamicFilterConfig).map(([key, config]) => (
                   <FilterPanel
@@ -192,7 +232,11 @@ export default function NewCardModal({
                       transition: { duration: 0.15, delay: 0 },
                     }}
                   >
-                    <GroupItems className="grid grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-2 text-center hide-scrollbar ">
+                    <GroupItems
+                      className={`grid grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-2 text-center hide-scrollbar ${
+                        changingSize ? "opacity-0" : "opacity-100"
+                      }  transition-all duration-100`}
+                    >
                       {loading && cards.length === 0 ? (
                         <p>Loading cards...</p>
                       ) : (
@@ -211,9 +255,12 @@ export default function NewCardModal({
                                 exit={{
                                   opacity: 0,
                                   scale: 0.95,
-                                  transition: { delay: 0, duration: 0.15 },
+                                  transition: { delay: 0, duration: 0.1 },
                                 }}
-                                transition={{ duration: 0.15 }}
+                                transition={{
+                                  duration: 0.25,
+                                  delay: index * 0.02,
+                                }}
                                 className={`relative rounded-xl cursor-pointer overflow-clip `}
                                 onClick={() => toggleSelectedCards(card)}
                               >
@@ -239,6 +286,7 @@ export default function NewCardModal({
                                 />
                               </motion.div>
                             ))}
+
                           <div ref={loadMoreRef} className="h-1 bottom-0 " />
                         </>
                       )}

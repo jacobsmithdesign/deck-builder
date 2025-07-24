@@ -7,7 +7,7 @@ import {
   useState,
   ReactNode,
 } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { getProfileFromAPI } from "@/lib/api/user/getProfile";
 
 type UserProfile = {
   id: string;
@@ -29,53 +29,16 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchUserProfile = async () => {
     setLoading(true);
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
-
-    if (sessionError) {
-      console.error("Session error:", sessionError.message);
-      setLoading(false);
-      return;
-    }
-
-    const user = session?.user;
-    if (user) {
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-
-      if (profileError) {
-        console.error("Profile fetch error:", profileError.message);
-      } else {
-        setProfile(profileData);
-      }
-    } else {
-      setProfile(null);
-    }
-
+    const profile = await getProfileFromAPI();
+    setProfile(profile);
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchUserProfile(); // initial session check
+    fetchUserProfile();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session?.user) {
-        fetchUserProfile();
-      } else if (event === "SIGNED_OUT") {
-        setProfile(null);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
+    // You could optionally handle auth state change events via Supabase client
+    // but you'd want to call fetchUserProfile() again on SIGNED_IN/SIGNED_OUT
   }, []);
 
   return (
