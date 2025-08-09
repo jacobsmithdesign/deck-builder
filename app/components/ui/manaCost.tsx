@@ -22,7 +22,7 @@ export const ManaCost: React.FC<ManaCostProps> = ({
   if (!symbols) return null;
 
   return (
-    <div className="flex gap-1 items-center text-sm p-1 rounded-full">
+    <div className="flex gap-1 items-center text-sm rounded-full">
       {symbols.map((symbol, index) => {
         if (!isNaN(Number(symbol))) {
           // Numeric cost

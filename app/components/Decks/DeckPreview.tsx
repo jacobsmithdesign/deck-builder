@@ -18,7 +18,7 @@ export default function DeckPreview({ deck }: { deck: CommanderDeckRecord }) {
       {!openPanel && (
         <div className="relative flex justify-between z-10 p-2 w-full top-0 items-start pointer-events-none">
           <div className="gap-1 flex flex-col">
-            <div className="w-fit bg-light/50 rounded-md px-1 h-6 shadow backdrop-blur-md">
+            <div className="w-fit bg-light rounded-md px-1 h-5 shadow text-sm">
               <p>{deck.type}</p>
             </div>
           </div>
