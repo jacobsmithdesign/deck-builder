@@ -64,9 +64,10 @@ export const DeckOverview = () => {
     // This is the entire deck preview board, starting with the header containing edit/ save/ minimise buttons etc.
     // and then the MainBoard itself which is categorised card groups (e.g. lands, enchantments, creatures, etc.)
     <Board
-      className={` bg-light relative z-10 overflow-y-scroll hide-scrollbar px-2 pb-2 rounded-none`}
+      className={` bg-light relative z-10 overflow-y-scroll hide-scrollbar p-1 rounded-none`}
     >
-      <BoardHeader className="pl-0 flex my-1 relative justify-between">
+      {/* The header above the board of cards */}
+      <BoardHeader className="pl-0 flex relative justify-between mb-1">
         <AnimatePresence>
           <div
             style={{ background: bgColor }}
@@ -189,8 +190,7 @@ export const DeckOverview = () => {
           </motion.div>
         </AnimatePresence>
       </BoardHeader>
-      {/* This is the modal for choosing new cards */}
-
+      {/* The board holding all cards */}
       <MainBoard isEditMode={isEditing} />
     </Board>
   );

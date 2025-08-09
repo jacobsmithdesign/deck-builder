@@ -70,7 +70,7 @@ export default function CommanderOverview() {
 
   return (
     <AnimatePresence>
-      <div className={`w-full bg-light/90 z-10 px-2 pt-2`}>
+      <div className={`w-full bg-light/90 z-10 px-1 pt-2`}>
         <Card
           style={
             {
@@ -119,7 +119,9 @@ export default function CommanderOverview() {
                               <h2 className="font-bold truncate">
                                 {commanderCard?.name}
                               </h2>
-                              {commanderCard?.mana_cost && <ManaCost />}
+                              {commanderCard?.mana_cost && (
+                                <ManaCost manaCost={commanderCard.mana_cost} />
+                              )}
                             </CardTitle>
                             <p className="flex py-2 md:text-sm lg:text-base text-xs text-dark/70 font-bold pl-2w-full">
                               <span className="font-normal bg-light/10 px-1 rounded mr-2 whitespace-nowrap">

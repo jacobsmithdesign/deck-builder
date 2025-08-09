@@ -37,7 +37,7 @@ export default function ScrollingLabels({
       onMouseUp={handleMouseUp}
       className="rounded-lg overflow-x-scroll overflow-y-hidden hide-scrollbar cursor-grab active:cursor-grabbing select-none"
     >
-      <div className="flex">{children}</div>
+      <div className="flex  gap-1">{children}</div>
     </div>
   );
 }

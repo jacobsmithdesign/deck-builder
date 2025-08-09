@@ -1,33 +1,41 @@
-import { useCommander } from "@/app/context/CommanderContext";
-import { useEffect, useState } from "react";
+interface ManaCostProps {
+  manaCost?: string | null; // e.g. "{2}{W}{U}"
+  colorIdentity?: string[] | null; // e.g. ["G", "W"]
+}
 
-export const ManaCost = () => {
-  const { commanderCard } = useCommander();
-  const [mana_costString, setmana_costString] = useState<string | null>();
+export const ManaCost: React.FC<ManaCostProps> = ({
+  manaCost,
+  colorIdentity,
+}) => {
+  let symbols: string[] | undefined;
 
-  useEffect(() => {
-    if (commanderCard) {
-      setmana_costString(commanderCard.mana_cost);
-      console.log(mana_costString);
-    }
-  }, [commanderCard]);
-  const manaSymbols = mana_costString
-    ?.match(/\{([^}]+)\}/g)
-    ?.map((s) => s.replace(/[{}]/g, ""));
+  if (manaCost) {
+    // Extract mana symbols from the cost string
+    symbols = manaCost
+      ?.match(/\{([^}]+)\}/g)
+      ?.map((s) => s.replace(/[{}]/g, ""));
+  } else if (colorIdentity && colorIdentity.length > 0) {
+    // Use colour identity directly
+    symbols = [...colorIdentity];
+  }
+
+  if (!symbols) return null;
 
   return (
-    <div className="flex gap-1 items-center text-sm p-1 rounded-full ">
-      {manaSymbols?.map((symbol, index) => {
+    <div className="flex gap-1 items-center text-sm p-1 rounded-full">
+      {symbols.map((symbol, index) => {
         if (!isNaN(Number(symbol))) {
+          // Numeric cost
           return (
             <div
               key={`${symbol}-${index}`}
-              className="sm:w-5 sm:h-5 w-4 h-4 rounded-full bg-manaAny flex items-center justify-center text-dark font-normal  text-xs sm:text-sm"
+              className="sm:w-5 sm:h-5 w-4 h-4 rounded-full bg-manaAny flex items-center justify-center text-dark font-normal text-xs sm:text-sm"
             >
               {symbol}
             </div>
           );
         } else {
+          // Coloured mana
           let color = "";
           switch (symbol.toUpperCase()) {
             case "W":
@@ -52,7 +60,7 @@ export const ManaCost = () => {
           return (
             <div
               key={`${symbol}-${index}`}
-              className={`sm:w-5 sm:h-5 w-4 h-4 rounded-full ${color} flex items-center bg- justify-center text-white font-bold`}
+              className={`sm:w-5 sm:h-5 w-4 h-4 rounded-full ${color} flex items-center justify-center text-white font-bold`}
             ></div>
           );
         }

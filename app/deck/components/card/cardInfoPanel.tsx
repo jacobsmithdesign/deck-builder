@@ -50,9 +50,8 @@ export function CardInfoPanel({
           </Button>
         </div>
         <div className="grid gap-1">
-          {}
-          <button className="h-6 md:hover:bg-light/60 flex items-center p-2 cursor-pointe rounded-sm">
-            <p>View Variations</p>
+          <button className="h-6 md:hover:bg-light/60 flex items-center p-2 cursor-pointer rounded-sm">
+            <p>Variations</p>
           </button>
         </div>
       </motion.div>

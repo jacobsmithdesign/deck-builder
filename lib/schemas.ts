@@ -81,7 +81,6 @@ export const suggestedUpgradesSchema = z.object({
 
 export const CardSchema = z.object({
   uuid: z.string().uuid(),
-
   name: z.string().nullable(),
   mana_cost: z.string().nullable(),
   mana_value: z.number().nullable(),
@@ -120,19 +119,48 @@ export const CardSchema = z.object({
 export type CardRecord = z.infer<typeof CardSchema>;
 
 export const DeckSchema = z.object({
-  id: z.string(), // primary key, MTGJSON deck UUID or custom user deck ID
+  id: z.string(), // primary key
   code: z.string().nullable(),
   name: z.string(),
   type: z.string(),
   board_section: z.string(),
-  user_id: z.string().uuid().nullable(), // nullable for official decks
-  release_date: z.string().nullable(), // ISO format from Supabase
+  user_id: z.string().uuid().nullable(),
+  release_date: z.string().nullable(),
   sealed_product: z.string().nullable(),
   is_public: z.boolean().nullable().default(false),
   description: z.string().nullable(),
   original_deck_id: z.string().nullable(),
   commander_uuid: z.string().uuid().nullable(),
   display_card_uuid: z.string().uuid().nullable(),
+
+  // --- AI summary content (kept) ---
+  tagline: z.string().nullable(),
+  ai_tags: z.array(z.string()).nullable(), // 3–6 tags
+  ai_strengths: z.array(z.string()).nullable(), // 2–4 short tags
+  ai_weaknesses: z.array(z.string()).nullable(), // 2–4 short tags
+  ai_generated_at: z.string().datetime().nullable(),
+
+  // --- New difficulty axes ---
+  // Note: DB stores power as TEXT; accept both to be resilient.
+  ai_power_level: z.union([z.string(), z.number()]).nullable(),
+  ai_complexity: z.enum(["Low", "Medium", "High"]).nullable(),
+  ai_pilot_skill: z.enum(["Beginner", "Intermediate", "Advanced"]).nullable(),
+  ai_interaction: z.enum(["Low", "Medium", "High"]).nullable(),
+
+  // --- Legacy (kept for back-compat; safe to remove later) ---
+  ai_rank: z.enum(["Beginner", "Intermediate", "Competitive"]).nullable(),
 });
 
 export type DeckRecord = z.infer<typeof DeckSchema>;
+
+export const DeckWithCommanderSchema = DeckSchema.extend({
+  commander: z
+    .object({
+      name: z.string(),
+      color_identity: z.array(z.string()).nullable(),
+      identifiers: z.record(z.string(), z.string()).nullable(),
+    })
+    .nullable(),
+});
+
+export type CommanderDeckRecord = z.infer<typeof DeckWithCommanderSchema>;

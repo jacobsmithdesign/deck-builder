@@ -65,7 +65,7 @@ export default function AddToCollectionModal({
             placeholder="Deck Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-96 p-1  bg-light/80 rounded-md drop-shadow-sm mb-2 "
+            className="w-96 p-1 bg-light/80 rounded-md drop-shadow-sm mb-2"
           />
           <textarea
             placeholder="Optional description..."
