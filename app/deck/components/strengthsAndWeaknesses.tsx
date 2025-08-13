@@ -22,7 +22,7 @@ export function StrengthsAndWeaknesses({
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.85 }}
           transition={{ duration: 0.15 }}
-          className="flex flex-col gap-2 row-span-2 h-fit "
+          className="flex flex-col gap-1 row-span-2 h-fit "
         >
           <div className="flex flex-col h-full pb-1 gap-1 px-1 bg-light/60 outline outline-dark/20 rounded-md">
             <p className="text-sm">
