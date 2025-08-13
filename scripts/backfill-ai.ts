@@ -40,7 +40,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE, {
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
 // ---------- TYPES ----------
-type CardRow = {
+export type CardRow = {
   uuid: string;
   name: string | null;
   mana_value: number | null;
@@ -48,7 +48,7 @@ type CardRow = {
   text: string | null;
 };
 
-type DeckRow = {
+export type DeckRow = {
   id: string;
   name: string;
   commander: CardRow | null;
@@ -83,6 +83,7 @@ async function fetchDeckPage(offset = 0): Promise<DeckRow[]> {
         uuid,
         name,
         mana_value,
+        mana_cost,
         type,
         text
       ),
@@ -93,6 +94,7 @@ async function fetchDeckPage(offset = 0): Promise<DeckRow[]> {
           uuid,
           name,
           mana_value,
+          mana_cost,
           type,
           text
         )

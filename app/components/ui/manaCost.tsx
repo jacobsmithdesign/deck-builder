@@ -29,7 +29,7 @@ export const ManaCost: React.FC<ManaCostProps> = ({
           return (
             <div
               key={`${symbol}-${index}`}
-              className="sm:w-5 sm:h-5 w-4 h-4 rounded-full bg-manaAny flex items-center justify-center text-dark font-normal text-xs sm:text-sm"
+              className="sm:w-4 sm:h-4 w-3 h-3 rounded-full bg-manaAny flex items-center justify-center text-dark font-normal text-xs"
             >
               {symbol}
             </div>
@@ -60,8 +60,8 @@ export const ManaCost: React.FC<ManaCostProps> = ({
           return (
             <div
               key={`${symbol}-${index}`}
-              className={`sm:w-5 sm:h-5 w-4 h-4 rounded-full ${color} flex items-center justify-center text-white font-bold`}
-            ></div>
+              className={`sm:w-4 sm:h-4 w-3 h-3 rounded-full ${color} flex items-center justify-center text-white font-bold`}
+            />
           );
         }
       })}

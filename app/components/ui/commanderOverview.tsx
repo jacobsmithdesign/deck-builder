@@ -15,7 +15,6 @@ import {
   Strength,
   Weakeness,
 } from "./overviewButtons";
-import ManaCurve from "./manaCurve";
 import ScrollingLabels from "./scrollingLabels";
 import Image from "next/image";
 import { CommanderSkeleton } from "../commanderSkeleton";
@@ -29,12 +28,20 @@ import {
 } from "@/lib/getCardCounts";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCompactView } from "@/app/context/compactViewContext";
+import { useCardList } from "@/app/context/CardListContext";
+import { ColouredManaCurve } from "@/app/deck/components/colouredManaCurve";
+import { SpellTypeCounts } from "@/app/deck/components/spellTypeCounts";
+import { ManaCurve } from "@/app/deck/components/manaCurve";
+import { StrengthsAndWeaknesses } from "@/app/deck/components/strengthsAndWeaknesses";
+import { DeckMetricsXL } from "@/app/deck/components/deckMetricsXL";
+import { DeckMetricsMini } from "@/app/deck/components/deckMetricsMini";
 export default function CommanderOverview() {
   const { compactView, setBgColor, bgColor } = useCompactView();
   const { deckDetails, commanderCard } = useCommander();
   const [artworkColor, setArtworkColor] = useState<string>();
   const [typeCount, setTypeCount] = useState<CardTypeCount[]>([]);
   const [keywordCount, setKeywordCount] = useState<KeywordCount[]>([]);
+  const { deckFeatures, aiOverview } = useCardList();
   // Set the artworkColour from the card artwork image
   useEffect(() => {
     async function fetchColor() {
@@ -90,7 +97,7 @@ export default function CommanderOverview() {
               damping: 23,
               duration: 0.3,
             }}
-            className="w-full h-full relative flex md:p-3 p-2 z-20"
+            className="w-full h-full relative flex md:p-2 p-1 z-20"
           >
             {/* Desktop card image */}
             <img
@@ -115,22 +122,22 @@ export default function CommanderOverview() {
                         {/* Card with title and oracle text*/}
                         <Card className="sm:col-span-2 col-span-3 sm:ml-0 ml-20 flex flex-col grid-cols-1 sm:grid-rows-3">
                           <div className="w-full  flex flex-col">
-                            <CardTitle className="pb-0 flex justify-between items-center bg-light/40 pl-2 pr-1 md:rounded-xl rounded-md col-span-2">
-                              <h2 className="font-bold truncate">
+                            <h1 className="flex md:text-sm lg:text-base text-xs text-dark/70 font-bold mb-2 w-full">
+                              <span className="text-ellipsis whitespace-nowrap overflow-hidden block mr-2">
+                                {deckDetails.name}
+                              </span>
+                              <span className="font-normal bg-light/20 px-2 rounded-md mr-2 whitespace-nowrap">
+                                {deckDetails.type}
+                              </span>
+                            </h1>
+                            <CardTitle className="pb-0 flex justify-between items-center bg-light/40 pl-2 pr-1 rounded-md col-span-2 h-6 mb-2">
+                              <h2 className="font-bold truncate ">
                                 {commanderCard?.name}
                               </h2>
                               {commanderCard?.mana_cost && (
                                 <ManaCost manaCost={commanderCard.mana_cost} />
                               )}
                             </CardTitle>
-                            <p className="flex py-2 md:text-sm lg:text-base text-xs text-dark/70 font-bold pl-2w-full">
-                              <span className="font-normal bg-light/10 px-1 rounded mr-2 whitespace-nowrap">
-                                {deckDetails.type}
-                              </span>
-                              <span className="text-ellipsis whitespace-nowrap overflow-hidden block w-full">
-                                {deckDetails.name}
-                              </span>
-                            </p>
                           </div>
 
                           {/* Card oracle text for medium displays */}
@@ -182,28 +189,121 @@ export default function CommanderOverview() {
                       </div>
                     </CardHeader>
                     {/* Overview panel with pemanent types, strengths and weaknesses */}
-                    {!compactView && (
-                      <motion.div
-                        key="big-deck-overview"
-                        initial={{ opacity: 0, translateY: -20 }}
-                        animate={{ opacity: 100, translateY: 0 }}
-                        exit={{ opacity: 0, translateY: -20 }}
-                        transition={{ duration: 0.25 }}
+                    <motion.div
+                      key="big-deck-overview"
+                      initial={{ opacity: 0, translateY: -20 }}
+                      animate={{ opacity: 100, translateY: 0 }}
+                      exit={{ opacity: 0, translateY: -20 }}
+                      transition={{ duration: 0.25 }}
+                    >
+                      <div
+                        className={`${
+                          compactView ? "" : "mt-0"
+                        } transition-all duration-250 flex gap-1 h-77`}
                       >
-                        <CardTitle className={`font-bold text-dark mt-1`}>
-                          Deck Overview
-                        </CardTitle>
+                        {/* Mana curve graphs */}
+                        <div
+                          className={`${
+                            compactView ? "w-1/3" : "w-2/5 "
+                          } h-77 grid grid-rows-3 gap-1 transition-all duration-250`}
+                        >
+                          {/* Mana curve graph that always shows */}
+                          <AnimatePresence>
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0 }}
+                              animate={{ opacity: 100, scale: 1 }}
+                              exit={{
+                                opacity: 0,
+                                scale: 0,
+                                transition: { delay: 0.05 },
+                              }}
+                              transition={{ duration: 0.2 }}
+                            >
+                              <ManaCurve
+                                toggle={compactView}
+                                deckFeatures={deckFeatures}
+                                compactView={compactView}
+                                defaultMode="pool"
+                              />
+                            </motion.div>
+                          </AnimatePresence>
+                          {/* Mana curve graph for spell mana second in list */}
+                          <AnimatePresence>
+                            {!compactView && (
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0 }}
+                                animate={{ opacity: 100, scale: 1 }}
+                                exit={{
+                                  opacity: 0,
+                                  scale: 0,
+                                  transition: { delay: 0.05 },
+                                }}
+                                transition={{ duration: 0.2 }}
+                              >
+                                <ManaCurve
+                                  deckFeatures={deckFeatures}
+                                  compactView={compactView}
+                                  defaultMode="curve"
+                                />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                          {/* Basic mana curve graph at bottom of list */}
+                          <AnimatePresence>
+                            {!compactView && (
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0 }}
+                                animate={{
+                                  opacity: 100,
+                                  scale: 1,
+                                  transition: { delay: 0.05 },
+                                }}
+                                exit={{
+                                  opacity: 0,
+                                  scale: 0,
+                                }}
+                                transition={{ duration: 0.2 }}
+                              >
+                                <ManaCurve
+                                  deckFeatures={deckFeatures}
+                                  compactView={compactView}
+                                  defaultMode="cost"
+                                />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                        {/* Spell type table */}
+                        <div className="grid grid-rows-3 w-full gap-1 h-full relative">
+                          <div className="w-full flex">
+                            <div
+                              className={`${
+                                compactView ? "w-1/2" : "w-full"
+                              } transition-all duration-250 relative`}
+                            >
+                              <SpellTypeCounts
+                                spellCounts={typeCount}
+                                compactView={compactView}
+                              />
+                            </div>
+                            {/* Miniature deck metrics list */}
+                            <div className="absolute w-full flex">
+                              <div
+                                className={`${
+                                  compactView ? "w-1/2" : "w-full"
+                                }`}
+                              ></div>
+                              <DeckMetricsMini compactView={compactView} />
+                            </div>
+                          </div>
 
-                        <CardContent className="grid grid-cols-2 gap-1 text-dark p-0 pt-3">
-                          {typeCount.map((type, index) => (
-                            <Spell key={index}>
-                              <SpellType>{type.type}</SpellType>
-                              <SpellCount>{type.count}</SpellCount>
-                            </Spell>
-                          ))}
-                        </CardContent>
-                      </motion.div>
-                    )}
+                          <StrengthsAndWeaknesses
+                            aiOverview={aiOverview}
+                            compactView={compactView}
+                          />
+                        </div>
+                      </div>
+                    </motion.div>
                   </CardContent>
                 </CardDescription>
               </div>

@@ -1,5 +1,5 @@
 import * as React from "react";
-
+import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 const Spell = React.forwardRef<
@@ -8,8 +8,9 @@ const Spell = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <button
     ref={ref}
+    onMouseEnter={() => {}}
     className={cn(
-      "flex justify-between items-center px-2 bg-zinc-500/15 rounded-lg py-1 cursor-pointer hover:bg-zinc-500/30 transition-all duration-200 ease-in-out lg:text-lg md:text-base text-sm text-dark/70",
+      "flex justify-between items-center px-2 cursor-pointer hover:bg-zinc-500/20 transition-all duration-100 ease-out text-dark/70",
       className
     )}
     {...props}
@@ -21,11 +22,7 @@ const SpellType = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("font-bold lg:text-base md:text-sm text-xs", className)}
-    {...props}
-  />
+  <div ref={ref} className={cn("font-bold tex-xs", className)} {...props} />
 ));
 SpellType.displayName = "SpellType";
 
@@ -33,11 +30,7 @@ const SpellCount = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("lg:text-lg md:text-base text-sm", className)}
-    {...props}
-  />
+  <div ref={ref} className={cn("", className)} {...props} />
 ));
 SpellCount.displayName = "SpellCount";
 

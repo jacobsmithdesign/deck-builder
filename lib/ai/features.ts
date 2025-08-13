@@ -4,6 +4,7 @@ import { z } from "zod";
 export type CardLite = {
   name: string | null;
   mana_value: number | null;
+  mana_cost: string | null;
   type: string | null;
   text: string | null;
 };
@@ -18,7 +19,7 @@ export const DeckFeatureVectorSchema = z.object({
     deck_id: z.string(),
     commander: z.object({
       name: z.string().nullable(),
-      color_identity: z.array(z.string()).default([]).optional(), // not strictly needed if absent here
+      color_identity: z.array(z.string()).default([]).optional(),
       text: z.string().nullable(),
     }),
     avg_mv: z.number(),
@@ -38,7 +39,22 @@ export const DeckFeatureVectorSchema = z.object({
       tags: z.array(z.string()),
     })
   ),
+  mana_pool: z.object({
+    W: z.number(),
+    U: z.number(),
+    B: z.number(),
+    R: z.number(),
+    G: z.number(),
+  }),
+  coloured_mana_curve: z.object({
+    W: z.number(),
+    U: z.number(),
+    B: z.number(),
+    R: z.number(),
+    G: z.number(),
+  }),
 });
+
 export type DeckFeatureVector = z.infer<typeof DeckFeatureVectorSchema>;
 
 // Simple detectors (expand as you like)
@@ -86,6 +102,7 @@ export function buildFeatures(deck: DeckLite): DeckFeatureVector {
   const nonlands = main.filter(
     (dc) => !upperType(dc.card.type).includes("Land")
   );
+  const lands = main.filter((dc) => upperType(dc.card.type).includes("Land"));
 
   // curve
   const curve: Record<string, number> = {
@@ -162,6 +179,20 @@ export function buildFeatures(deck: DeckLite): DeckFeatureVector {
     }
   }
 
+  // Build mana pool
+  const mana_pool = emptyColorCounts();
+  const commanderColors = (deck as any)?.commander?.color_identity ?? []; // pass through if you fetch it
+  for (const { card, count } of lands) {
+    const perLand = landSourcesFromText(card.text, commanderColors);
+    for (const c of COLORS) mana_pool[c] += perLand[c] * count;
+  }
+  // Build coloured mana curve for nonland cards
+  const coloured_mana_curve = emptyColorCounts();
+  for (const { card, count } of nonlands) {
+    const pips = countColoredPips(card.mana_cost);
+    for (const c of COLORS) coloured_mana_curve[c] += pips[c] * count;
+  }
+  // Build interaction counts
   const interactionCount =
     (counts.counters || 0) + (counts.wipes || 0) + (counts.spot || 0);
   const interaction_density = totalNonLand
@@ -211,7 +242,96 @@ export function buildFeatures(deck: DeckLite): DeckFeatureVector {
     interaction_density: Number(interaction_density.toFixed(3)),
     stack_complexity_markers: Array.from(new Set(markers)),
     signals,
+    mana_pool,
+    coloured_mana_curve,
   };
 
   return DeckFeatureVectorSchema.parse(features);
+}
+
+// Function to build a colour curve from deck
+const COLORS = ["W", "U", "B", "R", "G"] as const;
+type Color = (typeof COLORS)[number];
+type ColorCounts = Record<Color, number>;
+
+function emptyColorCounts(): ColorCounts {
+  return { W: 0, U: 0, B: 0, R: 0, G: 0 };
+}
+
+// Parse a Scryfall/MTGJSON mana_cost like "{2}{G}{U}{U}" or "{G/U}" or "{2/R}" or "{G/P}"
+// Returns colored pip counts. Heuristics:
+// - Pure colored {W}{U}{B}{R}{G} => +1 to that color
+// - Hybrid like {G/U} => +0.5 to G and +0.5 to U (splits evenly)
+// - Two-brid {2/R} => counts as 1 colored pip for R (optional: make this 0.5 if you prefer)
+// - Phyrexian {G/P} => counts as 1 colored pip to G
+// - {C}, numbers, {X} ignored
+function countColoredPips(manaCost: string | null | undefined): ColorCounts {
+  const out = emptyColorCounts();
+  if (!manaCost) return out;
+
+  const tokens = manaCost.match(/\{([^}]+)\}/g) ?? [];
+  for (const raw of tokens) {
+    const tok = raw.slice(1, -1); // inside braces
+
+    // Direct single color
+    if ((COLORS as readonly string[]).includes(tok)) {
+      out[tok as Color] += 1;
+      continue;
+    }
+
+    // Phyrexian (e.g. G/P)
+    if (/^[WUBRG]\/P$/i.test(tok)) {
+      const c = tok[0].toUpperCase() as Color;
+      out[c] += 1;
+      continue;
+    }
+
+    // Two-brid (2/R) — treat as 1 colored pip for that color
+    if (/^2\/[WUBRG]$/i.test(tok)) {
+      const c = tok.split("/")[1].toUpperCase() as Color;
+      out[c] += 1; // change to 0.5 if you prefer a softer model
+      continue;
+    }
+
+    // Hybrid (G/U etc). Split 1 pip evenly across colors present.
+    if (/^[WUBRG]\/[WUBRG]$/i.test(tok)) {
+      const parts = tok.split("/").map((s) => s.toUpperCase()) as Color[];
+      const share = 1 / parts.length;
+      for (const p of parts) out[p] += share;
+      continue;
+    }
+
+    // Everything else: ignore (numbers, X, C, etc.)
+  }
+  return out;
+}
+
+// Extract land color sources from oracle text.
+// Counts each color a land can produce as a "source" for that color.
+// If a land says "any color", we credit all commander colors (if provided),
+// otherwise all 5 colors.
+function landSourcesFromText(
+  text: string | null | undefined,
+  commanderColors?: string[] | null
+): ColorCounts {
+  const out = emptyColorCounts();
+  if (!text) return out;
+  const t = text.toLowerCase();
+
+  // Any color (common phrasing)
+  if (/(any color|any one color)/i.test(t)) {
+    const targets: Color[] = (
+      commanderColors?.length ? commanderColors : COLORS
+    ) as Color[];
+    for (const c of targets) out[c] += 1;
+  }
+
+  // Direct pips present in text, e.g., "{T}: Add {U} or {G}."
+  const matches = text.match(/\{[WUBRG]\}/g) ?? [];
+  for (const m of matches) {
+    const c = m.slice(1, -1) as Color;
+    out[c] += 1;
+  }
+
+  return out;
 }
