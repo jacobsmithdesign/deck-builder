@@ -13,7 +13,6 @@ import {
   Strength,
   Weakeness,
 } from "./ui/overviewButtons";
-import ManaCurve from "./ui/manaCurve";
 import ScrollingLabels from "./ui/scrollingLabels";
 export const CommanderSkeleton = () => {
   return (
