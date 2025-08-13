@@ -274,12 +274,12 @@ export default function CommanderOverview() {
                           </AnimatePresence>
                         </div>
                         {/* Spell type table */}
-                        <div className="grid grid-rows-3 w-full gap-1 h-full relative">
-                          <div className="w-full flex">
+                        <div className="grid grid-rows-3 w-full gap-1 h-full ">
+                          <div className="w-full flex z-10 relative">
                             <div
                               className={`${
                                 compactView ? "w-1/2" : "w-full"
-                              } transition-all duration-250 relative`}
+                              } transition-all duration-250 z-10`}
                             >
                               <SpellTypeCounts
                                 spellCounts={typeCount}
@@ -289,7 +289,7 @@ export default function CommanderOverview() {
                             {/* Miniature deck metrics list */}
                             <div className="absolute w-full flex">
                               <div
-                                className={`${
+                                className={`pointer-events-none z-0 ${
                                   compactView ? "w-1/2" : "w-full"
                                 }`}
                               ></div>

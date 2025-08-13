@@ -112,13 +112,14 @@ export function DeckMetricsMini({
             <>
               {compactView && (
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.85 }}
+                  initial={{ opacity: 0, scale: 0.85, translateX: 20 }}
                   animate={{
                     opacity: 1,
                     scale: 1,
+                    translateX: 0,
                     transition: { delay: index * 0.1 },
                   }}
-                  exit={{ opacity: 0, scale: 0.85 }}
+                  exit={{ opacity: 0 }}
                   transition={{ duration: 0.15 }}
                   key={key}
                   className="relative group flex items-center"
