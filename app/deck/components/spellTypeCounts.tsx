@@ -46,7 +46,7 @@ export function SpellTypeCounts({
         <Spell
           key={index}
           className={`${
-            compactView ? "h-4" : "h-6 border-dark/20"
+            compactView ? "h-4" : "h-6"
           } transition-all duration-250`}
         >
           <SpellType

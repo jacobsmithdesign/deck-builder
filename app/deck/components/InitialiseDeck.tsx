@@ -29,18 +29,30 @@ type DeckRow = {
   name: string;
   commander: CardRow | null;
   deck_cards: { count: number; board_section: string; card: CardRow }[];
+
+  // overview fields
   tagline?: string;
   ai_rank?: string[];
   ai_tags?: string[];
   ai_strengths?: string[];
   ai_weaknesses?: string[];
   ai_generated_at: string | null;
-  ai_power_level?: number;
-  ai_complexity?: string;
-  ai_pilot_skill?: string;
-  ai_interaction?: string;
-  ai_spec_version?: string;
-  ai_confidence?: number;
+  ai_confidence?: number | null;
+  ai_spec_version?: string | null;
+
+  // difficulty axes (note: ai_power_level may be TEXT in DB; coerce later)
+  ai_power_level?: string | null;
+  ai_complexity?: "Low" | "Medium" | "High" | null;
+  ai_pilot_skill?: "Beginner" | "Intermediate" | "Advanced" | null;
+  ai_interaction?: "Low" | "Medium" | "High" | null;
+  ai_upkeep?: "Low" | "Medium" | "High" | null;
+
+  // explanations
+  ai_power_level_explanation?: string | null;
+  ai_complexity_explanation?: string | null;
+  ai_pilot_skill_explanation?: string | null;
+  ai_interaction_explanation?: string | null;
+  ai_upkeep_explanation?: string | null;
 };
 
 // This component initialises the card list and deck details upon first visiting a deck page.
@@ -51,15 +63,15 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
     useCardList();
   const { setDeckDetails, setCommanderCard } = useCommander();
 
-  // Same async function from backfill-ai.ts to get a compressed version of the deck
-  async function fetchDeckPage(offset = 0): Promise<DeckRow[]> {
-    let query = supabase
+  async function fetchDeckPage(): Promise<DeckRow[]> {
+    const { data, error } = await supabase
       .from("decks")
       .select(
         `
-      id,
-      name,
-      tagline,
+        id,
+        name,
+        
+        tagline,
         ai_rank,
         ai_tags,
         ai_strengths,
@@ -67,73 +79,82 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
         ai_generated_at,
         ai_confidence,
         ai_spec_version,
+
         ai_power_level,
         ai_complexity,
         ai_pilot_skill,
         ai_interaction,
-      commander:cards!decks_commander_uuid_fkey(
-        uuid,
-        name,
-        mana_value,
-        mana_cost,
-        type,
-        text
-        
-      ),
-      deck_cards(
-        count,
-        board_section,
-        card:cards!deck_cards_card_uuid_fkey(
-          uuid,
-          name,
-          mana_value,
-          mana_cost,
-          type,
-          text
+        ai_upkeep,
+        ai_power_level_explanation,
+        ai_complexity_explanation,
+        ai_pilot_skill_explanation,
+        ai_interaction_explanation,
+        ai_upkeep_explanation,
+
+        commander:cards!decks_commander_uuid_fkey(
+          uuid, name, mana_value, mana_cost, type, text
+        ),
+        deck_cards(
+          count, board_section,
+          card:cards!deck_cards_card_uuid_fkey(
+            uuid, name, mana_value, mana_cost, type, text
+          )
         )
-      )
-    `
+        `
       )
       .eq("id", deck.id)
       .eq("deck_cards.board_section", "mainboard")
       .order("release_date", { ascending: false });
 
-    const { data, error } = await query;
-    console.log("Compressed deck data fetched: ", data);
     if (error) throw error;
-    return data as unknown as DeckRow[];
+    return (data ?? []) as unknown as DeckRow[];
   }
 
   // Fetch the compressed deck data
   async function buildDeckFeatures() {
     try {
-      const compressedDeck = await fetchDeckPage();
+      const rows = await fetchDeckPage();
       await Promise.allSettled(
-        compressedDeck.map((deck) => {
-          const features = buildFeatures(deck as any);
+        rows.map((row) => {
+          const features = buildFeatures(row as any);
           setDeckFeatures(features);
+
+          // coerce ai_power_level number if DB stores as TEXT
+          const power =
+            row.ai_power_level == null || row.ai_power_level === ""
+              ? null
+              : Number(row.ai_power_level);
+
           setAiOverview({
-            tagline: deck.tagline,
-            ai_rank: deck.ai_rank,
-            ai_tags: deck.ai_tags,
-            ai_strengths: deck.ai_strengths,
-            ai_weaknesses: deck.ai_weaknesses,
-            ai_generated_at: deck.ai_generated_at,
-            ai_confidence: deck.ai_confidence ?? null,
-            ai_spec_version: deck.ai_spec_version ?? null,
-            ai_power_level: deck.ai_power_level ?? null,
-            ai_complexity: deck.ai_complexity ?? null,
-            ai_pilot_skill: deck.ai_pilot_skill ?? null,
-            ai_interaction: deck.ai_interaction ?? null,
+            tagline: row.tagline ?? null,
+            ai_rank: row.ai_rank ?? null,
+            ai_tags: row.ai_tags ?? null,
+            ai_strengths: row.ai_strengths ?? null,
+            ai_weaknesses: row.ai_weaknesses ?? null,
+            ai_generated_at: row.ai_generated_at ?? null,
+            ai_confidence: row.ai_confidence ?? null,
+            ai_spec_version: row.ai_spec_version ?? null,
+
+            ai_power_level: row.ai_power_level ?? null,
+            ai_complexity: row.ai_complexity ?? null,
+            ai_pilot_skill: row.ai_pilot_skill ?? null,
+            ai_interaction: row.ai_interaction ?? null,
+            ai_upkeep: row.ai_upkeep ?? null,
+
+            ai_power_level_explanation: row.ai_power_level_explanation ?? null,
+            ai_complexity_explanation: row.ai_complexity_explanation ?? null,
+            ai_pilot_skill_explanation: row.ai_pilot_skill_explanation ?? null,
+            ai_interaction_explanation: row.ai_interaction_explanation ?? null,
+            ai_upkeep_explanation: row.ai_upkeep_explanation ?? null,
           });
-          console.log("Deck features built: ", features);
+
+          return null;
         })
       );
     } catch (error) {
       console.error("Error fetching compressed deck data: ", error);
     }
   }
-
   // console.log(
   //   "Cards initialised: ",
   //   deck.cards.map((c) => ({
@@ -145,6 +166,7 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
   useEffect(() => {
     // Get compressed deck data then build the features for the overview section
     const features = buildDeckFeatures();
+    console.log(features);
     // Initialise the commander details overview. This gets sloppy around the image section but whatever.
     const commanderDeckDetails: CommanderDeckDetails = {
       id: deck.id,

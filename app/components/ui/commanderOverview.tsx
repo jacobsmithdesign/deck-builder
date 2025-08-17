@@ -201,7 +201,7 @@ export default function CommanderOverview() {
                           compactView ? "" : "mt-0"
                         } transition-all duration-250 flex gap-1 h-77`}
                       >
-                        {/* Mana curve graphs */}
+                        {/* Left column: Mana curve graphs */}
                         <div
                           className={`${
                             compactView ? "w-1/3" : "w-2/5 "
@@ -231,11 +231,23 @@ export default function CommanderOverview() {
                           <AnimatePresence>
                             {!compactView && (
                               <motion.div
-                                initial={{ opacity: 0, scale: 0 }}
-                                animate={{ opacity: 1, scale: 1 }}
+                                initial={{
+                                  opacity: 0,
+                                  scale: 0.7,
+                                  translateX: -60,
+                                  translateY: -60,
+                                }}
+                                animate={{
+                                  opacity: 1,
+                                  scale: 1,
+                                  translateY: 0,
+                                  translateX: 0,
+                                }}
                                 exit={{
                                   opacity: 0,
-                                  scale: 0,
+                                  scale: 0.4,
+                                  translateX: -40,
+                                  translateY: -60,
                                   transition: { delay: 0.05 },
                                 }}
                                 transition={{ duration: 0.2 }}
@@ -252,17 +264,26 @@ export default function CommanderOverview() {
                           <AnimatePresence>
                             {!compactView && (
                               <motion.div
-                                initial={{ opacity: 0, scale: 0 }}
+                                initial={{
+                                  opacity: 0,
+                                  scale: 0,
+                                  translateX: -60,
+                                  translateY: -60,
+                                }}
                                 animate={{
                                   opacity: 1,
                                   scale: 1,
-                                  transition: { delay: 0.05 },
+                                  translateY: 0,
+                                  translateX: 0,
                                 }}
                                 exit={{
                                   opacity: 0,
                                   scale: 0,
+                                  translateX: -60,
+                                  translateY: -60,
+                                  transition: { delay: 0 },
                                 }}
-                                transition={{ duration: 0.2 }}
+                                transition={{ duration: 0.2, delay: 0.05 }}
                               >
                                 <ManaCurve
                                   deckFeatures={deckFeatures}
@@ -273,8 +294,8 @@ export default function CommanderOverview() {
                             )}
                           </AnimatePresence>
                         </div>
-                        {/* Spell type table */}
-                        <div className="grid grid-rows-3 w-full gap-1 h-full ">
+                        {/* Right column: Spell type table, strenghts and weaknesses, deck metrics */}
+                        <div className="grid grid-rows-3 w-full gap-1 h-full z-10">
                           <div className="w-full flex z-10 relative">
                             <div
                               className={`${
@@ -296,11 +317,13 @@ export default function CommanderOverview() {
                               <DeckMetricsMini compactView={compactView} />
                             </div>
                           </div>
-
-                          <StrengthsAndWeaknesses
-                            aiOverview={aiOverview}
-                            compactView={compactView}
-                          />
+                          <div className="row-span-2 gap-1 flex flex-col">
+                            <StrengthsAndWeaknesses
+                              aiOverview={aiOverview}
+                              compactView={compactView}
+                            />
+                            <DeckMetricsXL />
+                          </div>
                         </div>
                       </div>
                     </motion.div>

@@ -27,11 +27,23 @@ export type AiOverview = {
   ai_generated_at: string | null;
   ai_confidence?: number | null;
   ai_spec_version?: string | null;
-  ai_power_level?: number | null; // 1–10
-  ai_complexity?: string | null; // "Low" | "Medium" | "High"
-  ai_pilot_skill?: string | null; // "Beginner" | "Intermediate" | "Advanced"
-  ai_interaction?: string | null; // "Low" | "Medium" | "High"
+
+  // difficulty axes
+  ai_power_level?: string | null; // 1–10
+  ai_complexity?: "Low" | "Medium" | "High" | null;
+  ai_pilot_skill?: "Beginner" | "Intermediate" | "Advanced" | null;
+  ai_interaction?: "Low" | "Medium" | "High" | null;
+  ai_upkeep?: "Low" | "Medium" | "High" | null;
+
+  // short explanations (≤160 chars each)
+  ai_power_level_explanation?: string | null;
+  ai_complexity_explanation?: string | null;
+  ai_pilot_skill_explanation?: string | null;
+  ai_interaction_explanation?: string | null;
+  ai_upkeep_explanation?: string | null;
 };
+
+// rest of file unchanged
 
 interface CardListContextType {
   // cards

@@ -18,14 +18,25 @@ export function StrengthsAndWeaknesses({
     <AnimatePresence>
       {!compactView && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.85 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.85 }}
-          transition={{ duration: 0.15 }}
-          className="flex flex-col gap-1 row-span-2 h-fit "
+          initial={{
+            opacity: 0,
+            scale: 0.85,
+            translateY: -60,
+            translateX: -80,
+          }}
+          animate={{ opacity: 1, scale: 1, translateY: 0, translateX: 0 }}
+          exit={{
+            opacity: 0,
+            scale: 0.65,
+            translateY: -45,
+            translateX: -90,
+            transition: { delay: 0.05 },
+          }}
+          transition={{ duration: 0.15, delay: 0 }}
+          className="flex flex-col row-span-2 h-fit z-0"
         >
           <div className="flex flex-col h-full pb-1 gap-1 px-1 bg-light/60 outline outline-dark/20 rounded-md">
-            <p className="text-sm">
+            <p className="text-sm pt-1 border-b border-dark/20">
               {aiOverview?.tagline || "No tagline available"}
             </p>
             <div className="flex flex-wrap gap-1 text-sm">
@@ -45,7 +56,6 @@ export function StrengthsAndWeaknesses({
               ))}
             </div>
           </div>
-          <DeckMetricsXL />
         </motion.div>
       )}
     </AnimatePresence>
