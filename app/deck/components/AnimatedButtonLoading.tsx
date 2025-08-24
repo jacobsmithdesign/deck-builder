@@ -3,6 +3,7 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { CgSpinner } from "react-icons/cg";
 
 const buttonVariants = cva(
   "flex items-center justify-center cursor-pointer transition-all duration-200",
@@ -20,7 +21,7 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         aiAnalyse:
-          "font-bold bg-purple-500 md:hover:bg-light md:hover:text-purple-500 md:hover:shadow-lg shadow-xs shadow-light md:hover:shadow-purple-200 outline outline-purple-500/0 transition-all duration-300 md:hover:outline-purple-500/0 text-light px-3 py-1 rounded-lg ease-in-out cursor-pointer",
+          "flex font-bold bg-light md:hover:scale-105 shadow-md md:hover:shadow-lg shadow-purple-300/20 md:hover:shadow-purple-300 outline outline-purple-500/10 md:hover:outline-purple-500/50 text-purple-500 px-3 py-1 rounded-lg ease-in-out active:scale-95",
       },
       size: {
         default: "h-6 px-2 py-1 rounded-md md:text-sm text-xs",
@@ -41,44 +42,50 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
+  loading?: boolean;
 }
 
-const AnimatedButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, title, variant, size, asChild = false, ...props }, ref) => {
+const AnimatedButtonLoading = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      className,
+      title,
+      variant,
+      size,
+      asChild = false,
+      loading = false,
+      ...props
+    },
+    ref
+  ) => {
     const Comp = asChild ? Slot : "button";
     return (
       <AnimatePresence>
-        <motion.div
+        <motion.button
           key="close"
-          initial={{
-            opacity: 0,
-            scale: 1,
-            shadow: "12px 12px rgba(0, 0, 0, 0.2)",
-          }}
-          animate={{
-            opacity: 1,
-            scale: 1,
-          }}
-          exit={{
-            opacity: 0,
-            scale: 0.0,
-          }}
-          whileTap={{ scale: 0.93 }}
-          whileHover={{ scale: 1.07 }}
-          transition={{ type: "spring", damping: 17, stiffness: 450 }}
+          className={cn(
+            buttonVariants({ variant, size, className }),
+            `${loading && "pointer-events-none cursor-not-allowed"}`
+          )}
+          ref={ref}
         >
           <Comp
-            className={cn(buttonVariants({ variant, size, className }))}
-            ref={ref}
+            className="cursor-pointer flex items-center"
+            disabled={loading}
             {...props}
           >
             {title}
+            <CgSpinner
+              className={`transition-all duration-150 animate-spin ${
+                loading ? "scale-100 w-4 h-4 ml-2" : "scale-0 w-0 h-0 ml-0"
+              }`}
+            />
           </Comp>
-        </motion.div>
+        </motion.button>
       </AnimatePresence>
     );
   }
 );
-AnimatedButton.displayName = "Button";
+AnimatedButtonLoading.displayName = "Button";
 
-export { AnimatedButton, buttonVariants };
+export { AnimatedButtonLoading, buttonVariants };

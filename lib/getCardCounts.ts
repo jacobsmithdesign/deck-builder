@@ -2,6 +2,17 @@
 
 import { CardRecord } from "./schemas";
 
+// function used for logging cards in a smaller format
+function logCardsBrief(cards: CardRecord[]) {
+  const brief = cards.map((c) => ({
+    name: c.name,
+    type: c.type,
+    mana_value: c.mana_value,
+    text: c.text,
+  }));
+  console.log("cards (brief):", brief);
+}
+
 // ---------- Count of each type (eg creature, land, etc.) in entire cardlist ---------- //
 export type CardTypeCount = {
   type: string;
@@ -10,7 +21,7 @@ export type CardTypeCount = {
 
 export function getCardTypeCounts(cards: CardRecord[]): CardTypeCount[] {
   const typeCounts: Record<string, number> = {};
-  console.log("cards: ", cards);
+  logCardsBrief(cards);
 
   for (const card of cards) {
     const typeKey = getBaseType(card.type); // Extract e.g. "Creature" from "Creature — Elf Druid"

@@ -1,0 +1,43 @@
+------------------------ backfill-ai.ts ------------------------
+
+Return ONLY minified JSON:
+{"tagline":string,
+ "power_level":1-10,"power_level_explanation":string(<=160),
+ "complexity":"Low"|"Medium"|"High","complexity_explanation":string(<=160),
+ "pilot_skill":"Beginner"|"Intermediate"|"Advanced","pilot_skill_explanation":string(<=160),
+ "interaction_intensity":"Low"|"Medium"|"High","interaction_explanation":string(<=160),
+ "tags":string[],"strengths":string[],"weaknesses":string[],"confidence":0..1}
+
+Rules:
+- tagline ≤ 60 chars.
+- each explanation: 1 sentence, ≤160 chars, plain words.
+- tags: pick 3–6 from ["Token Swarm","Treasure","Aristocrats","Graveyard","Reanimator","Stax","Voltron","Spellslinger","Blink","+1/+1 Counters","Lifegain","Control","Combo","Ramp","Landfall","Mill","Extra Turns","Vehicles","Dragons","Elves","Artifacts","Enchantress","Aura","Discard","Steal/Copy","Flicker","Proliferate","Burn","Big Mana"]
+- strengths/weaknesses: 2–4 items each, 1–3 words.
+
+Features:
+{"meta":{"deck_id":"ScionsSpellcraftFinalFantasyXiv_FIC","commander":{"name":"Y'shtola, Night's Blessed","text":"Vigilance At the beginning of each end step, if a player lost 4 or more life this turn, you draw a card. Whenever you cast a noncreature spell with mana value 3 or greater, Y'shtola deals 2 damage to each opponent and you gain 2 life."},"avg_mv":3.38,"mainboard_count":63},"counts":{"rocks":8,"draw":13,"tutors":1,"wipes":2,"spot":4,"counters":1,"recursion":1,"token":14},"curve":{"2":17,"3":17,"4":14,"5":6,"0-1":3,"6+":6},"type_counts":{"Artifact":16,"Creature":23,"Sorcery":10,"Enchantment":6,"Instant":8},"interaction_density":0.111,"stack_complexity_markers":["choose_modes"],"signals":[{"n":"Sublime Epiphany","mv":6,"t":["counters","token","choose_modes"]},{"n":"Hermes, Overseer of Elpis","mv":4,"t":["token"]},{"n":"Cleansing Nova","mv":5,"t":["wipes","choose_modes"]},{"n":"Hraesvelgr of the First Brood","mv":5,"t":["protection"]},{"n":"Summon: Good King Mog XII","mv":5,"t":["token"]},{"n":"Thancred Waters","mv":5,"t":["protection"]},{"n":"Lethal Scheme","mv":4,"t":["spot"]},{"n":"Rite of Replication","mv":4,"t":["token"]}]}
+
+
+------------------------ ai-metrics-backfill.ts ------------------------
+
+Return ONLY minified JSON with EXACT keys:
+{"power_level":1..10,"power_level_explanation":string(<=160),
+"complexity":"Low"|"Medium"|"High","complexity_explanation":string(<=160),
+"pilot_skill":"Beginner"|"Intermediate"|"Advanced","pilot_skill_explanation":string(<=160),
+"interaction_intensity":"Low"|"Medium"|"High","interaction_explanation":string(<=160),
+"upkeep":"Low"|"Medium"|"High","upkeep_explanation":string(<=160),
+"confidence":0..1}
+
+Constraints: One sentence per explanation, 120–150 chars, plain words, ≤3 numbers, no lists/newlines/quotes. Be STRICTLY EXTRACTIVE from F.
+
+Fields available:
+ramp_total,tutors_total,int_instant,int_mass,int_spot,upkeep_triggers,upkeep_costs,activations_repeatable,color_tension_color,color_tension_max,plan,examples.
+
+Heuristics:
+- power_level: 4 + ⌊ramp_total/3⌋ + ⌊tutors_total/2⌋ +1 if int_instant≥5; −1 if color_tension_max≥0.60; P≥9 only if tutors_total≥6 or (int_instant+int_mass)≥8 or ramp_total≥7; clamp 1..10.
+- complexity: High if (int_instant+int_mass)≥6 or activations_repeatable≥20 or color_tension_max≥0.60; Low if int_instant≤2 and (upkeep_triggers+activations_repeatable)≤8 and color_tension_max<0.30; else Medium.
+- pilot_skill: mirror complexity; bump up if ramp_total is low and interaction high; reduce one tier if tutors_total≥4.
+- interaction_intensity: High if int_instant≥6 or int_mass≥3 or int_spot≥7; Low if int_instant≤2 and int_spot≤3 and int_mass≤1; else Medium.
+- upkeep: High if activations_repeatable≥20 or upkeep_triggers≥6 or upkeep_costs≥2; Low if (upkeep_triggers+activations_repeatable)≤8 and upkeep_costs=0; else Medium.
+
+F={"ramp_total":7,"tutors_total":4,"int_mass":3,"int_spot":4,"upkeep_triggers":5,"activations_repeatable":12,"color_tension_color":"W","color_tension_max":0.54,"plan":["tokens","treasure","ramp"],"examples":[["Austere Command","mass"],["SOLDIER Military Program","tokens"],["Unfinished Business","spot"],["Sephiroth, Fallen Hero","engine"],["Zack Fair","protection"]]}

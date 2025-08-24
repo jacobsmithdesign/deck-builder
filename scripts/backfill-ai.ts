@@ -60,9 +60,17 @@ export type DeckRow = {
 const AiJsonSchema = z.object({
   tagline: z.string().min(8).max(70), // keep 70 to avoid strict failures
   power_level: z.number().min(1).max(10),
+  power_level_explanation: z.string().min(10).max(170),
+
   complexity: z.enum(["Low", "Medium", "High"]),
+  complexity_explanation: z.string().min(10).max(170),
+
   pilot_skill: z.enum(["Beginner", "Intermediate", "Advanced"]),
+  pilot_skill_explanation: z.string().min(10).max(170),
+
   interaction_intensity: z.enum(["Low", "Medium", "High"]),
+  interaction_explanation: z.string().min(10).max(170),
+
   tags: z.array(z.string()).min(3).max(6),
   strengths: z.array(z.string()).min(2).max(4),
   weaknesses: z.array(z.string()).min(2).max(4),
@@ -70,7 +78,7 @@ const AiJsonSchema = z.object({
 });
 type AiOutput = z.infer<typeof AiJsonSchema>;
 
-// ---------- FETCH (trimmed columns to reduce payload) ----------
+// ---------- FETCH ----------
 async function fetchDeckPage(offset = 0): Promise<DeckRow[]> {
   let query = supabase
     .from("decks")
@@ -117,13 +125,12 @@ async function fetchDeckPage(offset = 0): Promise<DeckRow[]> {
   return data as unknown as DeckRow[];
 }
 
-// ---------- PROMPT (lean) + FEATURES PRUNE ----------
+// ---------- PROMPT ----------
 const TAG_VOCAB =
   '["Token Swarm","Treasure","Aristocrats","Graveyard","Reanimator","Stax","Voltron","Spellslinger","Blink","+1/+1 Counters","Lifegain","Control","Combo","Ramp","Landfall","Mill","Extra Turns","Vehicles","Dragons","Elves","Artifacts","Enchantress","Aura","Discard","Steal/Copy","Flicker","Proliferate","Burn","Big Mana"]';
 
 type Features = ReturnType<typeof buildFeatures>;
 
-// keep only high-signal pieces to save tokens
 function pruneFeatures(f: Features) {
   return {
     meta: {
@@ -178,10 +185,16 @@ function pick<T extends Record<string, any>>(obj: T, keys: string[]) {
 
 function buildPrompt(prunedFeatures: ReturnType<typeof pruneFeatures>): string {
   return `Return ONLY minified JSON:
-{"tagline":string,"power_level":1-10,"complexity":"Low"|"Medium"|"High","pilot_skill":"Beginner"|"Intermediate"|"Advanced","interaction_intensity":"Low"|"Medium"|"High","tags":string[],"strengths":string[],"weaknesses":string[],"confidence":0..1}
+{"tagline":string,
+ "power_level":1-10,"power_level_explanation":string(<=160),
+ "complexity":"Low"|"Medium"|"High","complexity_explanation":string(<=160),
+ "pilot_skill":"Beginner"|"Intermediate"|"Advanced","pilot_skill_explanation":string(<=160),
+ "interaction_intensity":"Low"|"Medium"|"High","interaction_explanation":string(<=160),
+ "tags":string[],"strengths":string[],"weaknesses":string[],"confidence":0..1}
 
 Rules:
 - tagline ≤ 60 chars.
+- each explanation: 1 sentence, ≤160 chars, plain words.
 - tags: pick 3–6 from ${TAG_VOCAB}
 - strengths/weaknesses: 2–4 items each, 1–3 words.
 
@@ -189,7 +202,7 @@ Features:
 ${JSON.stringify(prunedFeatures)}`;
 }
 
-// ---------- AI CALL (cap output) ----------
+// ---------- AI CALL ----------
 async function getAiAssessment(pruned: ReturnType<typeof pruneFeatures>) {
   const completion = await openai.chat.completions.create({
     model: MODEL,
@@ -203,20 +216,30 @@ async function getAiAssessment(pruned: ReturnType<typeof pruneFeatures>) {
     ],
   });
 
+  if (completion.usage) {
+    console.log(
+      `[tokens overview] prompt=${completion.usage.prompt_tokens} out=${completion.usage.completion_tokens} total=${completion.usage.total_tokens}`
+    );
+  }
+
   const raw = completion.choices[0]?.message?.content ?? "{}";
   return AiJsonSchema.parse(JSON.parse(raw));
 }
 
-// ---------- UPDATE (column names mirror DB) ----------
+// ---------- UPDATE ----------
 async function updateDeckAI(id: string, payload: AiOutput) {
   const { error } = await supabase
     .from("decks")
     .update({
       tagline: payload.tagline,
-      ai_power_level: String(payload.power_level), // your column is TEXT; cast number to string
+      ai_power_level: String(payload.power_level),
+      ai_power_level_explanation: payload.power_level_explanation,
       ai_complexity: payload.complexity,
+      ai_complexity_explanation: payload.complexity_explanation,
       ai_pilot_skill: payload.pilot_skill,
-      ai_interaction: payload.interaction_intensity, // fixed name
+      ai_pilot_skill_explanation: payload.pilot_skill_explanation,
+      ai_interaction: payload.interaction_intensity,
+      ai_interaction_explanation: payload.interaction_explanation,
       ai_tags: payload.tags,
       ai_strengths: payload.strengths,
       ai_weaknesses: payload.weaknesses,
@@ -268,17 +291,14 @@ function nowMs() {
                 return;
               }
 
-              // features
               const f0 = nowMs();
               const rawFeatures = buildFeatures(deck as any);
               const features = pruneFeatures(rawFeatures);
               const f1 = nowMs();
 
-              // openai
               const ai = await getAiAssessment(features);
               const f2 = nowMs();
 
-              // db update
               await updateDeckAI(deck.id, ai);
               const f3 = nowMs();
 
@@ -288,6 +308,7 @@ function nowMs() {
                     f2 - f1
                   }ms, db ${f3 - f2}ms)`
               );
+
               totalProcessed++;
             } catch (e) {
               console.error(

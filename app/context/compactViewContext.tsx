@@ -8,6 +8,8 @@ interface CompactViewContextType {
   toggleCompactView: () => void;
   bgColor: string;
   setBgColor: (color: string) => void;
+  showBoard: boolean;
+  toggleShowBoard: () => void;
 }
 
 // Create the context
@@ -18,15 +20,26 @@ const CompactViewContext = createContext<CompactViewContextType | undefined>(
 // Provider component
 export const CompactViewProvider = ({ children }: { children: ReactNode }) => {
   const [compactView, setCompactView] = useState(false);
+  const [showBoard, setShowBoard] = useState(true);
   const [bgColor, setBgColor] = useState("");
 
   const toggleCompactView = () => {
     setCompactView((prev) => !prev);
   };
 
+  const toggleShowBoard = () => {
+    setShowBoard((prev) => (prev = !prev));
+  };
   return (
     <CompactViewContext.Provider
-      value={{ compactView, toggleCompactView, bgColor, setBgColor }}
+      value={{
+        compactView,
+        toggleCompactView,
+        bgColor,
+        setBgColor,
+        showBoard,
+        toggleShowBoard,
+      }}
     >
       {children}
     </CompactViewContext.Provider>

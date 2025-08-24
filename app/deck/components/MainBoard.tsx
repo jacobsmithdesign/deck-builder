@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Board,
   BoardContent,
@@ -60,7 +60,7 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
   const [newCardType, setNewCardType] = useState<string>("");
   const [openCardInfoModal, setOpenCardInfoModal] = useState<boolean>(false);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
-  const { bgColor } = useCompactView();
+  const { bgColor, showBoard } = useCompactView();
   const groupedCardsArray = groupByCardType(cards);
 
   // Hide / show card groups
@@ -75,6 +75,15 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
       return newSet;
     });
   };
+
+  // Functions for toggling between showing or hiding all cards. Just pretty animation functions really.
+  const hideAllGroups = () => {
+    setVisibleGroups(new Set());
+  };
+  const showAllGroups = (allTypes: string[]) => {
+    setVisibleGroups(new Set(allTypes));
+  };
+
   // Group cards by similar types
   useEffect(() => {
     const allTypes = groupByCardType(cards).map((group) => group.type);
@@ -91,6 +100,19 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
     setOpenNewCardModal((prev) => (prev = !prev));
   };
 
+  const allTypes = useMemo(
+    () => groupByCardType(cards).map((g) => g.type),
+    [cards]
+  );
+
+  useEffect(() => {
+    if (showBoard) {
+      showAllGroups(allTypes);
+    } else {
+      hideAllGroups;
+    }
+  }, [showBoard, allTypes]);
+
   useEffect(() => {
     if (!isEditMode) {
       setOpenNewCardModal(false);
@@ -100,7 +122,7 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
     <AnimatePresence>
       <BoardContent
         style={{ background: bgColor }}
-        className="hide-scrollbar transition-all duration-700 justify-center items-center relative"
+        className="hide-scrollbar transition-all duration-700 justify-center items-center relative rounded-t-none outline outline-dark/20 h-full"
       >
         {/* This is the modal for choosing new cards */}
         <div className="z-50 w-full h-full pointer-events-none">
@@ -110,7 +132,7 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
             cardType={newCardType}
           />
         </div>
-        <div className="w-full h-full overflow-y-scroll hide-scrollbar absolute bg-light/60">
+        <div className="w-full h-full overflow-y-scroll hide-scrollbar absolute bg-light/50">
           {groupedCardsArray.map((group, index) => {
             if (!group.type) {
               console.warn("Missing UUID at index", index, group);

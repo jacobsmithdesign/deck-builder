@@ -30,7 +30,7 @@ const BoardHeader = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "w-full h-8 flex gap-1 items-center p-1 rounded-xl",
+      "w-full h-8 flex gap-1 items-center p-1 rounded-b-none rounded-xl ",
       className
     )}
     {...props}
@@ -60,7 +60,7 @@ const BoardContent = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "w-full h-full rounded-xl flex flex-col overflow-y-scroll",
+      "w-full h-full rounded-lg flex flex-col overflow-y-scroll",
       className
     )}
     {...props}

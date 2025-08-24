@@ -1,0 +1,71 @@
+----------------------- gpt-5 - Feature Extraction -----------------------
+
+[tokens difficulty] prompt=634 out=2039 total=2673
+✓ [difficulty] Virtue and Valor: P5/High/Intermediate/IMedium/UMedium — total 27683ms (features 9ms, openai 27517ms, db 157ms)
+Deck difficulty rating:  {
+  power_level: 5,
+  power_level_explanation: 'Board centric win path and modest speed put it in the casual midrange band rather than explosive or lock focused shells.',
+  complexity: 'High',
+  complexity_explanation: 'Many repeatable abilities and layered board states increase decision trees and timing windows, raising cognitive load.',
+  pilot_skill: 'Intermediate',
+  pilot_skill_explanation: 'Sequencing, combat math, and resource timing matter, and mistakes snowball, but gameplay patterns remain readable for most.',
+  interaction_intensity: 'Medium',
+  interaction_explanation: 'Answers exist but are not dense or fast, leading to reactive turns that matter yet sometimes arrive a turn late.',
+  upkeep: 'Medium',
+  upkeep_explanation: 'Wide boards and activated choices require tracking across turns, though few triggers ease between turn maintenance.',
+  confidence: 0.64
+}
+
+----------------------- gpt-5-mini - Feature Extraction -----------------------
+
+[tokens difficulty] prompt=634 out=1603 total=2237
+✓ [difficulty] Virtue and Valor: P6/Medium/Intermediate/IMedium/UMedium — total 22626ms (features 8ms, openai 22439ms, db 179ms)
+Deck difficulty rating:  {
+  power_level: 6,
+  power_level_explanation: 'A moderately strong build that leverages steady ramp and token synergies with a few mass interaction pieces enabling consistent midgame threats.',
+  complexity: 'Medium',
+  complexity_explanation: 'Medium complexity from many repeatable activations and ramp sequencing that requires timing and board state awareness without heavy combo math.',
+  pilot_skill: 'Intermediate',
+  pilot_skill_explanation: 'Intermediate pilot skill is appropriate because the deck needs careful activation sequencing and efficient ramp use while reacting to opponents.',
+  interaction_intensity: 'Medium',
+  interaction_explanation: 'The interaction level is medium since it includes spot and mass answers plus a few instants to respond, offering reactive but not oppressive play.',
+  upkeep: 'Medium',
+  upkeep_explanation: 'Upkeep is medium because numerous repeatable activations and ongoing resource management require tracking and occasional precise sequencing each turn.',
+  confidence: 0.78
+}
+
+----------------------- gpt-5 - Full Card List -----------------------
+
+[tokens difficulty] prompt=4917 out=1367 total=6284
+✓ [difficulty] Virtue and Valor: P6/High/Intermediate/IMedium/UMedium — total 31730ms (features 9ms, openai 31541ms, db 180ms)
+Deck difficulty rating:  {
+  power_level: 6,
+  power_level_explanation: 'Synergistic Selesnya Auras/Enchantress engine snowballs with cheap draw and cost reducers, but lacks fast mana, tutors, and deterministic combos.',
+  complexity: 'High',
+  complexity_explanation: 'Sequencing reducers, shields, and draw triggers while managing Roles, umbra armor, bestow, and one-sided wraths creates many layered decisions.',
+  pilot_skill: 'Intermediate',
+  pilot_skill_explanation: 'Success hinges on timing protection, playing around sweepers, selecting targets, and combat math, rewarding careful planning and threat assessment.',
+  interaction_intensity: 'Medium',
+  interaction_explanation: "Solid spot removal and a few sweepers plus Kenrith's Transformation and fight effects, but plan is mostly proactive and creature-centric.",
+  upkeep: 'Medium',
+  upkeep_explanation: 'Numerous ongoing tokens, Role attachments, counters, and constellation triggers demand tracking, but turns remain streamlined once lines are learned.',
+  confidence: 0.68
+}
+
+----------------------- gpt-5-mini - Full Card List -----------------------
+
+[tokens difficulty] prompt=4917 out=1300 total=6217
+✓ [difficulty] Virtue and Valor: P6/High/Advanced/IMedium/UMedium — total 17765ms (features 8ms, openai 17635ms, db 122ms)
+Deck difficulty rating:  {
+  power_level: 6,
+  power_level_explanation: 'Consistent enchantment synergies and efficient ramp let this deck produce large threats quickly, but it lacks immediate, unstoppable combo finishes.',
+  complexity: 'High',
+  complexity_explanation: 'High: managing numerous Auras, enchantment recursion, attachments, timing windows, and triggered abilities requires careful sequencing and rules knowledge.',
+  pilot_skill: 'Advanced',
+  pilot_skill_explanation: "Advanced: pilots must track attached Auras, layered buffs, many triggers, and tight sequencing while adapting to opponents' interaction and timing.",
+  interaction_intensity: 'Medium',
+  interaction_explanation: 'Medium: the deck includes targeted removal, mass wipes, and disruption but mostly wins through value, board presence, and incremental advantage rather than tota',
+  upkeep: 'Medium',
+  upkeep_explanation: 'Medium: recurring draw, token creation, and aura recursion create frequent triggers and decisions each turn but do not demand constant resource maintenance.',
+  confidence: 0.86
+}

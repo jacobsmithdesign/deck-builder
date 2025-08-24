@@ -10,12 +10,12 @@ export default function Navbar() {
       className="absolute w-screen z-50 h-13 flex p-1
      text-dark top-0"
     >
-      <div className="flex w-full justify-between items-center bg-dark/15 p-2 pl-4 rounded-xl">
+      <div className="flex w-full justify-between items-center bg-light/60 p-2 pl-2 rounded-xl">
         <Link
           href="/"
-          className="font-bold p-1 rounded-md md:hover:bg-light h-8"
+          className="font-bold p-1 rounded-lg md:hover:bg-light/70  h-8 flex items-center md:hover:outline outline-light"
         >
-          MTG Deck Builder
+          <p className="px-1">MTG Deck Builder</p>
         </Link>
         <div className="space-x-3">
           {/* Display Log In button or profile button */}

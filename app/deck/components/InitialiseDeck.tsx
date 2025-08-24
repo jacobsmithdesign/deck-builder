@@ -92,12 +92,12 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
         ai_upkeep_explanation,
 
         commander:cards!decks_commander_uuid_fkey(
-          uuid, name, mana_value, mana_cost, type, text
+          uuid, name, mana_value, mana_cost, type, text, color_identity
         ),
         deck_cards(
           count, board_section,
           card:cards!deck_cards_card_uuid_fkey(
-            uuid, name, mana_value, mana_cost, type, text
+            uuid, name, mana_value, mana_cost, type, text, color_identity
           )
         )
         `
@@ -118,6 +118,7 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
         rows.map((row) => {
           const features = buildFeatures(row as any);
           setDeckFeatures(features);
+          console.log(features);
 
           // coerce ai_power_level number if DB stores as TEXT
           const power =
@@ -125,28 +126,38 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
               ? null
               : Number(row.ai_power_level);
 
-          setAiOverview({
-            tagline: row.tagline ?? null,
-            ai_rank: row.ai_rank ?? null,
-            ai_tags: row.ai_tags ?? null,
-            ai_strengths: row.ai_strengths ?? null,
-            ai_weaknesses: row.ai_weaknesses ?? null,
-            ai_generated_at: row.ai_generated_at ?? null,
-            ai_confidence: row.ai_confidence ?? null,
-            ai_spec_version: row.ai_spec_version ?? null,
+          const hasExistingAI = !!row.ai_generated_at;
 
-            ai_power_level: row.ai_power_level ?? null,
-            ai_complexity: row.ai_complexity ?? null,
-            ai_pilot_skill: row.ai_pilot_skill ?? null,
-            ai_interaction: row.ai_interaction ?? null,
-            ai_upkeep: row.ai_upkeep ?? null,
+          setAiOverview(
+            hasExistingAI
+              ? {
+                  tagline: row.tagline ?? null,
+                  ai_rank: row.ai_rank ?? null,
+                  ai_tags: row.ai_tags ?? null,
+                  ai_strengths: row.ai_strengths ?? null,
+                  ai_weaknesses: row.ai_weaknesses ?? null,
+                  ai_generated_at: row.ai_generated_at ?? null,
+                  ai_confidence: row.ai_confidence ?? null,
+                  ai_spec_version: row.ai_spec_version ?? null,
 
-            ai_power_level_explanation: row.ai_power_level_explanation ?? null,
-            ai_complexity_explanation: row.ai_complexity_explanation ?? null,
-            ai_pilot_skill_explanation: row.ai_pilot_skill_explanation ?? null,
-            ai_interaction_explanation: row.ai_interaction_explanation ?? null,
-            ai_upkeep_explanation: row.ai_upkeep_explanation ?? null,
-          });
+                  ai_power_level: row.ai_power_level ?? null,
+                  ai_complexity: row.ai_complexity ?? null,
+                  ai_pilot_skill: row.ai_pilot_skill ?? null,
+                  ai_interaction: row.ai_interaction ?? null,
+                  ai_upkeep: row.ai_upkeep ?? null,
+
+                  ai_power_level_explanation:
+                    row.ai_power_level_explanation ?? null,
+                  ai_complexity_explanation:
+                    row.ai_complexity_explanation ?? null,
+                  ai_pilot_skill_explanation:
+                    row.ai_pilot_skill_explanation ?? null,
+                  ai_interaction_explanation:
+                    row.ai_interaction_explanation ?? null,
+                  ai_upkeep_explanation: row.ai_upkeep_explanation ?? null,
+                }
+              : null
+          );
 
           return null;
         })
@@ -165,8 +176,7 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
   // );
   useEffect(() => {
     // Get compressed deck data then build the features for the overview section
-    const features = buildDeckFeatures();
-    console.log(features);
+    buildDeckFeatures();
     // Initialise the commander details overview. This gets sloppy around the image section but whatever.
     const commanderDeckDetails: CommanderDeckDetails = {
       id: deck.id,

@@ -344,14 +344,11 @@ export default function NewCardModal({
                       ))}
                     </div>
                     <div className="flex gap-2 items-end">
-                      <AnimatedButton>
-                        <Button
-                          className="shadow-none px-2 h-6"
-                          onClick={() => setSelectedCards([])}
-                        >
-                          Cancel
-                        </Button>
-                      </AnimatedButton>
+                      <AnimatedButton
+                        className="shadow-none px-2 h-6"
+                        onClick={() => setSelectedCards([])}
+                        title="Cancel"
+                      />
                       <button
                         disabled={loading}
                         className="text-sm rounded-md h-6 w-26 cursor-pointer bg-green-500 md:hover:bg-light md:hover:text-green-600 transition-all duration-100 text-light flex justify-center items-center gap-2"

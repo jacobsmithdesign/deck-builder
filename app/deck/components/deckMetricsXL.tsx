@@ -6,37 +6,38 @@ import { RiBrainFill } from "react-icons/ri";
 import { AiFillInteraction } from "react-icons/ai";
 import { IoExtensionPuzzle } from "react-icons/io5";
 import { useCardList } from "@/app/context/CardListContext";
+import { ExpandablePills } from "./expandablePill";
 
 // Power Level: numeric 1–10
 export const powerLevelColors: Record<number, string> = {
-  1: "bg-green-200 outline outline-green-300",
-  2: "bg-green-200 outline outline-green-300",
-  3: "bg-green-200 outline outline-green-300",
-  4: "bg-yellow-200 outline outline-yellow-300",
-  5: "bg-yellow-200 outline outline-yellow-300",
-  6: "bg-orange-200 outline outline-orange-300",
-  7: "bg-orange-200 outline outline-orange-300",
-  8: "bg-red-200 outline outline-red-300",
-  9: "bg-red-200 outline outline-red-300",
+  1: "bg-green-200/40 outline outline-green-300",
+  2: "bg-green-200/40 outline outline-green-300",
+  3: "bg-green-200/40 outline outline-green-300",
+  4: "bg-yellow-200/40 outline outline-yellow-300",
+  5: "bg-yellow-200/40 outline outline-yellow-300",
+  6: "bg-orange-200/40 outline outline-orange-300",
+  7: "bg-orange-200/40 outline outline-orange-300",
+  8: "bg-red-200/40 outline outline-red-300",
+  9: "bg-red-200/40 outline outline-red-300",
   10: "bg-red-300 outline outline-red-300",
 };
 
 export const complexityColors: Record<string, string> = {
-  Low: "bg-green-200 outline outline-green-300",
-  Medium: "bg-yellow-200 outline outline-yellow-300",
-  High: "bg-red-200 outline outline-red-300",
+  Low: "bg-green-200/40 outline outline-green-300",
+  Medium: "bg-yellow-200/40 outline outline-yellow-300",
+  High: "bg-red-200/40 outline outline-red-300",
 };
 
 export const pilotSkillColors: Record<string, string> = {
-  Beginner: "bg-green-200 outline outline-green-300",
-  Intermediate: "bg-yellow-200 outline outline-yellow-300",
-  Advanced: "bg-red-200 outline outline-red-300",
+  Beginner: "bg-green-200/40 outline outline-green-300",
+  Intermediate: "bg-yellow-200/40 outline outline-yellow-300",
+  Advanced: "bg-red-200/40 outline outline-red-300",
 };
 
 export const interactionColors: Record<string, string> = {
-  Low: "bg-green-200 outline outline-green-300",
-  Medium: "bg-yellow-200 outline outline-yellow-300",
-  High: "bg-red-200 outline outline-red-300",
+  Low: "bg-green-200/40 outline outline-green-300",
+  Medium: "bg-yellow-200/40 outline outline-yellow-300",
+  High: "bg-red-200/40 outline outline-red-300",
 };
 
 type MetricKey =
@@ -136,78 +137,12 @@ export function DeckMetricsXL({ className = "" }: { className?: string }) {
   const description =
     pickDescription(aiOverview, current.descKeys) ??
     `No description provided yet for ${prettyLabel(current.key)}.`;
-
+  const handleIdxChange = (number: number) => {
+    setIdx(number);
+  };
   return (
     <div className="w-full h-full gap-1 flex flex-col">
       {/* Top pills: now clickable to select the metric */}
-      <div
-        className={`flex gap-1 ${className}`}
-        role="tablist"
-        aria-label="Deck metrics"
-      >
-        {metricConfig.map((def, i) => {
-          const value = def.get(aiOverview);
-          if (value === null || value === undefined || value === "")
-            return null;
-
-          let colorClass = "bg-light/50 outline outline-dark/10";
-          if (def.key === "ai_power_level" && typeof value === "number") {
-            const n = Math.max(1, Math.min(10, value));
-            colorClass =
-              (powerLevelColors as Record<number, string>)[n] ?? colorClass;
-          } else if (typeof value === "string") {
-            colorClass =
-              (def.colorMap as Record<string, string>)[value] ?? colorClass;
-          }
-
-          const Icon = def.icon;
-          const active = i === idx;
-
-          return (
-            <button
-              key={def.key}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              aria-controls={`metric-panel-${def.key}`}
-              onClick={() => setIdx(i)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  setIdx(i);
-                }
-                if (e.key === "ArrowRight")
-                  setIdx((p) => (p + 1) % metricConfig.length);
-                if (e.key === "ArrowLeft")
-                  setIdx(
-                    (p) => (p - 1 + metricConfig.length) % metricConfig.length
-                  );
-              }}
-              className={[
-                "relative group flex items-center",
-                "rounded transition-transform",
-                active ? "ring-2 ring-dark/40 " : "",
-              ].join(" ")}
-            >
-              <div
-                className={`w-fit rounded px-1 pr-1.5 gap-1 flex items-center ${colorClass}`}
-              >
-                <Icon className="h-3 text-dark/80" />
-                <p className="text-sm text-dark/80">{String(value)}</p>
-              </div>
-
-              {/* Tooltip */}
-              <div
-                className={`absolute bottom-full mb-1 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-100 ease-out rounded px-1 whitespace-nowrap shadow z-20 ${colorClass} h-5 flex items-center pointer-events-none`}
-              >
-                <span className="text-dark/80 font-medium text-sm">
-                  {prettyLabel(def.key)}
-                </span>
-              </div>
-            </button>
-          );
-        })}
-      </div>
 
       {/* Bottom description panel (click to cycle, or use the pills above) */}
       <div
@@ -217,19 +152,18 @@ export function DeckMetricsXL({ className = "" }: { className?: string }) {
         <div
           className={`items-start ${currentColor} rounded p-1 h-full flex flex-col`}
         >
-          <div className="flex gap-1">
+          <ExpandablePills setIndex={handleIdxChange} />
+          <div className="flex gap-1 items-center">
             <CurrentIcon className="h-3 min-w-3 text-dark/80" />
-            <div className="flex items-center gap-1 h-3">
-              <h4 className="text-sm font-semibold text-dark/90 capitalize">
-                {prettyLabel(current.key)} -
-              </h4>
-              {currentValue !== null &&
-                currentValue !== undefined &&
-                currentValue !== "" && (
-                  <span className="text-sm font-bold rounded text-dark/90 ">
-                    {String(currentValue)}
-                  </span>
-                )}
+            <span className="text-sm font-bold rounded text-dark/90 ">
+              {prettyLabel(current.key)} -
+            </span>
+            <div className="flex items-center gap-1">
+              {currentValue && (
+                <span className="text-sm font-bold rounded text-dark/90 ">
+                  {String(currentValue)}
+                </span>
+              )}
             </div>
           </div>
           <p className="text-sm text-dark/80 leading-snug my-auto">

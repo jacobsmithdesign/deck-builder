@@ -1,0 +1,168 @@
+{
+  "meta": {
+    "deck_id": "SliverSwarm_CMM",
+    "commander": {
+      "name": "Sliver Gravemother",
+      "color_identity": [],
+      "text": "The \"legend rule\" doesn't apply to Slivers you control.\nEach Sliver creature card in your graveyard has encore {X}, where X is its mana value.\nEncore {5} ({5}, Exile this card from your graveyard: For each opponent, create a token copy that attacks that opponent this turn if able. They gain haste. Sacrifice them at the beginning of the next end step. Activate only as a sorcery.)"
+    }
+  },
+  "counts": {
+    "rocks": 4,
+    "token": 4,
+    "spot": 4,
+    "ramp": 1,
+    "tutors": 4,
+    "gy_hate": 1,
+    "wipes": 2,
+    "flash": 1,
+    "draw": 5,
+    "dorks": 2,
+    "protection": 1,
+    "choose_modes": 1,
+    "cast_trigger": 1
+  },
+  "curve": {
+    "2": 21,
+    "3": 16,
+    "4": 12,
+    "5": 8,
+    "0-1": 3,
+    "6+": 3
+  },
+  "type_counts": {
+    "Artifact": 7,
+    "Creature": 44,
+    "Enchantment": 1,
+    "Sorcery": 10,
+    "Instant": 1
+  },
+  "keyword_histogram": {},
+  "interaction_density": 0.095,
+  "stack_complexity_markers": ["choose_modes", "cast_trigger"],
+  "signals": [
+    {
+      "name": "Rukarumel, Biologist",
+      "mv": 5,
+      "type": "Legendary Creature — Human Wizard",
+      "tags": ["token"]
+    },
+    {
+      "name": "Sliver Gravemother",
+      "mv": 5,
+      "type": "Legendary Creature — Sliver",
+      "tags": ["token"]
+    },
+    {
+      "name": "Cleansing Nova",
+      "mv": 5,
+      "type": "Sorcery",
+      "tags": ["wipes", "choose_modes"]
+    },
+    {
+      "name": "Brood Sliver",
+      "mv": 5,
+      "type": "Creature — Sliver",
+      "tags": ["token"]
+    },
+    {
+      "name": "Necrotic Sliver",
+      "mv": 3,
+      "type": "Creature — Sliver",
+      "tags": ["spot"]
+    },
+    {
+      "name": "Lazotep Sliver",
+      "mv": 4,
+      "type": "Creature — Zombie Sliver",
+      "tags": ["token"]
+    },
+    {
+      "name": "Constricting Sliver",
+      "mv": 6,
+      "type": "Creature — Sliver",
+      "tags": ["spot"]
+    },
+    {
+      "name": "Sliver Hivelord",
+      "mv": 5,
+      "type": "Legendary Creature — Sliver",
+      "tags": ["protection"]
+    },
+    {
+      "name": "Decimate",
+      "mv": 4,
+      "type": "Sorcery",
+      "tags": ["spot"]
+    },
+    {
+      "name": "Firewake Sliver",
+      "mv": 3,
+      "type": "Creature — Sliver",
+      "tags": []
+    },
+    {
+      "name": "Hatchery Sliver",
+      "mv": 2,
+      "type": "Creature — Sliver",
+      "tags": ["cast_trigger"]
+    },
+    {
+      "name": "Descendants' Fury",
+      "mv": 4,
+      "type": "Enchantment",
+      "tags": []
+    }
+  ],
+  "mana_pool": {
+    "W": 16,
+    "U": 14,
+    "B": 13,
+    "R": 15,
+    "G": 18
+  },
+  "coloured_mana_curve": {
+    "W": 16,
+    "U": 15,
+    "B": 11,
+    "R": 17,
+    "G": 20
+  },
+  "interaction": {
+    "instant": 0,
+    "mass": 2,
+    "spot": 4
+  },
+  "upkeep_load": {
+    "recurring_triggers": 1,
+    "mandatory_costs": 0,
+    "repeatable_activations": 14
+  },
+  "c_pips": {
+    "demand": 0,
+    "supply": 4
+  },
+  "effective_curve": {
+    "2": 21,
+    "3": 16,
+    "4": 12,
+    "5": 8,
+    "0-1": 3,
+    "6+": 3
+  },
+  "token_profile": {
+    "rate": 0,
+    "bursts": 4
+  },
+  "tutor_breadth": {
+    "broad": 3,
+    "narrow": 1
+  },
+  "color_tension_index": {
+    "W": 0.381,
+    "U": 0.316,
+    "B": 0.278,
+    "R": 0.45,
+    "G": 0.52
+  }
+}

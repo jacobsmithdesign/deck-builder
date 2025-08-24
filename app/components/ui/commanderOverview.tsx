@@ -35,6 +35,9 @@ import { ManaCurve } from "@/app/deck/components/manaCurve";
 import { StrengthsAndWeaknesses } from "@/app/deck/components/strengthsAndWeaknesses";
 import { DeckMetricsXL } from "@/app/deck/components/deckMetricsXL";
 import { DeckMetricsMini } from "@/app/deck/components/deckMetricsMini";
+import { AnimatedButton } from "@/app/deck/components/AnimatedButton";
+import { AnimatedButtonLoading } from "@/app/deck/components/AnimatedButtonLoading";
+import { useAnalyseProgress } from "@/app/hooks/useAnalyseProgress";
 export default function CommanderOverview() {
   const { compactView, setBgColor, bgColor } = useCompactView();
   const { deckDetails, commanderCard } = useCommander();
@@ -42,6 +45,8 @@ export default function CommanderOverview() {
   const [typeCount, setTypeCount] = useState<CardTypeCount[]>([]);
   const [keywordCount, setKeywordCount] = useState<KeywordCount[]>([]);
   const { deckFeatures, aiOverview } = useCardList();
+  const { analysing, progress, step, start, error } = useAnalyseProgress();
+  const [aiLoading, setAiLoading] = useState<boolean>(false);
   // Set the artworkColour from the card artwork image
   useEffect(() => {
     async function fetchColor() {
@@ -52,7 +57,6 @@ export default function CommanderOverview() {
         )}`;
         const color = await getAverageColorFromImage(proxiedUrl);
         setArtworkColor(color);
-        console.log("colour:", color);
         setBgColor(color);
       }
     }
@@ -70,22 +74,28 @@ export default function CommanderOverview() {
 
   const rgbaFrom = artworkColor
     ?.replace("rgb(", "rgba(")
-    .replace(")", ", 0.5)");
-  const rgbaTo = artworkColor?.replace("rgb(", "rgba(").replace(")", ", 0.2)");
+    .replace(")", ", 0.1)");
+  const rgbaTo = artworkColor?.replace("rgb(", "rgba(").replace(")", ", 0)");
 
-  // Function to toggle the compact view of the commander overview
+  // handler for analysing deck with AI
+
+  // client
+  const handleAnalyseAi = () => {
+    if (!deckDetails?.id || analysing) return;
+    start(deckDetails.id);
+  };
 
   return (
     <AnimatePresence>
-      <div className={`w-full bg-light/90 z-10 px-1 pt-2`}>
+      <div className={`w-full z-10 px-1 pt-1`}>
         <Card
           style={
             {
-              "--from-color": rgbaFrom ?? "rgba(100, 100, 100,0.25)",
-              "--to-color": rgbaTo ?? "rgba(100, 100, 100,0.25)",
+              "--from-color": rgbaFrom ?? "rgba(100, 100, 100, 0.25)",
+              "--to-color": rgbaTo ?? "rgba(100, 100, 100, 0.10)",
             } as React.CSSProperties
           }
-          className={`w-full mt-1 flex bg-gradient-to-r from-[var(--from-color)] to-[var(--to-color)] text-dark/90 relative overflow-clip`}
+          className={`bg-light/60 w-full flex bg-gradient-to-r from-[var(--from-color)] to-[var(--to-color)] text-dark/90 relative overflow-clip rounded-b-none border-b border-light/40`}
         >
           <motion.div
             key="height-container-div"
@@ -97,7 +107,7 @@ export default function CommanderOverview() {
               damping: 23,
               duration: 0.3,
             }}
-            className="w-full h-full relative flex md:p-2 p-1 z-20"
+            className="w-full relative flex md:p-2 p-1 z-20"
           >
             {/* Desktop card image */}
             <img
@@ -314,15 +324,56 @@ export default function CommanderOverview() {
                                   compactView ? "w-1/2" : "w-full"
                                 }`}
                               ></div>
-                              <DeckMetricsMini compactView={compactView} />
+                              {aiOverview && (
+                                <DeckMetricsMini compactView={compactView} />
+                              )}
                             </div>
                           </div>
-                          <div className="row-span-2 gap-1 flex flex-col">
-                            <StrengthsAndWeaknesses
-                              aiOverview={aiOverview}
-                              compactView={compactView}
-                            />
-                            <DeckMetricsXL />
+                          <div
+                            key={aiOverview ? "ai-loaded" : "ai-empty"}
+                            className="row-span-2 gap-1 flex flex-col"
+                          >
+                            {aiOverview ? (
+                              <>
+                                <StrengthsAndWeaknesses
+                                  compactView={compactView}
+                                />
+                                <DeckMetricsXL />
+                              </>
+                            ) : (
+                              <div className="relative rounded-sm bg-light/60 h-full w-full outline outline-dark/20 p-2 flex">
+                                <p className="text-sm bg-light h-5 w-fit px-2 rounded-sm shadow-lg shadow-purple-400/20 outline outline-purple-400/60 text-purple-400">
+                                  AI Overview
+                                </p>
+                                <div className="absolute flex flex-col gap-2 w-full h-full items-center justify-center">
+                                  <p className="text-sm">
+                                    This deck has not been analyzed by AI yet
+                                  </p>
+                                  <AnimatedButtonLoading
+                                    variant="aiAnalyse"
+                                    title={
+                                      analysing
+                                        ? `Analysing ${
+                                            progress ? `(${progress}%)` : ""
+                                          }`
+                                        : "Analyse Now"
+                                    }
+                                    loading={analysing}
+                                    onClick={handleAnalyseAi}
+                                  />
+                                  {analysing && step && (
+                                    <p className="text-xs text-dark/60 mt-1">
+                                      Step: {step}
+                                    </p>
+                                  )}
+                                  {error && (
+                                    <p className="text-xs text-red-500 mt-1">
+                                      AI error: {error}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -342,6 +393,8 @@ export default function CommanderOverview() {
               className="object-cover w-96 h-full rounded-2xl hidden md:block absolute z-0 opacity-40 p-4"
             />
           </div>
+          {/* Background gradient from bottom */}
+          <div className="w-full h-full absolute bg-gradient-to-t from-light/50 to-light/0" />
         </Card>
       </div>
     </AnimatePresence>

@@ -6,6 +6,9 @@ import CommanderOverview from "@/app/components/ui/commanderOverview";
 import { CommanderProvider } from "@/app/context/CommanderContext";
 import { CompactViewProvider } from "@/app/context/compactViewContext";
 import { getDeckById } from "@/lib/api/decks/getDeckById";
+import { AnimatePresence, motion } from "framer-motion";
+import { useState } from "react";
+import AnimatedDeckView from "../components/AnimatedDeckView";
 
 export default async function DeckPage({
   params,
@@ -13,7 +16,6 @@ export default async function DeckPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-
   let deck = null;
   try {
     deck = await getDeckById(id);
@@ -30,14 +32,9 @@ export default async function DeckPage({
     <CardListProvider>
       <CommanderProvider>
         <InitialiseDeck deck={deck.deck} />
-        <div className="bg-light relative">
-          <div className="w-screen h-lvh items-center text-dark pt-12 overflow-y-scroll hide-scrollbar flex flex-col">
-            <CompactViewProvider>
-              <CommanderOverview />
-              <DeckOverview />
-            </CompactViewProvider>
-          </div>
-        </div>
+        <CompactViewProvider>
+          <AnimatedDeckView />
+        </CompactViewProvider>
       </CommanderProvider>
     </CardListProvider>
   );

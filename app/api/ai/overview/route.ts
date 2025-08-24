@@ -88,7 +88,7 @@ const args = Object.fromEntries(
 );
 const LIMIT = Number(args.limit ?? 25);
 const FORCE = args.force === "true" || args.force === "1";
-const MODEL = args.model ?? "gpt-5-mini-2025-08-07";
+const MODEL = args.model ?? "gpt-4.1-mini";
 const TASK = (args.task as string) || "overview"; // "overview" | "difficulty"
 const DECK_ID = args.deckId ?? null;
 
@@ -310,62 +310,6 @@ const TAG_VOCAB =
 
 type Features = ReturnType<typeof buildFeatures>;
 
-function pick<T extends Record<string, any>>(obj: T, keys: string[]) {
-  const out: Record<string, any> = {};
-  for (const k of keys) if (obj && obj[k] != null) out[k] = obj[k];
-  return out;
-}
-
-// Minimal motif derivation (≤3 words) using commander text + keywords/counts
-function derivePlan(f: Features): string[] {
-  const plan = new Set<string>();
-  const commanderText = (f.meta?.commander?.text || "").toLowerCase();
-
-  const addIf = (word: string, re: RegExp) => {
-    if (plan.size >= 3) return;
-    if (re.test(commanderText)) plan.add(word);
-  };
-
-  // Commander-driven hints
-  addIf("tokens", /\btoken|create .* token|myriad|populate/);
-  addIf("sacrifice", /\bsacrifice\b|dies|aristocrat/);
-  addIf("spellslinger", /\binstant|sorcery|cast.*spell/);
-  addIf("blink", /\bblink\b|exile.*return.*battlefield/);
-  addIf("copy", /\bcopy\b/);
-  addIf("counters", /\bproliferate|\+1\/\+1 counter|energy/);
-  addIf("treasure", /\btreasure\b/);
-  addIf("protection", /\bindestructible|hexproof|ward|phase out/);
-
-  // Keyword histogram (presence)
-  const kh = f.keyword_histogram || {};
-  const pushKH = (key: string, tag: string) =>
-    kh[key] && plan.size < 3 && plan.add(tag);
-  pushKH("storm", "storm");
-  pushKH("cascade", "cascade");
-  pushKH("landfall", "landfall");
-  pushKH("proliferate", "proliferate");
-
-  // Counts backup
-  const c = f.counts || {};
-  const orderedTuples: [string, number, string][] = [
-    ["token", c.token ?? 0, "tokens"],
-    ["stax", c.stax ?? 0, "stax"],
-    ["copy", c.copy ?? 0, "copy"],
-    ["blink", c.blink ?? 0, "blink"],
-    ["ramp", c.ramp ?? 0, "ramp"],
-    ["counters", c.counters ?? 0, "counters"],
-  ];
-
-  orderedTuples.sort((a, b) => b[1] - a[1]);
-
-  for (const [, val, tag] of orderedTuples) {
-    if (plan.size >= 3) break;
-    if (val > 0) plan.add(tag);
-  }
-
-  return Array.from(plan).slice(0, 3);
-}
-
 // Map signal tags to 1–2 word roles
 function tagToRole(tags: string[]): string {
   const t = new Set((tags || []).map((x) => x.toLowerCase()));
@@ -380,102 +324,39 @@ function tagToRole(tags: string[]): string {
   return "engine";
 }
 
-// 3–5 exemplar pairs: [shortName, role]
-function deriveExamples(f: Features): Array<[string, string]> {
-  const signals = Array.isArray(f.signals) ? f.signals.slice(0, 8) : [];
-  const rolesSeen = new Set<string>();
-  const out: Array<[string, string]> = [];
-
-  for (const s of signals) {
-    const name = (s as any)?.name || "Card";
-    const role = tagToRole(((s as any)?.tags || []).slice(0, 6));
-    if (!rolesSeen.has(role)) {
-      out.push([String(name).slice(0, 24), role]);
-      rolesSeen.add(role);
-    }
-    if (out.length >= 5) break;
-  }
-
-  // Fallback if empty
-  if (out.length === 0 && f.meta?.commander?.name) {
-    out.push([String(f.meta.commander.name).slice(0, 24), "commander"]);
-  }
-
-  return out.slice(0, 5);
-}
-
-// ────────── PRUNE (prompt-facing) ──────────
-// Keep high-signal pieces ONLY for LLM, remove forbidden families.
-// Add tiny grounding: plan + examples.
-function pruneFeatures(f: Features) {
-  return {
-    meta: {
-      commander: {
-        name: f.meta.commander.name,
-        text: (f.meta.commander.text || "").replace(/\s+/g, " ").slice(0, 240),
-      },
-    },
-    counts: pick(f.counts, [
-      "ramp",
-      "rocks",
-      "dorks",
-      "draw",
-      "tutors",
-      "wipes",
-      "spot",
-      "counters",
-      "recursion",
-      "stax",
-      "token",
-      "blink",
-      "copy",
-      "choose_modes",
-      "flash",
-    ]),
-    // Curve kept for overview only; not used in difficulty heuristics
-    curve: f.curve,
-    type_counts: f.type_counts,
-    // Keyword presence is fine; the model sees a compact map
-    keyword_histogram: f.keyword_histogram,
-    stack_complexity_markers: Array.from(
-      new Set(f.stack_complexity_markers || [])
-    ).slice(0, 8),
-    // Signals for overview grounding; difficulty uses "examples" instead
-    signals: (f.signals || [])
-      .slice(0, 8)
-      .map((s) => ({ n: s.name, mv: s.mv, t: (s.tags || []).slice(0, 3) })),
-    // Needed families retained (allowed)
-    interaction: (f as any).interaction,
-    upkeep_load: (f as any).upkeep_load,
-    token_profile: (f as any).token_profile,
-    color_tension_index: (f as any).color_tension_index,
-
-    // New: tiny grounding anchors for difficulty prompt
-    plan: derivePlan(f),
-    examples: deriveExamples(f),
-  };
-}
-
-// ────────── OVERVIEW PROMPT (kept lean; forbidden families removed) ──────────
-function buildPrompt(
-  prunedFeatures: ReturnType<typeof pruneFeatures>,
-  cards: CardMini[]
+// ────────── UNIFIED PROMPT (overview | difficulty) ──────────
+function buildUnifiedAnalysisPrompt(
+  cards: CardMini[],
+  rawFeatures: any,
+  mode: "overview" | "difficulty"
 ): string {
-  return `Return ONLY minified JSON:
+  const CARDS = JSON.stringify(cards);
+  const FEATURES = JSON.stringify(rawFeatures); // raw, not pruned
+
+  if (mode === "overview") {
+    return `Return ONLY minified JSON:
 {"tagline":string,"tags":string[],"strengths":string[],"weaknesses":string[],"confidence":0..1}
 
 Rules: tagline ≤ 60 chars. tags: pick 3–6 from ${TAG_VOCAB}. strengths/weaknesses: 2–4 items each, 1–3 words.
-Cards:
-${JSON.stringify(cards)},
-Features:
-${JSON.stringify(prunedFeatures)}`;
-}
+Cards:${CARDS}
+Features:${FEATURES}`;
+  }
 
+  // difficulty mode
+  return `Return ONLY minified JSON with EXACT keys:
+{"power_level":1..10,"power_level_explanation":string(<=170),
+"complexity":"Low"|"Medium"|"High","complexity_explanation":string(<=170),
+"pilot_skill":"Beginner"|"Intermediate"|"Advanced","pilot_skill_explanation":string(<=170),
+"interaction_intensity":"Low"|"Medium"|"High","interaction_explanation":string(<=170),
+"upkeep":"Low"|"Medium"|"High","upkeep_explanation":string(<=170),
+"confidence":0..1}
+
+Rules: one sentence per explanation; 60–170 chars; plain words; no lists/newlines/quotes; do not restate Features.
+Cards:${CARDS}
+Features:${FEATURES}`;
+}
 // ────────── OVERVIEW AI CALL ──────────
-async function getAiAssessment(
-  pruned: ReturnType<typeof pruneFeatures>,
-  cards: CardMini[]
-) {
+async function getAiAssessment(rawFeatures: any, cards: CardMini[]) {
   const completion = await openai.chat.completions.create({
     model: MODEL,
     response_format: { type: "json_object" },
@@ -484,13 +365,17 @@ async function getAiAssessment(
         role: "system",
         content: `Use this tags vocabulary when possible: ${TAG_VOCAB}. Output strict minified JSON only.`,
       },
-      { role: "user", content: buildPrompt(pruned, cards) },
+      {
+        role: "user",
+        content: buildUnifiedAnalysisPrompt(cards, rawFeatures, "overview"),
+      },
     ],
   });
 
   if (LOG_TOKENS && completion.usage) {
+    const u = completion.usage;
     console.log(
-      `[tokens overview] prompt=${completion.usage.prompt_tokens} out=${completion.usage.completion_tokens} total=${completion.usage.total_tokens}`
+      `[tokens overview] prompt=${u.prompt_tokens} out=${u.completion_tokens} total=${u.total_tokens}`
     );
   }
 
@@ -516,157 +401,6 @@ async function updateDeckAI(id: string, payload: AiOutput) {
   if (error) throw error;
 }
 
-// ────────── DIFFICULTY CORE (new consolidated fields) ──────────
-type DifficultyCore = {
-  // consolidated numeric core
-  ramp_total?: number;
-  tutors_total?: number;
-  int_instant?: number;
-  int_mass?: number;
-  int_spot?: number;
-  upkeep_triggers?: number;
-  upkeep_costs?: number;
-  activations_repeatable?: number;
-  color_tension_color?: string; // one of W/U/B/R/G
-  color_tension_max?: number; // 0.xx.. value, 2 decimals
-
-  // tiny grounding
-  plan?: string[]; // ≤3 words
-  examples?: Array<[string, string]>; // 3–5 [name, role]
-};
-
-function round(n: unknown, d = 2) {
-  return typeof n === "number" ? +n.toFixed(d) : n;
-}
-
-function pruneZeros<T>(obj: T): T {
-  if (obj == null) return obj;
-  if (Array.isArray(obj)) {
-    const arr = obj.map(pruneZeros).filter((v) => v !== undefined) as any[];
-    return (arr.length ? (arr as any) : undefined) as any;
-  }
-  if (typeof obj === "object") {
-    const out: Record<string, any> = {};
-    for (const [k, v0] of Object.entries(obj as Record<string, any>)) {
-      const v = pruneZeros(v0);
-      if (v === undefined) continue;
-      if (typeof v === "number" && v === 0) continue;
-      if (
-        typeof v === "object" &&
-        !Array.isArray(v) &&
-        Object.keys(v).length === 0
-      )
-        continue;
-      out[k] = v;
-    }
-    return (Object.keys(out).length ? (out as any) : undefined) as any;
-  }
-  return obj as any;
-}
-
-function cap(n: number | undefined, max: number) {
-  if (typeof n !== "number") return undefined;
-  return Math.min(n, max);
-}
-
-function difficultyCoreFromPruned(
-  pf: ReturnType<typeof pruneFeatures>
-): DifficultyCore {
-  const counts = pf.counts || {};
-  const interaction = pf.interaction || {};
-  const upkeep = pf.upkeep_load || {};
-  const cti = pf.color_tension_index || {};
-
-  // Consolidations
-  const ramp_total =
-    (counts.ramp || 0) + (counts.rocks || 0) + (counts.dorks || 0);
-  const tutors_total = counts.tutors || 0;
-
-  // Interaction split
-  const int_instant = interaction.instant || 0;
-  const int_mass = interaction.mass || 0;
-  const int_spot = interaction.spot || 0;
-
-  // Upkeep (capped)
-  const upkeep_triggers = cap(upkeep.recurring_triggers || 0, 8);
-  const upkeep_costs = cap(upkeep.mandatory_costs || 0, 3);
-  const activations_repeatable = cap(upkeep.repeatable_activations || 0, 25);
-
-  // Color tension: pick the max color/value
-  let color_tension_color: string | undefined;
-  let color_tension_max: number | undefined;
-  for (const [c, v] of Object.entries(cti as Record<string, number>)) {
-    if (typeof v !== "number") continue;
-    if (color_tension_max === undefined || v > (color_tension_max as number)) {
-      color_tension_max = v;
-      color_tension_color = c;
-    }
-  }
-  if (typeof color_tension_max === "number") {
-    color_tension_max = round(color_tension_max, 2) as number;
-  }
-
-  const core: DifficultyCore = {
-    ramp_total,
-    tutors_total,
-    int_instant,
-    int_mass,
-    int_spot,
-    upkeep_triggers,
-    upkeep_costs,
-    activations_repeatable,
-    color_tension_color,
-    color_tension_max,
-    plan: Array.isArray(pf.plan) ? pf.plan.slice(0, 3) : undefined,
-    examples: Array.isArray(pf.examples) ? pf.examples.slice(0, 5) : undefined,
-  };
-
-  // Prune zeros/empties to save tokens
-  return (pruneZeros(core) || {}) as DifficultyCore;
-}
-
-// ────────── DIFFICULTY PROMPT (concise rules; new field names) ──────────
-function buildDifficultyPrompt(
-  prunedFeatures: ReturnType<typeof pruneFeatures>
-): string {
-  const INPUT = JSON.stringify(difficultyCoreFromPruned(prunedFeatures));
-
-  return `Return ONLY minified JSON with EXACT keys:
-{"power_level":1..10,"power_level_explanation":string(<=170),
-"complexity":"Low"|"Medium"|"High","complexity_explanation":string(<=170),
-"pilot_skill":"Beginner"|"Intermediate"|"Advanced","pilot_skill_explanation":string(<=170),
-"interaction_intensity":"Low"|"Medium"|"High","interaction_explanation":string(<=170),
-"upkeep":"Low"|"Medium"|"High","upkeep_explanation":string(<=170),
-"confidence":0..1}
-
-Rules: one sentence per explanation; 60–170 chars; plain words; no lists/newlines/quotes; do not restate Features.
-
-Apply internal heuristics silently. Output only the function arguments.
-
-F=${INPUT}`;
-}
-
-// Same as above but tailored to the full card list.
-function buildDifficultyPromptFromList(
-  cards: CardMini[],
-  rawFeatures: any
-): string {
-  const INPUT = JSON.stringify(cards);
-  const features = JSON.stringify(rawFeatures);
-  return `Return ONLY minified JSON with EXACT keys:
-{"power_level":1..10,"power_level_explanation":string(<=170),
-"complexity":"Low"|"Medium"|"High","complexity_explanation":string(<=170),
-"pilot_skill":"Beginner"|"Intermediate"|"Advanced","pilot_skill_explanation":string(<=170),
-"interaction_intensity":"Low"|"Medium"|"High","interaction_explanation":string(<=170),
-"upkeep":"Low"|"Medium"|"High","upkeep_explanation":string(<=170),
-"confidence":0..1}
-
-Rules: one sentence per explanation; 60–150 chars.
-
-Apply internal heuristics silently. Output only the function arguments.
-Extracted deck features=${features}
-Cards=${INPUT}`;
-}
 // ────────── DIFFICULTY AI CALL (forced tool; no extra response_format) ──────────
 function clampStr(s: any, n: number) {
   return String(s ?? "")
@@ -729,10 +463,9 @@ function parseToolOrContent(c: OpenAI.Chat.Completions.ChatCompletion): any {
   return safeJSON(raw, {});
 }
 
-async function getDifficultyAssessment(cards: CardMini[], rawFeatures) {
-  // const prompt = buildDifficultyPrompt(pruned);
-
-  const prompt2 = buildDifficultyPromptFromList(cards, rawFeatures);
+// ────────── DIFFICULTY AI CALL (tool calling; uses rawFeatures) ──────────
+async function getDifficultyAssessment(cards: CardMini[], rawFeatures: any) {
+  const prompt = buildUnifiedAnalysisPrompt(cards, rawFeatures, "difficulty");
 
   const completion = await openai.chat.completions.create({
     model: MODEL,
@@ -744,12 +477,11 @@ async function getDifficultyAssessment(cards: CardMini[], rawFeatures) {
       {
         role: "system",
         content:
-          "Return ONLY a function call to set_difficulty. Do NOT output assistant text. " +
-          "You are an expert MTG EDH deck assistant designed to assess difficulty metrics based on a full card list. " +
-          "No reasoning, no lists, no preamble. Total output must fit within budget; " +
-          "truncate explanations as needed but keep them >= 10 chars. Total tokens used MUST be less than 1000.",
+          "Return ONLY a function call to set_difficulty. No assistant text. " +
+          "You are an expert MTG EDH deck assistant assessing difficulty from full card list + features. " +
+          "No reasoning; explanations must be short, readable. Keep total tokens < 1000.",
       },
-      { role: "user", content: prompt2 },
+      { role: "user", content: prompt },
     ],
   });
 
@@ -830,11 +562,12 @@ function nowMs() {
                 return;
               }
 
-              // Extract & prune features (shared)
-              const rawFeatures = buildFeatures(deck as any);
-              const features = pruneFeatures(rawFeatures);
-              const f1 = nowMs();
+              // Extract raw features once
               const f0 = nowMs();
+              const rawFeatures = buildFeatures(deck as any);
+              const f1 = nowMs();
+
+              // Cards (for both overview + difficulty)
               const cards = await fetchMainboardCardMinis(deck.id);
 
               if (TASK === "difficulty") {
@@ -853,7 +586,7 @@ function nowMs() {
                   }ms, db ${f3 - f2}ms)`
                 );
               } else {
-                const ai = await getAiAssessment(features, cards);
+                const ai = await getAiAssessment(rawFeatures, cards);
                 const f2 = nowMs();
                 await updateDeckAI(deck.id, ai);
                 const f3 = nowMs();

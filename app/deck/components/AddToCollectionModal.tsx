@@ -84,14 +84,11 @@ export default function AddToCollectionModal({
             <Label>Make this deck public</Label>
           </Field>
           <div className="flex justify-end gap-2">
-            <AnimatedButton>
-              <Button
-                className="shadow-none transition-all duration-150 px-2 h-6"
-                onClick={closeModal}
-              >
-                Cancel
-              </Button>
-            </AnimatedButton>
+            <AnimatedButton
+              className="shadow-none transition-all duration-150 px-2 h-6"
+              onClick={closeModal}
+              title="Cancel"
+            />
             <button
               disabled={loading}
               className="px-2 lg:text-base text-sm rounded-md h-6 bg-buttonBlue md:hover:bg-buttonBlue/80 text-light cursor-pointer"

@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useCompactView } from "../context/compactViewContext";
 import { isDeepStrictEqual } from "util";
 import NewCardModal from "./components/NewCardModal";
+import { AnimatedButton } from "./components/AnimatedButton";
 
 export const DeckOverview = () => {
   // Get deck and user info from context
@@ -24,7 +25,13 @@ export const DeckOverview = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [openNewCardModal, setOpenNewCardModal] = useState<boolean>(true);
   const [newCreatedDeck, setNewCreatedDeck] = useState<string>();
-  const { compactView, toggleCompactView, bgColor } = useCompactView();
+  const {
+    compactView,
+    toggleCompactView,
+    bgColor,
+    showBoard,
+    toggleShowBoard,
+  } = useCompactView();
   const toggleEditing = () => {
     setEditMode((prev) => !prev); // Toggle edit mode
     console.log(editMode);
@@ -63,16 +70,17 @@ export const DeckOverview = () => {
   return (
     // This is the entire deck preview board, starting with the header containing edit/ save/ minimise buttons etc.
     // and then the MainBoard itself which is categorised card groups (e.g. lands, enchantments, creatures, etc.)
+
     <Board
-      className={` bg-light relative z-10 overflow-y-scroll hide-scrollbar p-1 rounded-none`}
+      className={`h-full relative z-10 overflow-y-scroll hide-scrollbar rounded-none ease-in-out px-1 pb-2`}
     >
       {/* The header above the board of cards */}
-      <BoardHeader className="pl-0 flex relative justify-between mb-1">
+      <BoardHeader
+        className={`pl-0 mt-1 bg-light/30 outline outline-dark/10 flex relative justify-between ${
+          showBoard && "rounded-b-none"
+        }  transition-all duration-200 `}
+      >
         <AnimatePresence>
-          <div
-            style={{ background: bgColor }}
-            className="w-full h-full z-0 absolute pointer-events-none transition-all duration-700 opacity-30 rounded-xl"
-          />
           {/* Conditionally render add to collection or edit button */}
           {isOwner ? (
             <div className="flex ml-1 rounded-lg z-20 overflow-hidden relative gap-1">
@@ -181,7 +189,13 @@ export const DeckOverview = () => {
               damping: 18,
               stiffness: 450,
             }}
+            className="flex gap-1"
           >
+            <Button
+              className="pt-1.5 text-xs md:text-sm rounded-lg"
+              onClick={toggleShowBoard}
+              title={showBoard ? "Hide cards" : "View cards"}
+            />
             <Button
               className="pt-1.5 text-xs md:text-sm rounded-lg"
               onClick={toggleCompactView}
@@ -191,7 +205,15 @@ export const DeckOverview = () => {
         </AnimatePresence>
       </BoardHeader>
       {/* The board holding all cards */}
-      <MainBoard isEditMode={isEditing} />
+      <div
+        className={`h-full transition-all  ${
+          showBoard
+            ? "opacity-100 duration-150"
+            : "opacity-0 duration-200 pointer-events-none"
+        }`}
+      >
+        <MainBoard isEditMode={isEditing} />
+      </div>
     </Board>
   );
 };
