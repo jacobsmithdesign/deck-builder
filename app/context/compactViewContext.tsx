@@ -28,7 +28,18 @@ export const CompactViewProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const toggleShowBoard = () => {
-    setShowBoard((prev) => (prev = !prev));
+    if (!showBoard) {
+      setCompactView(true);
+      if (compactView) {
+        setShowBoard((prev) => (prev = !prev));
+      } else {
+        setTimeout(() => {
+          setShowBoard((prev) => (prev = !prev));
+        }, 450);
+      }
+    } else {
+      setShowBoard((prev) => (prev = !prev));
+    }
   };
   return (
     <CompactViewContext.Provider

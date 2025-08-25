@@ -7,7 +7,7 @@ import { searchCardsWithFilters } from "@/lib/db/searchCardsWithFilters";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/app/components/ui/button";
-import { AnimatedButton } from "./AnimatedButton";
+import { AnimatedButton } from "../AnimatedButton";
 import { Group, GroupHeader, GroupItems } from "./Board";
 import { GroupTitle } from "./Board";
 import { FilterPanel } from "./FilterPanel";
@@ -181,7 +181,7 @@ export default function NewCardModal({
             }}
             exit={{ width: 0, backdropFilter: "blur(7px)" }}
             transition={{ type: "spring", stiffness: 250, damping: 25 }}
-            className="z-50 bg-light/60 flex flex-col p-2 rounded-xl drop-shadow-xl h-full"
+            className="z-50 bg-light/60 flex flex-col p-2  drop-shadow-xl h-full"
           >
             <div className="">
               <div className="flex gap-2">
@@ -220,7 +220,7 @@ export default function NewCardModal({
                 ))}
               </div>
             </div>
-            <div className="overflow-y-scroll hide-scrollbar rounded-md h-full">
+            <div className="overflow-y-scroll hide-scrollbar rounded-md h-fit">
               <Group>
                 <AnimatePresence>
                   <motion.div

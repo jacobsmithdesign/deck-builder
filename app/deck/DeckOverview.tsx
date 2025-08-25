@@ -1,17 +1,17 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Board, BoardHeader, BoardTitle } from "./components/Board";
+import { Board, BoardHeader, BoardTitle } from "./components/card/Board";
 import { useUser } from "@/app/context/userContext";
-import { MainBoard } from "./components/MainBoard";
+import { MainBoard } from "./components/card/MainBoard";
 import { useCardList } from "../context/CardListContext";
 import { motion, AnimatePresence } from "framer-motion";
-import AddToCollectionModal from "./components/AddToCollectionModal";
+import AddToCollectionModal from "./components/card/AddToCollectionModal";
 import { Button } from "./components/button";
 import { RxArrowRight, RxCheck, RxCheckCircled } from "react-icons/rx";
 import Link from "next/link";
 import { useCompactView } from "../context/compactViewContext";
 import { isDeepStrictEqual } from "util";
-import NewCardModal from "./components/NewCardModal";
+import NewCardModal from "./components/card/NewCardModal";
 import { AnimatedButton } from "./components/AnimatedButton";
 
 export const DeckOverview = () => {
@@ -78,8 +78,12 @@ export const DeckOverview = () => {
       <BoardHeader
         className={`pl-0 mt-1 bg-light/30 outline outline-dark/10 flex relative justify-between ${
           showBoard && "rounded-b-none"
-        }  transition-all duration-200 `}
+        }  transition-all duration-200`}
       >
+        <button
+          className="w-full h-full absolute z-0 "
+          onClick={toggleShowBoard}
+        />
         <AnimatePresence>
           {/* Conditionally render add to collection or edit button */}
           {isOwner ? (
@@ -189,13 +193,8 @@ export const DeckOverview = () => {
               damping: 18,
               stiffness: 450,
             }}
-            className="flex gap-1"
+            className="flex gap-1 z-20"
           >
-            <Button
-              className="pt-1.5 text-xs md:text-sm rounded-lg"
-              onClick={toggleShowBoard}
-              title={showBoard ? "Hide cards" : "View cards"}
-            />
             <Button
               className="pt-1.5 text-xs md:text-sm rounded-lg"
               onClick={toggleCompactView}

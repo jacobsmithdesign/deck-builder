@@ -7,7 +7,7 @@ import { Checkbox, Field, Label } from "@headlessui/react";
 import { RxCheck } from "react-icons/rx";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/app/components/ui/button";
-import { AnimatedButton } from "./AnimatedButton";
+import { AnimatedButton } from "../AnimatedButton";
 import { saveNewDeckClient } from "@/lib/api/decks/client/saveNewDeckClient";
 
 export default function AddToCollectionModal({

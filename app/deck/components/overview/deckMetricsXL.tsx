@@ -123,7 +123,7 @@ export function DeckMetricsXL({ className = "" }: { className?: string }) {
 
   // compute current state for bottom card
   const currentValue = current.get(aiOverview);
-  let currentColor = "bg-light/50 outline outline-dark/10";
+  let currentColor = "bg-light/50";
   if (current.key === "ai_power_level" && typeof currentValue === "number") {
     const n = Math.max(1, Math.min(10, currentValue));
     currentColor =
@@ -147,10 +147,10 @@ export function DeckMetricsXL({ className = "" }: { className?: string }) {
       {/* Bottom description panel (click to cycle, or use the pills above) */}
       <div
         id={`metric-panel-${current.key}`}
-        className="w-full h-full text-left bg-light/60 outline outline-dark/20 rounded-md transition-all flex flex-col relative"
+        className="w-full h-full text-left bg-light/60 rounded-md transition-all flex flex-col relative"
       >
         <div
-          className={`items-start ${currentColor} rounded p-1 h-full flex flex-col`}
+          className={`items-start ${currentColor} rounded-md p-1 h-full flex flex-col`}
         >
           <ExpandablePills setIndex={handleIdxChange} />
           <div className="flex gap-1 items-center">

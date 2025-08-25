@@ -1,6 +1,6 @@
 "use client";
 
-import { DeckOverview } from "../DeckOverview";
+import { DeckOverview } from "../../DeckOverview";
 import CommanderOverview from "@/app/components/ui/commanderOverview";
 import {
   CompactViewProvider,
@@ -19,7 +19,7 @@ export default function AnimatedDeckView() {
         className="h-lvh items-center text-dark pt-12 overflow-y-scroll hide-scrollbar flex flex-col justify-between relative"
       >
         <CommanderOverview />
-        <div className="w-full h-full flex relative items-end">
+        <div className="w-full h-full flex relative">
           <div className="w-full h-full px-1 pb-1">
             <div className="bg-light/60 w-full h-full rounded-b-xl p-1"></div>
           </div>

@@ -1,14 +1,14 @@
 import { notFound } from "next/navigation";
 import { DeckOverview } from "../DeckOverview";
 import { CardListProvider } from "@/app/context/CardListContext";
-import InitialiseDeck from "../components/InitialiseDeck";
+import InitialiseDeck from "../components/card/InitialiseDeck";
 import CommanderOverview from "@/app/components/ui/commanderOverview";
 import { CommanderProvider } from "@/app/context/CommanderContext";
 import { CompactViewProvider } from "@/app/context/compactViewContext";
 import { getDeckById } from "@/lib/api/decks/getDeckById";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
-import AnimatedDeckView from "../components/AnimatedDeckView";
+import AnimatedDeckView from "../components/card/AnimatedDeckView";
 
 export default async function DeckPage({
   params,

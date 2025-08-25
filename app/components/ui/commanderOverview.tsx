@@ -29,17 +29,18 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { useCompactView } from "@/app/context/compactViewContext";
 import { useCardList } from "@/app/context/CardListContext";
-import { ColouredManaCurve } from "@/app/deck/components/colouredManaCurve";
-import { SpellTypeCounts } from "@/app/deck/components/spellTypeCounts";
-import { ManaCurve } from "@/app/deck/components/manaCurve";
-import { StrengthsAndWeaknesses } from "@/app/deck/components/strengthsAndWeaknesses";
-import { DeckMetricsXL } from "@/app/deck/components/deckMetricsXL";
-import { DeckMetricsMini } from "@/app/deck/components/deckMetricsMini";
+import { ColouredManaCurve } from "@/app/deck/components/overview/colouredManaCurve";
+import { SpellTypeCounts } from "@/app/deck/components/overview/spellTypeCounts";
+import { ManaCurve } from "@/app/deck/components/overview/manaCurve";
+import { StrengthsAndWeaknesses } from "@/app/deck/components/overview/strengthsAndWeaknesses";
+import { DeckMetricsXL } from "@/app/deck/components/overview/deckMetricsXL";
+import { DeckMetricsMini } from "@/app/deck/components/overview/deckMetricsMini";
 import { AnimatedButton } from "@/app/deck/components/AnimatedButton";
 import { AnimatedButtonLoading } from "@/app/deck/components/AnimatedButtonLoading";
 import { useAnalyseProgress } from "@/app/hooks/useAnalyseProgress";
 export default function CommanderOverview() {
-  const { compactView, setBgColor, bgColor } = useCompactView();
+  const { compactView, toggleCompactView, setBgColor, bgColor } =
+    useCompactView();
   const { deckDetails, commanderCard } = useCommander();
   const [artworkColor, setArtworkColor] = useState<string>();
   const [typeCount, setTypeCount] = useState<CardTypeCount[]>([]);
@@ -121,7 +122,10 @@ export default function CommanderOverview() {
               <div className="w-full">
                 <CardDescription className="text-lg text-dark/70 h-full">
                   <CardContent className="text-dark grid md:grid-cols-2 grid-cols-1 gap-2 p-0 h-full ">
-                    <CardHeader className="md:px-3 px-0">
+                    <CardHeader
+                      className="md:px-3 px-0"
+                      onClick={toggleCompactView}
+                    >
                       <div className="md:flex grid grid-cols-3 gap-2 flex-col">
                         {/* Mobile card image */}
                         <img

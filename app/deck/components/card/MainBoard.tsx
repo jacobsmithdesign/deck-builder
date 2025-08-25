@@ -9,7 +9,7 @@ import {
   GroupItems,
   GroupTitle,
 } from "./Board";
-import PerspectiveCard from "./card/perspectiveCard";
+import PerspectiveCard from "./perspectiveCard";
 import { ChevronDown, Minus } from "lucide-react";
 import { useCardList } from "@/app/context/CardListContext";
 import { RxCross2, RxInfoCircled, RxPlus } from "react-icons/rx";
