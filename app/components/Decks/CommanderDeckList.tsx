@@ -23,6 +23,7 @@ import { set } from "zod";
 import { DeckMetrics } from "./DeckMetrics";
 import ScrollingLabels from "../ui/scrollingLabels";
 import DeckPreview from "./DeckPreview";
+import CustomScrollArea from "../ui/CustomScrollArea";
 
 export default function CommanderDeckList() {
   const [loading, setLoading] = useState<boolean>(false);
@@ -88,18 +89,25 @@ export default function CommanderDeckList() {
       <CardHeader className="p-1 md:px-4 bg-light/50 m-1 rounded-lg">
         <CardTitle>Commander Decks</CardTitle>
       </CardHeader>
-      <CardContent className="grid grid-cols-[repeat(auto-fit,minmax(22rem,1fr))] gap-1 text-center hide-scrollbar overflow-y-scroll">
-        {decks.map((deck) => {
-          return (
-            <div key={deck.id} className="relative">
-              <DeckPreview deck={deck} />
-            </div>
-          );
-        })}
+      <CustomScrollArea
+        className="h-full w-full"
+        trackClassName="bg-dark/40 rounded-xs outline outline-dark/20 w-2 mr-1"
+        thumbClassName="bg-light/60 rounded-xs"
+        autoHide={false}
+      >
+        <CardContent className="grid grid-cols-[repeat(auto-fit,minmax(22rem,1fr))] gap-1 text-center hide-scrollbar mb-10">
+          {decks.map((deck) => {
+            return (
+              <div key={deck.id} className="relative">
+                <DeckPreview deck={deck} />
+              </div>
+            );
+          })}
 
-        {loading && <p>Loading more decks...</p>}
-        <div ref={loadMoreRef} className="h-1" />
-      </CardContent>
+          {loading && <p>Loading more decks...</p>}
+          <div ref={loadMoreRef} className="h-1" />
+        </CardContent>
+      </CustomScrollArea>
     </CardContainer>
   );
 }

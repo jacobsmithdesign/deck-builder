@@ -19,6 +19,7 @@ import Tilt from "react-parallax-tilt";
 import { Card } from "@/app/components/ui/card";
 import NewCardModal from "./NewCardModal";
 import { withOpacity } from "@/lib/getAverageColour";
+import CustomScrollArea from "@/app/components/ui/CustomScrollArea";
 interface MainBoardProps {
   isEditMode: boolean;
 }
@@ -133,107 +134,114 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
           />
         </div>
         <div className="w-full h-full overflow-y-scroll hide-scrollbar absolute bg-light/50">
-          {groupedCardsArray.map((group, index) => {
-            if (!group.type) {
-              console.warn("Missing UUID at index", index, group);
-            }
-            return (
-              <Group key={group.type} className="">
-                <GroupHeader
-                  className={`${index !== 0 ? "" : "border-t-0"} py-2`}
-                >
-                  <GroupTitle
-                    type={group.type}
-                    visibleGroups={visibleGroups}
-                    toggleGroupVisibility={toggleGroupVisibility}
-                  />
-                </GroupHeader>
+          <CustomScrollArea
+            className="h-full w-full"
+            trackClassName="bg-dark/20 rounded-xs outline outline-dark/20 w-2 mr-1 my-1 rounded-br-sm"
+            thumbClassName="bg-light/60 rounded-xs"
+            autoHide={false}
+          >
+            {groupedCardsArray.map((group, index) => {
+              if (!group.type) {
+                console.warn("Missing UUID at index", index, group);
+              }
+              return (
+                <Group key={group.type} className="">
+                  <GroupHeader
+                    className={`${index !== 0 ? "" : "border-t-0"} py-2`}
+                  >
+                    <GroupTitle
+                      type={group.type}
+                      visibleGroups={visibleGroups}
+                      toggleGroupVisibility={toggleGroupVisibility}
+                    />
+                  </GroupHeader>
 
-                <AnimatePresence>
-                  {visibleGroups.has(group.type) && (
-                    <motion.div
-                      key={`group-${group.type}`}
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 100 }}
-                      exit={{ height: 0 }}
-                      className="overflow-clip flex px-2"
-                    >
-                      <GroupItems key={group.type} className="mt-2">
-                        {group.cards.map((card, index) => {
-                          return (
+                  <AnimatePresence>
+                    {visibleGroups.has(group.type) && (
+                      <motion.div
+                        key={`group-${group.type}`}
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 100 }}
+                        exit={{ height: 0 }}
+                        className="overflow-clip flex px-2"
+                      >
+                        <GroupItems key={group.type} className="mt-2">
+                          {group.cards.map((card, index) => {
+                            return (
+                              <motion.div
+                                key={card + index}
+                                initial={{ opacity: 0, scale: 0.85 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{
+                                  opacity: 0,
+                                  scale: 0.95,
+                                  transition: {
+                                    delay: 0,
+                                    duration: 0.15,
+                                    ease: "easeOut",
+                                  },
+                                }}
+                                transition={{
+                                  type: "spring",
+                                  stiffness: 250,
+                                  damping: 12,
+                                  bounce: 0.1,
+                                  delay: 0.03 * index,
+                                  duration: 0.2,
+                                }}
+                              >
+                                <PerspectiveCard
+                                  key={card.id}
+                                  id={card.id}
+                                  image={card.imageFrontUrl}
+                                  label={card.name}
+                                  isEditMode={isEditMode}
+                                  card={card}
+                                  inspectCard={handleInspectCard}
+                                />
+                              </motion.div>
+                            );
+                          })}
+
+                          {/* This is the new card that appears at the end of every card group, onlly visible in edit mode */}
+                          {isEditMode && (
                             <motion.div
-                              key={card + index}
+                              key="new-card"
                               initial={{ opacity: 0, scale: 0.85 }}
                               animate={{ opacity: 1, scale: 1 }}
-                              exit={{
-                                opacity: 0,
-                                scale: 0.95,
-                                transition: {
-                                  delay: 0,
-                                  duration: 0.15,
-                                  ease: "easeOut",
-                                },
-                              }}
+                              exit={{ opacity: 0, scale: 0.95 }}
+                              whileTap={{ scale: 0.95 }}
                               transition={{
                                 type: "spring",
                                 stiffness: 250,
                                 damping: 12,
                                 bounce: 0.1,
-                                delay: 0.03 * index,
-                                duration: 0.2,
+                                duration: 0.005,
                               }}
                             >
-                              <PerspectiveCard
-                                key={card.id}
-                                id={card.id}
-                                image={card.imageFrontUrl}
-                                label={card.name}
-                                isEditMode={isEditMode}
-                                card={card}
-                                inspectCard={handleInspectCard}
-                              />
-                            </motion.div>
-                          );
-                        })}
-
-                        {/* This is the new card that appears at the end of every card group, onlly visible in edit mode */}
-                        {isEditMode && (
-                          <motion.div
-                            key="new-card"
-                            initial={{ opacity: 0, scale: 0.85 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            whileTap={{ scale: 0.95 }}
-                            transition={{
-                              type: "spring",
-                              stiffness: 250,
-                              damping: 12,
-                              bounce: 0.1,
-                              duration: 0.005,
-                            }}
-                          >
-                            <button
-                              className="relative w-46 h-64 transition-transform duration-300 ease-out [transform-style:preserve-3d] md:hover:[transform:rotateX(var(--y-rotation))_rotateY(var(--x-rotation))] justify-center items-center flex p-1 md:hover:scale-105 cursor-pointer group"
-                              onClick={() => toggleNewCardModal(group.type)}
-                            >
-                              <div className="bg-light/20 shadow-inner shadow-light/30 border border-light/60 w-full h-full rounded-lg flex items-center justify-center">
-                                <div className="font-bold text-sm items-center flex flex-col w-8 h-8 md:group-hover:h-12 md:group-hover:w-34 overflow-x-clip text-nowrap text-center bg-light rounded-md relative p-2 transition-all duration-200">
-                                  <RxPlus className="w-4 h-4 absolute" />
-                                  <p className="w-40 md:group-hover:mt-4 md:group-hover:opacity-100 opacity-0 transition-all duration-200">
-                                    Add {group.type}
-                                  </p>
+                              <button
+                                className="relative w-46 h-64 transition-transform duration-300 ease-out [transform-style:preserve-3d] md:hover:[transform:rotateX(var(--y-rotation))_rotateY(var(--x-rotation))] justify-center items-center flex p-1 md:hover:scale-105 cursor-pointer group"
+                                onClick={() => toggleNewCardModal(group.type)}
+                              >
+                                <div className="bg-light/20 shadow-inner shadow-light/30 border border-light/60 w-full h-full rounded-lg flex items-center justify-center">
+                                  <div className="font-bold text-sm items-center flex flex-col w-8 h-8 md:group-hover:h-12 md:group-hover:w-34 overflow-x-clip text-nowrap text-center bg-light rounded-md relative p-2 transition-all duration-200">
+                                    <RxPlus className="w-4 h-4 absolute" />
+                                    <p className="w-40 md:group-hover:mt-4 md:group-hover:opacity-100 opacity-0 transition-all duration-200">
+                                      Add {group.type}
+                                    </p>
+                                  </div>
                                 </div>
-                              </div>
-                            </button>
-                          </motion.div>
-                        )}
-                      </GroupItems>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </Group>
-            );
-          })}
+                              </button>
+                            </motion.div>
+                          )}
+                        </GroupItems>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </Group>
+              );
+            })}{" "}
+          </CustomScrollArea>
         </div>
       </BoardContent>
     </AnimatePresence>

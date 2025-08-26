@@ -46,15 +46,15 @@ export const DeckOverview = () => {
     >
       {/* The header above the board of cards */}
       <BoardHeader
-        className={`pl-0 bg-light/20 outline outline-dark/10 flex relative justify-between backdrop-blur-sm group ${
-          showBoard ? "rounded-b-none " : "shadow-inner shadow-light/40 "
+        className={`pl-0 bg-light/20 outline outline-light/30 flex relative justify-between backdrop-blur-sm group ${
+          showBoard ? "rounded-b-none " : "shadow-inner shadow-light/30 "
         }  transition-all duration-100 ease-out md:hover:bg-light/50 mx-auto`}
       >
         <button
           className="w-full h-full absolute z-0 cursor-pointer"
           onClick={toggleShowBoard}
         />
-        <BoardTitle className="p-1 w-full text-center flex justify-center items-center ">
+        <BoardTitle className="p-1 w-full text-center flex justify-center items-center pointer-events-none">
           <CardDescription
             className={`font-normal text-dark/60 md:group-hover:pr-3 md:group-hover:text-dark/80 transition-all duration-100 ease-out pointer-events-none z-10 `}
           >

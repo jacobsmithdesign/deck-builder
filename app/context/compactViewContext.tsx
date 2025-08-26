@@ -20,7 +20,7 @@ const CompactViewContext = createContext<CompactViewContextType | undefined>(
 // Provider component
 export const CompactViewProvider = ({ children }: { children: ReactNode }) => {
   const [compactView, setCompactView] = useState(false);
-  const [showBoard, setShowBoard] = useState(true);
+  const [showBoard, setShowBoard] = useState(false);
   const [bgColor, setBgColor] = useState("");
 
   const toggleCompactView = () => {
