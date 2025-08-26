@@ -123,7 +123,7 @@ export default function CommanderOverview() {
                 <CardDescription className="text-lg text-dark/70 h-full">
                   <CardContent className="text-dark grid md:grid-cols-2 grid-cols-1 gap-2 p-0 h-full ">
                     <CardHeader
-                      className="md:px-3 px-0"
+                      className="md:px-3 px-0 cursor-pointer "
                       onClick={toggleCompactView}
                     >
                       <div className="md:flex grid grid-cols-3 gap-2 flex-col">

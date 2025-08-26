@@ -44,3 +44,53 @@ export async function getAverageColorFromImage(
     };
   });
 }
+
+// colorUtils.ts
+export function withOpacity(color: string, alpha: number): string {
+  const a = Math.max(0, Math.min(1, alpha));
+
+  // rgb(…) -> rgba(…, a)
+  const rgbMatch = color.match(
+    /^rgb\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*\)$/i
+  );
+  if (rgbMatch) {
+    const [_, r, g, b] = rgbMatch;
+    return `rgba(${r}, ${g}, ${b}, ${a})`;
+  }
+
+  // rgba(…) -> replace alpha
+  const rgbaMatch = color.match(
+    /^rgba\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*\)$/i
+  );
+  if (rgbaMatch) {
+    const [_, r, g, b] = rgbaMatch;
+    return `rgba(${r}, ${g}, ${b}, ${a})`;
+  }
+
+  // #rrggbb or #rgb -> rgba
+  if (color.startsWith("#")) {
+    const hex = color.replace("#", "");
+    const to255 = (h: string) => parseInt(h.length === 1 ? h + h : h, 16);
+    const [r, g, b] =
+      hex.length === 3
+        ? [to255(hex[0]), to255(hex[1]), to255(hex[2])]
+        : [
+            to255(hex.slice(0, 2)),
+            to255(hex.slice(2, 4)),
+            to255(hex.slice(4, 6)),
+          ];
+    return `rgba(${r}, ${g}, ${b}, ${a})`;
+  }
+
+  // hsl(…)/hsla(…) and others — let the browser compute it via a hidden element
+  try {
+    const el = document.createElement("div");
+    el.style.color = color;
+    document.body.appendChild(el);
+    const cs = getComputedStyle(el).color; // becomes rgb(…)
+    document.body.removeChild(el);
+    return withOpacity(cs, a); // recurse once with computed rgb
+  } catch {
+    return color; // fallback: return original
+  }
+}

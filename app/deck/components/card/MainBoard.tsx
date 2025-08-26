@@ -18,7 +18,7 @@ import { useCompactView } from "@/app/context/compactViewContext";
 import Tilt from "react-parallax-tilt";
 import { Card } from "@/app/components/ui/card";
 import NewCardModal from "./NewCardModal";
-
+import { withOpacity } from "@/lib/getAverageColour";
 interface MainBoardProps {
   isEditMode: boolean;
 }
@@ -122,7 +122,7 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
     <AnimatePresence>
       <BoardContent
         style={{ background: bgColor }}
-        className="hide-scrollbar transition-all duration-700 justify-center items-center relative rounded-t-none outline outline-dark/20 h-full"
+        className="hide-scrollbar transition-all duration-700 justify-center items-center relative rounded-t-none outline outline-dark/20 h-full "
       >
         {/* This is the modal for choosing new cards */}
         <div className="z-50 w-full h-full pointer-events-none">
