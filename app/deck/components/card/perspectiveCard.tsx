@@ -50,7 +50,7 @@ const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
     setOpenInfo((prev) => !prev);
   };
   return (
-    <div className="flex flex-col [perspective:1500px] ">
+    <div className="[perspective:1500px]">
       <div>
         <Tilt
           perspective={1500}

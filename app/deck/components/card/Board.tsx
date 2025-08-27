@@ -30,7 +30,7 @@ const BoardHeader = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "w-full h-8 flex gap-1 items-center p-1 rounded-b-none rounded-xl ",
+      "w-full h-8 flex gap-1 items-center p-1 rounded-b-none rounded-lg ",
       className
     )}
     {...props}
@@ -137,7 +137,7 @@ const GroupItems = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("flex flex-wrap mb-1", className)} {...props} />
+  <div ref={ref} className={cn("flex flex-wrap mb-1 ", className)} {...props} />
 ));
 GroupItems.displayName = "GroupItems";
 

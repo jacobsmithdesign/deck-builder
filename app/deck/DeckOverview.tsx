@@ -46,9 +46,9 @@ export const DeckOverview = () => {
     >
       {/* The header above the board of cards */}
       <BoardHeader
-        className={`pl-0 bg-light/20 outline outline-light/30 flex relative justify-between backdrop-blur-sm group ${
-          showBoard ? "rounded-b-none " : "shadow-inner shadow-light/30 "
-        }  transition-all duration-100 ease-out md:hover:bg-light/50 mx-auto`}
+        className={`pl-0 bg-light/40 outline outline-light/70 md:hover:outline-light/90 flex relative justify-between backdrop-blur-sm group ${
+          showBoard ? "rounded-b-none " : "shadow-inner shadow-light/40 "
+        }  transition-all duration-100 ease-out md:hover:bg-light/60 mx-auto`}
       >
         <button
           className="w-full h-full absolute z-0 cursor-pointer"
