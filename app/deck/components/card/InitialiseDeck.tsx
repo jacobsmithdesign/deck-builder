@@ -11,6 +11,7 @@ import {
 import { getAverageColorFromImage } from "@/lib/getAverageColour";
 import { supabase } from "@/lib/supabase/client";
 import { buildFeatures } from "@/lib/ai/features";
+import { compressLands } from "@/lib/ai/landCompression";
 
 type DeckWithCards = DeckRecord & {
   cards: (CardRecord & { count: number; board_section: string })[];
@@ -55,12 +56,26 @@ type DeckRow = {
   ai_upkeep_explanation?: string | null;
 };
 
+type ArchetypeOverviewRow = {
+  deck_id: string;
+  archetypes: string[] | null;
+  axes: Record<string, number> | null;
+  explanation_md: string | null;
+  updated_at: string | null;
+};
+
 // This component initialises the card list and deck details upon first visiting a deck page.
 // It validates the card data and sets it in the useCardList context.
 // It also sets the data for the commander overview section above the card table.
 export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
-  const { setCards, setDeck, setInitialCards, setDeckFeatures, setAiOverview } =
-    useCardList();
+  const {
+    setCards,
+    setDeck,
+    setDeckFeatures,
+    setLandFeatures,
+    setAiOverview,
+    setArchetypeOverview,
+  } = useCardList();
   const { setDeckDetails, setCommanderCard } = useCommander();
 
   async function fetchDeckPage(): Promise<DeckRow[]> {
@@ -117,8 +132,10 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
       await Promise.allSettled(
         rows.map((row) => {
           const features = buildFeatures(row as any);
+          const landFeatures = compressLands(row as any);
           setDeckFeatures(features);
-          console.log(features);
+          setLandFeatures(landFeatures);
+          console.log(landFeatures);
 
           // coerce ai_power_level number if DB stores as TEXT
           const power =
@@ -166,6 +183,20 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
       console.error("Error fetching compressed deck data: ", error);
     }
   }
+
+  async function fetchArchetypeOverview(
+    deckId: string
+  ): Promise<ArchetypeOverviewRow | null> {
+    const { data, error } = await supabase
+      .from("deck_archetype_overview")
+      .select("deck_id, archetypes, axes, explanation_md, updated_at")
+      .eq("deck_id", deckId)
+      .maybeSingle();
+
+    if (error) throw error;
+    return (data as ArchetypeOverviewRow) ?? null;
+  }
+
   // console.log(
   //   "Cards initialised: ",
   //   deck.cards.map((c) => ({
@@ -177,6 +208,27 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
   useEffect(() => {
     // Get compressed deck data then build the features for the overview section
     buildDeckFeatures();
+    (async () => {
+      try {
+        const row = await fetchArchetypeOverview(deck.id);
+        if (row) {
+          setArchetypeOverview({
+            deckId: deck.id,
+            archetypes: row.archetypes ?? [],
+            axes: row.axes ?? {},
+            explanation_md: row.explanation_md ?? "",
+            updated_at: row.updated_at ?? null,
+          });
+        } else {
+          // no data yet
+          setArchetypeOverview(null);
+        }
+      } catch (e) {
+        console.error("[archetypeOverview] fetch error:", e);
+        setArchetypeOverview(null);
+      }
+    })();
+
     // Initialise the commander details overview. This gets sloppy around the image section but whatever.
     const commanderDeckDetails: CommanderDeckDetails = {
       id: deck.id,
@@ -222,7 +274,7 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
       text: commanderCardRecord.text,
       imageFrontUrl: `https://cards.scryfall.io/normal/front/${commanderCardRecord.identifiers.scryfallId[0]}/${commanderCardRecord.identifiers.scryfallId[1]}/${commanderCardRecord.identifiers.scryfallId}.jpg`,
 
-      imageBackUrl: `https://cards.scryfall.io/normal/front/${commanderCardRecord.identifiers.scryfallCardBackId[0]}/${commanderCardRecord.identifiers.scryfallCardBackId[1]}/${commanderCardRecord.identifiers.scryfallCardBackId}.jpg`,
+      //  imageBackUrl: `https://cards.scryfall.io/normal/back/${commanderCardRecord.identifiers.scryfallCardBackId[0]}/${commanderCardRecord.identifiers.scryfallCardBackId[1]}/${commanderCardRecord.identifiers.scryfallCardBackId}.jpg`,
       artwork: `https://cards.scryfall.io/art_crop/front/${commanderCardRecord.identifiers.scryfallId[0]}/${commanderCardRecord.identifiers.scryfallId[1]}/${commanderCardRecord.identifiers.scryfallId}.jpg`,
       isDoubleFaced: !!commanderCardRecord.identifiers?.scryfallCardBackId,
       identifiers: commanderCardRecord.identifiers,
@@ -262,7 +314,6 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
         count: c.count ?? 1,
       };
     });
-    setInitialCards(validatedCards);
     setCards(validatedCards);
     setDeck({
       id: deck.id,
@@ -271,7 +322,7 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
       type: deck.type,
       isUserDeck: "user_id" in deck,
     });
-  }, []);
+  }, [deck?.id, setArchetypeOverview]);
 
   return null;
 }

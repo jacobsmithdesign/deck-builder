@@ -40,10 +40,6 @@ export function useAnalyseProgress(opts?: {
 
     es.addEventListener("done", (ev: MessageEvent) => {
       const d = JSON.parse(ev.data); // { deckId, overview, difficulty, ... }
-
-      // 🔎 sanity log (leave it in until fixed)
-      console.log("SSE done payload:", d.overview, d.difficulty);
-
       setAiOverview({
         // overview
         tagline: d?.overview?.tagline ?? null,

@@ -14,24 +14,10 @@ import { useCompactView } from "../context/compactViewContext";
 import { CardDescription } from "../components/ui/card";
 import { RxMinus, RxPlus } from "react-icons/rx";
 
-export const DeckOverview = () => {
-  // Get deck and user info from context
-  const { profile } = useUser();
+export const CardTable = () => {
   const { deck } = useCardList();
-  // states to determine deck ownership and render "edit" / "add to collection" buttons appropriately
-  const isOwner = deck?.userId === profile?.id; // check if the current user is the owner of the deck
-
   const [isEditing, setIsEditing] = useState<boolean>(false); // State to manage if the deck is being edited (isOwner && editMode)
-  const [showModal, setShowModal] = useState<boolean>(false);
-  const [openNewCardModal, setOpenNewCardModal] = useState<boolean>(true);
-  const [newCreatedDeck, setNewCreatedDeck] = useState<string>();
-  const {
-    compactView,
-    toggleCompactView,
-    bgColor,
-    showBoard,
-    toggleShowBoard,
-  } = useCompactView();
+  const { showBoard, toggleShowBoard } = useCompactView();
 
   if (!deck) {
     return <div className="text-center text-lg">Loading deck...</div>;
@@ -42,7 +28,9 @@ export const DeckOverview = () => {
     // and then the MainBoard itself which is categorised card groups (e.g. lands, enchantments, creatures, etc.)
 
     <Board
-      className={`h-full relative z-10 overflow-y-scroll hide-scrollbar rounded-none ease-in-out px-1 pb-2 pt-1`}
+      className={` ${
+        showBoard ? "h-full" : " h-10"
+      } transition-all duration-200 relative z-10 overflow-y-scroll hide-scrollbar rounded-none ease-in-out px-1 pb-2 pt-1`}
     >
       {/* The header above the board of cards */}
       <BoardHeader

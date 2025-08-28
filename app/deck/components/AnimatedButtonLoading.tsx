@@ -21,13 +21,13 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         aiAnalyse:
-          "flex font-bold bg-light md:hover:scale-105 shadow-md md:hover:shadow-lg shadow-purple-300/20 md:hover:shadow-purple-300 outline outline-purple-500/10 md:hover:outline-purple-500/50 text-purple-500 px-3 py-1 rounded-lg ease-in-out active:scale-95",
+          "flex font-bold bg-light md:hover:scale-105 shadow-md md:hover:shadow-md shadow-purple-300/20 md:hover:shadow-purple-300 outline outline-purple-500/10 md:hover:outline-purple-500/50 text-purple-500 px-3 py-1 rounded-lg ease-in-out active:scale-95",
       },
       size: {
         default: "h-6 px-2 py-1 rounded-md md:text-sm text-xs",
-        sm: "h-8 rounded-md px-3 text-xs",
+        sm: "h-6 rounded-md px-2 text-xs",
         cardGroup: "h-9 pl-6 md:hover:pl-7",
-        lg: "h-10 rounded-md px-8",
+        lg: "h-10 rounded-md px-8 text-lg",
         icon: "h-9 w-9",
       },
     },
@@ -76,7 +76,7 @@ const AnimatedButtonLoading = React.forwardRef<HTMLButtonElement, ButtonProps>(
           >
             {title}
             <CgSpinner
-              className={`transition-all duration-150 animate-spin ${
+              className={`transition-all duration-150 animate-spin  ${
                 loading ? "scale-100 w-4 h-4 ml-2" : "scale-0 w-0 h-0 ml-0"
               }`}
             />

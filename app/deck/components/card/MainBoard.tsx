@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  Board,
   BoardContent,
   Group,
   GroupHeader,
@@ -15,10 +14,7 @@ import { useCardList } from "@/app/context/CardListContext";
 import { RxCross2, RxInfoCircled, RxPlus } from "react-icons/rx";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCompactView } from "@/app/context/compactViewContext";
-import Tilt from "react-parallax-tilt";
-import { Card } from "@/app/components/ui/card";
 import NewCardModal from "./NewCardModal";
-import { withOpacity } from "@/lib/getAverageColour";
 import CustomScrollArea from "@/app/components/ui/CustomScrollArea";
 interface MainBoardProps {
   isEditMode: boolean;

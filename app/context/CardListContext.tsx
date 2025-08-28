@@ -17,6 +17,23 @@ export interface DeckMetadata {
   display_card_uuid?: string | null;
 }
 
+// Smaller land feature object for AI models
+export type LandFeatures = {
+  mana_pool: {
+    W: number;
+    U: number;
+    B: number;
+    R: number;
+    G: number;
+  };
+  signal_lands: Array<{
+    name: string;
+    count: number;
+    tags: string[];
+    why: string;
+  }>;
+};
+
 // AI overview payload we store in context
 export type AiOverview = {
   tagline?: string | null;
@@ -43,12 +60,20 @@ export type AiOverview = {
   ai_upkeep_explanation?: string | null;
 };
 
+// AI Archetype Overview
+export type ArchetypeOverview = {
+  // deckId: string;
+  archetypes: string[];
+  axes: Record<string, number>;
+  explanation_md: string;
+  updated_at?: string | null;
+} | null;
+
 // rest of file unchanged
 
 interface CardListContextType {
   // cards
   cards: CardRecord[];
-  setInitialCards: (cards: CardRecord[]) => void;
   setCards: (cards: CardRecord[]) => void;
   resetCards: () => void;
   addCard: (card: CardRecord) => void;
@@ -64,10 +89,18 @@ interface CardListContextType {
   setDeckFeatures: (features: DeckFeatureVector | null) => void;
   resetDeckFeatures: () => void;
 
+  // land features
+  landFeatures: LandFeatures | null;
+  setLandFeatures: (features: LandFeatures | null) => void;
+  resetLandFeatures: () => void;
+
   // AI overview
   aiOverview: AiOverview | null;
   setAiOverview: (overview: AiOverview | null) => void;
   resetAiOverview: () => void;
+  archetypeOverview: ArchetypeOverview;
+  setArchetypeOverview: (v: ArchetypeOverview) => void;
+  resetArchetypeOverview: () => void;
 }
 
 const CardListContext = createContext<CardListContextType | undefined>(
@@ -75,23 +108,18 @@ const CardListContext = createContext<CardListContextType | undefined>(
 );
 
 export const CardListProvider = ({ children }: { children: ReactNode }) => {
-  // cards
   const [cards, setCardsState] = useState<CardRecord[]>([]);
   const [originalCards, setOriginalCards] = useState<CardRecord[]>([]);
-
-  // deck
   const [deck, setDeck] = useState<DeckMetadata | null>(null);
-
-  // features
   const [deckFeatures, setDeckFeatures] = useState<DeckFeatureVector | null>(
     null
   );
-
-  // AI overview
   const [aiOverview, setAiOverviewState] = useState<AiOverview | null>(null);
+  const [landFeatures, setLandFeatures] = useState<LandFeatures | null>(null);
+  const [archetypeOverview, setArchetypeOverview] =
+    useState<ArchetypeOverview>(null);
 
   // card helpers
-  const setInitialCards = (initial: CardRecord[]) => setOriginalCards(initial);
   const setCards = (newCards: CardRecord[]) => setCardsState(newCards);
   const addCard = (card: CardRecord) =>
     setCardsState((prev) => [...prev, card]);
@@ -103,6 +131,7 @@ export const CardListProvider = ({ children }: { children: ReactNode }) => {
       prev.map((c) => (c.uuid === updated.uuid ? updated : c))
     );
 
+  const resetLandFeatures = () => setLandFeatures(null);
   // features helpers
   const resetDeckFeatures = () => setDeckFeatures(null);
 
@@ -110,13 +139,13 @@ export const CardListProvider = ({ children }: { children: ReactNode }) => {
   const setAiOverview = (overview: AiOverview | null) =>
     setAiOverviewState(overview);
   const resetAiOverview = () => setAiOverviewState(null);
-
+  // AI Archetype Overview
+  const resetArchetypeOverview = () => setArchetypeOverview(null);
   return (
     <CardListContext.Provider
       value={{
         // cards
         cards,
-        setInitialCards,
         setCards,
         resetCards,
         addCard,
@@ -133,6 +162,13 @@ export const CardListProvider = ({ children }: { children: ReactNode }) => {
         aiOverview,
         setAiOverview,
         resetAiOverview,
+        archetypeOverview,
+        setArchetypeOverview,
+        resetArchetypeOverview,
+        // land features
+        landFeatures,
+        setLandFeatures,
+        resetLandFeatures,
       }}
     >
       {children}

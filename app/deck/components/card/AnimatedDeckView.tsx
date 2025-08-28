@@ -1,13 +1,13 @@
 "use client";
 
-import { DeckOverview } from "../../DeckOverview";
+import { CardTable } from "../../CardTable";
 import CommanderOverview from "@/app/components/ui/commanderOverview";
 import {
   CompactViewProvider,
   useCompactView,
 } from "@/app/context/compactViewContext";
-import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { AnimatePresence, motion, useTime } from "framer-motion";
+import { useEffect, useState } from "react";
 import Details from "../details/details";
 
 export default function AnimatedDeckView() {
@@ -24,7 +24,7 @@ export default function AnimatedDeckView() {
           <AnimatePresence>
             <motion.div
               animate={{
-                height: showBoard ? "100%" : 80,
+                height: showBoard ? "100%" : 40,
               }}
               transition={{
                 type: "tween",
@@ -33,9 +33,9 @@ export default function AnimatedDeckView() {
                 stiffness: 270,
                 ease: [0.22, 1, 0.36, 1],
               }}
-              className={`w-full ${!showBoard && "mb-1"} absolute px-1 z-20`}
+              className={`w-full ${!showBoard && "mb-1"} absolute px-1 z-20 `}
             >
-              <DeckOverview />
+              <CardTable />
             </motion.div>
             <motion.div className="z-10 h-full">
               <Details></Details>
