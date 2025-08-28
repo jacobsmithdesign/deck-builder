@@ -62,7 +62,7 @@ export type AiOverview = {
 
 // AI Archetype Overview
 export type ArchetypeOverview = {
-  // deckId: string;
+  deckId: string;
   archetypes: string[];
   axes: Record<string, number>;
   explanation_md: string;

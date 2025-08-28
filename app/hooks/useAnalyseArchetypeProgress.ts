@@ -64,6 +64,7 @@ export function useAnalyseArchetypeProgress(opts?: {
         setStep("done");
 
         setArchetypeOverview({
+          deckId: String(d.deckId),
           archetypes: d.archetypes as string[],
           axes: d.axes as Record<string, number>,
           explanation_md:
