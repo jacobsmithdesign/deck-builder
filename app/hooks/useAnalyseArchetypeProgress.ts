@@ -3,9 +3,10 @@ import { useCardList } from "../context/CardListContext";
 
 export type ArchetypeOverviewResult = {
   deckId: string;
-  archetypes: string[];
   axes: Record<string, number>;
-  explanation_md?: string;
+  explanation_md?: Record<string, string>;
+  description?: string;
+  updatedAt?: string;
 };
 
 type DonePayload = ArchetypeOverviewResult & { progress: number };
@@ -48,15 +49,13 @@ export function useAnalyseArchetypeProgress(opts?: {
       try {
         const d = JSON.parse(ev.data) as Partial<DonePayload>;
         // Expect: { progress, deckId, archetypes, axes, explanation_md? }
-        if (!d || !d.deckId || !Array.isArray(d.archetypes) || !d.axes) {
+        if (!d || !d.deckId || !d.explanation_md || !d.axes) {
           throw new Error("Malformed done payload");
         }
         const clean: ArchetypeOverviewResult = {
           deckId: String(d.deckId),
-          archetypes: d.archetypes as string[],
           axes: d.axes as Record<string, number>,
-          explanation_md:
-            typeof d.explanation_md === "string" ? d.explanation_md : undefined,
+          explanation_md: d.explanation_md as Record<string, string>,
         };
 
         setResult(clean);
@@ -65,18 +64,18 @@ export function useAnalyseArchetypeProgress(opts?: {
 
         setArchetypeOverview({
           deckId: String(d.deckId),
-          archetypes: d.archetypes as string[],
           axes: d.axes as Record<string, number>,
-          explanation_md:
-            typeof d.explanation_md === "string" ? d.explanation_md : undefined,
+          explanation_md: d.explanation_md as Record<string, string>,
+          description: d.description as string,
         });
 
         onDone?.({
           progress: 100,
           deckId: clean.deckId,
-          archetypes: clean.archetypes,
           axes: clean.axes,
           explanation_md: clean.explanation_md,
+          updatedAt: clean.updatedAt,
+          description: clean.description,
         });
       } catch (e: any) {
         setError(e?.message || "Parse error");
