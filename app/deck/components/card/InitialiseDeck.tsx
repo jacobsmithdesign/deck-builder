@@ -12,6 +12,7 @@ import { getAverageColorFromImage } from "@/lib/getAverageColour";
 import { supabase } from "@/lib/supabase/client";
 import { buildFeatures } from "@/lib/ai/features";
 import { compressLands } from "@/lib/ai/landCompression";
+import { ArchetypeOverviewRow } from "@/lib/db/archetypeOverview";
 
 type DeckWithCards = DeckRecord & {
   cards: (CardRecord & { count: number; board_section: string })[];
@@ -54,14 +55,6 @@ type DeckRow = {
   ai_pilot_skill_explanation?: string | null;
   ai_interaction_explanation?: string | null;
   ai_upkeep_explanation?: string | null;
-};
-
-type ArchetypeOverviewRow = {
-  deck_id: string;
-  archetypes: string[] | null;
-  axes: Record<string, number> | null;
-  explanation_md: string | null;
-  updated_at: string | null;
 };
 
 // This component initialises the card list and deck details upon first visiting a deck page.
@@ -189,7 +182,7 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
   ): Promise<ArchetypeOverviewRow | null> {
     const { data, error } = await supabase
       .from("deck_archetype_overview")
-      .select("deck_id, archetypes, axes, explanation_md, updated_at")
+      .select("deck_id, axes, explanation_md, description, updated_at")
       .eq("deck_id", deckId)
       .maybeSingle();
 
@@ -214,10 +207,10 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
         if (row) {
           setArchetypeOverview({
             deckId: deck.id,
-            archetypes: row.archetypes ?? [],
-            axes: row.axes ?? {},
-            explanation_md: row.explanation_md ?? "",
-            updated_at: row.updated_at ?? null,
+            axes: row.axes,
+            explanation_md: row.explanation_md,
+            description: row.description,
+            updated_at: row.updated_at,
           });
         } else {
           // no data yet
@@ -265,7 +258,7 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
       (card) => card.uuid === deck.commander_uuid
     );
     const commanderCard: CommanderCard = {
-      id: commanderCardRecord.uuid ?? crypto.randomUUID(),
+      id: commanderCardRecord.uuid,
       name: commanderCardRecord.name,
       type: commanderCardRecord.type,
       mana_cost: commanderCardRecord.mana_cost,

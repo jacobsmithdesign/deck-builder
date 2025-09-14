@@ -10,13 +10,9 @@ import remarkGfm from "remark-gfm";
 import { Board, BoardContent } from "../card/Board";
 import { useCompactView } from "@/app/context/compactViewContext";
 import CustomScrollArea from "@/app/components/ui/CustomScrollArea";
-import { Button } from "../button";
-import { AnimatedButtonLoading } from "../AnimatedButtonLoading";
-import { useAnalyseArchetypeProgress } from "@/app/hooks/useAnalyseArchetypeProgress";
 import { useCardList } from "@/app/context/CardListContext";
 import ArchetypeOverview from "./ArchetypeOverview";
-
-import { getArchetypeOverview } from "@/lib/db/archetypeOverview";
+import PrimarySecondaryAxis from "./PrimarySecondaryAxist";
 export default function Details() {
   const { showBoard } = useCompactView();
   const { deck } = useCardList();
@@ -33,12 +29,14 @@ export default function Details() {
           <div className="w-full h-full overflow-y-scroll hide-scrollbar absolute px-2 ">
             <CustomScrollArea
               className="h-full w-full"
-              trackClassName="bg-dark/20 rounded-xs rounded-br-sm outline outline-dark/20 w-2 mt-11 mb-2"
+              trackClassName="bg-dark/20 rounded-xs rounded-br-sm outline outline-dark/20 w-2 mt-2 mb-2"
               thumbClassName="bg-light/60 rounded-xs"
               autoHide={true}
             >
               <div className="pt-8 pr-1">
+                {/* New components go here */}
                 <ArchetypeOverview />
+                <PrimarySecondaryAxis />
                 {/* In the future, when components have been built, replace this map with each component. it should fit the height properly  */}
                 {dummyData.map((item, index) => (
                   <Card className="" key={index}>

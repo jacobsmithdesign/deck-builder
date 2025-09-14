@@ -18,8 +18,8 @@ export default function Profile() {
       </div>
     );
   return (
-    <div className="pt-13 bg-light h-lvh text-dark">
-      <div className="m-2">
+    <div className="flex flex-col h-lvh overflow-scroll hide-scrollbar items-center max-h-lvh  bg-light text-dark pt-15">
+      <div className="m-2 w-full">
         <BoardTitle className="mb-12 px-4">
           {profile.username}'s Profile
         </BoardTitle>

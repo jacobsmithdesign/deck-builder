@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { MyThemeContextProvider } from "./context/themeContext";
 import { PageTransitionProvider } from "./context/PageTransitionContext";
-import AnimateLayout from "./components/General/AnimateLayout";
+import AnimateLayout from "./components/general/AnimateLayout";
 import Navbar from "./components/navbar";
 import { UserProvider } from "./context/userContext";
 import SuppressKeyWarning from "./components/SuppressKeyWarning";

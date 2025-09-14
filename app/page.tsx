@@ -1,5 +1,5 @@
 import { CommanderProvider } from "./context/CommanderContext";
-import CommanderDeckList from "./components/Decks/CommanderDeckList";
+import CommanderDeckList from "./components/decks/CommanderDeckList";
 
 export type commanderData = {
   image: string | null;

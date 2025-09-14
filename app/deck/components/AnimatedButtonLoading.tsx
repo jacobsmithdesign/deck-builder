@@ -61,18 +61,18 @@ const AnimatedButtonLoading = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const Comp = asChild ? Slot : "button";
     return (
       <AnimatePresence>
-        <motion.button
+        <motion.div
           key="close"
           className={cn(
             buttonVariants({ variant, size, className }),
             `${loading && "pointer-events-none cursor-not-allowed"}`
           )}
-          ref={ref}
         >
           <Comp
             className="cursor-pointer flex items-center"
             disabled={loading}
             {...props}
+            ref={ref}
           >
             {title}
             <CgSpinner
@@ -81,7 +81,7 @@ const AnimatedButtonLoading = React.forwardRef<HTMLButtonElement, ButtonProps>(
               }`}
             />
           </Comp>
-        </motion.button>
+        </motion.div>
       </AnimatePresence>
     );
   }

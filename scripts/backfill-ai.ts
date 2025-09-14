@@ -31,7 +31,11 @@ const args = Object.fromEntries(
 );
 const LIMIT = Number(args.limit ?? 25);
 const FORCE = args.force === "true" || args.force === "1";
-const MODEL = args.model || process.env.OPENAI_MODEL || "gpt-5-mini";
+const MODEL = args.model || process.env.OPENAI_MODEL || "gpt-4.1";
+const DECK_ID = args.deckId ?? null;
+
+// ────────── constants ──────────
+const ai_spec = "v5-difficulty-axes-gpt-4.1";
 
 // ---------- SUPABASE / OPENAI ----------
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE, {
@@ -123,6 +127,77 @@ async function fetchDeckPage(offset = 0): Promise<DeckRow[]> {
   const { data, error } = await query;
   if (error) throw error;
   return data as unknown as DeckRow[];
+}
+
+async function fetchDeckById(deckId: string): Promise<DeckRow[]> {
+  const { data, error } = await supabase
+    .from("decks")
+    .select(
+      `
+      id,
+      name,
+      ai_generated_at,
+      commander:cards!decks_commander_uuid_fkey(
+        uuid, name, mana_value, mana_cost, type, text
+      ),
+      deck_cards(
+        count,
+        board_section,
+        card:cards!deck_cards_card_uuid_fkey(
+          uuid, name, mana_value, mana_cost, type, text
+        )
+      )
+    `
+    )
+    .eq("id", deckId)
+    .eq("deck_cards.board_section", "mainboard")
+    .single();
+
+  if (error) throw error;
+  return data ? [data as unknown as DeckRow] : [];
+}
+
+async function fetchBatchNeedingDifficulty(): Promise<DeckRow[]> {
+  const { data, error } = await supabase
+    .from("decks")
+    .select(
+      `
+      id,
+      name,
+      ai_generated_at,
+      ai_spec_version,
+      commander_uuid,
+      commander:cards!decks_commander_uuid_fkey(
+        uuid, name, mana_value, mana_cost, type, text
+      ),
+      deck_cards!inner(
+        count, board_section,
+        card:cards!deck_cards_card_uuid_fkey(
+          uuid, name, mana_value, mana_cost, type, text
+        )
+      )
+    `
+    )
+    .eq("type", "Commander Deck")
+    .is("user_id", null)
+    .eq("deck_cards.board_section", "mainboard")
+    .not("commander_uuid", "is", null)
+    .or(
+      [
+        "ai_spec_version.is.null",
+        `ai_spec_version.neq.${ai_spec}`,
+        "ai_power_level_explanation.is.null",
+        "ai_complexity_explanation.is.null",
+        "ai_pilot_skill_explanation.is.null",
+        "ai_interaction_explanation.is.null",
+        "ai_upkeep_explanation.is.null",
+      ].join(",")
+    )
+    .order("id", { ascending: true })
+    .limit(LIMIT);
+
+  if (error) throw error;
+  return (data ?? []) as unknown as DeckRow[];
 }
 
 // ---------- PROMPT ----------
@@ -268,7 +343,12 @@ function nowMs() {
     let totalProcessed = 0;
 
     while (true) {
-      const decks = await fetchDeckPage(offset);
+      const decks = DECK_ID
+        ? await fetchDeckById(DECK_ID)
+        : !FORCE
+        ? await fetchBatchNeedingDifficulty()
+        : await fetchDeckPage(offset);
+      if (decks.length === 0) break;
       if (decks.length === 0) break;
 
       console.log(

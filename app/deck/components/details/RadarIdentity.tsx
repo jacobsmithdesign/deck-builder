@@ -2,7 +2,7 @@
 "use client";
 import { useCompactView } from "@/app/context/compactViewContext";
 import { AnimatePresence, motion } from "framer-motion";
-import React from "react";
+import React, { useState } from "react";
 import {
   Radar,
   RadarChart,
@@ -29,19 +29,33 @@ export function RadarIdentity({
   theme?: "emerald" | "violet" | "amber";
 }) {
   const { bgColor } = useCompactView();
+  const [mouseOverGraph, setMouseOverGraph] = useState<boolean>(false);
+
   const entries = Object.entries(axes);
   const data = entries.map(([k, v]) => ({ axis: niceLabel(k), value: v }));
-
   const color = {
     emerald: { stroke: "#10b981", fill: "url(#radarFillEmerald)" },
     violet: { stroke: "#8b5cf6", fill: "url(#radarFillViolet)" },
     amber: { stroke: "#f59e0b", fill: "url(#radarFillAmber)" },
   }[theme];
+  const handleEnterGraph = () => {
+    if (mouseOverGraph) {
+      setMouseOverGraph(false);
+    } else {
+      setMouseOverGraph(true);
+    }
+  };
 
   return (
-    <div className="w-full h-70 rounded-md flex">
+    <div className="w-full h-full rounded-md flex select-none">
       <ResponsiveContainer width="100%" height="100%">
-        <RadarChart data={data} cx="50%" cy="55%" outerRadius="70%">
+        <RadarChart
+          data={data}
+          cx="50%"
+          cy="50%"
+          outerRadius="80%"
+          className="select-none"
+        >
           {/* Fancy gradient */}
           <defs>
             <radialGradient id="radarFillEmerald">
@@ -90,14 +104,27 @@ export function RadarIdentity({
             strokeOpacity={0.6}
             strokeWidth={8}
             fill={bgColor}
-            opacity={0.85}
+            opacity={0.95}
             strokeLinejoin="round" // <- smooth joins
             strokeLinecap="round" // <- smooth dot caps
             isAnimationActive={true}
             animationDuration={300}
             animationEasing="ease-out"
           />
-          <Tooltip content={<RadarTip />} animationDuration={0} />
+          <AnimatePresence>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.65 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 1000, type: "spring" }}
+            >
+              <Tooltip
+                content={<RadarTip />}
+                animationDuration={70}
+                isAnimationActive={true}
+                animationEasing="ease-out"
+              />
+            </motion.div>
+          </AnimatePresence>
         </RadarChart>
       </ResponsiveContainer>
     </div>
@@ -146,11 +173,18 @@ function wrap(text: string, width: number) {
 }
 
 // Custom tooltip
-function RadarTip({ active, payload }: any) {
+function RadarTip({ active, payload, coordinate }: any) {
   if (!active || !payload?.length) return null;
   const { axis, value } = payload[0].payload;
+  const { x, y } = coordinate || { x: 0, y: 0 };
   return (
-    <div className="flex backdrop-blur-xs rounded-lg border border-light/60 bg-light/50 shadow-inner shadow-light/70 px-1 py-1 text-sm drop-shadow-lg drop-shadow-dark/5">
+    <div
+      style={{
+        left: x,
+        top: y,
+      }}
+      className="flex items-center justify-center backdrop-blur-sm rounded-lg border border-light/60 bg-light/50 shadow-inner shadow-light/70 px-1 py-1 text-sm drop-shadow-dark/5 w-fit"
+    >
       <div className="font-semibold mr-2">{axis}</div>
       <div className="opacity-80">{Math.round(value)}</div>
     </div>

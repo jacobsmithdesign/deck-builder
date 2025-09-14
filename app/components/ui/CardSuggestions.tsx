@@ -1,4 +1,4 @@
-import CommanderDeckList from "../Decks/CommanderDeckList";
+import CommanderDeckList from "../decks/CommanderDeckList";
 import {
   Card,
   CardContent,

@@ -158,6 +158,7 @@ export async function GET(req: NextRequest) {
           return false;
         };
 
+        // this is the cards array
         const cards = ((cardRows?.deck_cards ?? []) as any[])
           .map(({ card }) => ({
             name: card.name,
@@ -181,21 +182,20 @@ export async function GET(req: NextRequest) {
           return `
           Return ONLY minified JSON with EXACT keys:
             {
-            "archetypes": ["<slug-1>", "..."],
             "axes": { "<slug-1>": 0, "...": 0 },
-            "explanation_md": "<markdown string>"
+            "explanation_md": { "<slug-1>": "<markdown string>", "...": "<markdown string>" }, 
+            "description": <text>, 20-30 words
             }
 
             Archetype vocabulary=${TAG_VOCAB}
 
             RULES:
             archetypes: 4–7 short lowercase slugs that capture the deck’s playstyle and card frequency. Choose from archetype vocabulary. If an archetype that does not exist in the vocabular could be derived from the commander or the cards always include it. 
-            axes: 0–100, keys ⊆ archetypes, reflecting the strength of each chosen archetype in this deck.
+            axes: ranked 0–100, keys ⊆ archetypes, reflecting the strength of each chosen archetype in this deck.
 
-            explanation_md: maximum 120 words in Markdown, purely extractive. Explain the overall archetype of the deck. You may use just a few example cards from the card list justify the archetypes and their relative weighting. 
+            explanation_md: maximum 120 words in Markdown, purely extractive. Explain the reasoning behind the archetype's rank and its impact on the deck's playstyle. You may use some example cards from the card list justify the archetypes and their relative weighting. 
             
             Land feature extraction: ${LANDFEATURES}
-
             Cards:${CARDS}
             `;
         })();
@@ -227,7 +227,7 @@ export async function GET(req: NextRequest) {
 
         console.log("Archetype JSON data: ", json);
         // basic guards
-        if (!json || !Array.isArray(json.archetypes) || !json.axes) {
+        if (!json || !json.explanation_md || !json.axes) {
           throw new Error("Model output missing required fields");
         }
 
@@ -237,20 +237,12 @@ export async function GET(req: NextRequest) {
           .from("deck_archetype_overview")
           .upsert({
             deck_id: deckId,
-            archetypes: json.archetypes,
             axes: json.axes,
-            explanation_md: json.explanation_md ?? "",
+            explanation_md: json.explanation_md,
+            description: json.description,
             updated_at: new Date().toISOString(),
           });
         if (updateErr) throw updateErr;
-
-        write("done", {
-          progress: 100,
-          deckId,
-          archetypes: json.archetypes,
-          axes: json.axes,
-          explanation_md: json.explanation_md ?? "",
-        });
       } catch (err: any) {
         controller.enqueue(
           enc.encode(sse("error", { message: err?.message || String(err) }))

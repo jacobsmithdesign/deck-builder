@@ -7,11 +7,29 @@ import {
   useCompactView,
 } from "@/app/context/compactViewContext";
 import { AnimatePresence, motion, useTime } from "framer-motion";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import Details from "../details/details";
+import AddToCollectionModal from "./AddToCollectionModal";
+import { useCardList } from "@/app/context/CardListContext";
+import { useUser } from "@/app/context/userContext";
+import AddToCollectionButton from "./AddToCollectionButton";
+import { useIsDeckSaved } from "@/app/hooks/useIsDeckSaved";
 
 export default function AnimatedDeckView() {
   const { showBoard, bgColor } = useCompactView();
+  const { deck } = useCardList();
+  const { profile } = useUser();
+  const { saved: deckSaved } = useIsDeckSaved(deck?.id);
+  const [userOwnsDeck, setUserOwnsDeck] = useState<boolean>(false);
+  const [enableAddToCollectionButton, setEnableAddToCollectionButton] =
+    useState<boolean>(false);
+
+  useEffect(() => {
+    if (deck && profile) {
+      setUserOwnsDeck(profile.id === deck.userId);
+      setEnableAddToCollectionButton(true);
+    }
+  }, [profile, deck]);
 
   return (
     <div className="bg-light ">
@@ -24,7 +42,7 @@ export default function AnimatedDeckView() {
           <AnimatePresence>
             <motion.div
               animate={{
-                height: showBoard ? "100%" : 40,
+                height: showBoard ? "100%" : 32,
               }}
               transition={{
                 type: "tween",
@@ -33,12 +51,19 @@ export default function AnimatedDeckView() {
                 stiffness: 270,
                 ease: [0.22, 1, 0.36, 1],
               }}
-              className={`w-full ${!showBoard && "mb-1"} absolute px-1 z-20 `}
+              className={`w-full ${
+                !showBoard && "mb-1"
+              } absolute px-1 z-20 flex`}
             >
-              <CardTable />
+              {enableAddToCollectionButton && !userOwnsDeck && (
+                <AddToCollectionButton />
+              )}
+              <div className={`w-full  transition-all`}>
+                <CardTable />
+              </div>
             </motion.div>
             <motion.div className="z-10 h-full">
-              <Details></Details>
+              <Details />
             </motion.div>
           </AnimatePresence>
           <div className="w-full h-full px-1 pb-1 absolute">
