@@ -139,15 +139,6 @@ export default function DeckEditTools() {
               </button>
             </motion.div>
           )}
-
-          <AddToCollectionModal
-            preconDeckId={deck.id}
-            preconDeckName={deck.name}
-            showModal={showModal}
-            closeModal={closeModal}
-            saveDeck={saveDeck}
-            onDeckCreated={setNewCreatedDeck}
-          />
         </div>
       )}
       <motion.div
