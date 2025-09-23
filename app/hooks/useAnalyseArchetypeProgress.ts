@@ -56,6 +56,7 @@ export function useAnalyseArchetypeProgress(opts?: {
           deckId: String(d.deckId),
           axes: d.axes as Record<string, number>,
           explanation_md: d.explanation_md as Record<string, string>,
+          description: String(d.description),
         };
 
         setResult(clean);

@@ -199,7 +199,7 @@ export async function GET(req: NextRequest) {
             Cards:${CARDS}
             `;
         })();
-
+        // Submission to OpenAI with full prompt
         const completion = await openai.chat.completions.create({
           model: MODEL,
           response_format: { type: "json_object" },
@@ -224,8 +224,6 @@ export async function GET(req: NextRequest) {
         const json = JSON.parse(
           completion.choices[0]?.message?.content ?? "{}"
         );
-
-        console.log("Archetype JSON data: ", json);
         // basic guards
         if (!json || !json.explanation_md || !json.axes) {
           throw new Error("Model output missing required fields");
@@ -243,6 +241,13 @@ export async function GET(req: NextRequest) {
             updated_at: new Date().toISOString(),
           });
         if (updateErr) throw updateErr;
+        write("done", {
+          progress: 100,
+          deckId,
+          axes: json.axes,
+          explanation_md: json.explanation_md,
+          description: json.description,
+        });
       } catch (err: any) {
         controller.enqueue(
           enc.encode(sse("error", { message: err?.message || String(err) }))

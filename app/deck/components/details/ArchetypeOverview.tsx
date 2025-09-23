@@ -107,14 +107,14 @@ export default function ArchetypeOverview() {
           </div>
           {/* Explanation */}
           <div className="max-w-none flex flex-col w-2/3">
-            <div className="w-full rounded-md my-auto grid gap-2 grid-cols-4">
+            <div className="w-full rounded-md my-auto grid gap-1 grid-cols-2">
               {explanationArray ? (
                 explanationArray.map(({ axis, value }) => (
                   <div
                     key={axis}
-                    className="rounded-md bg-dark/10 w-full text-center"
+                    className="rounded-md bg-gradient-to-t to-light/15 from-transparent w-full text-center outline outline-dark/10 bg-light/5"
                   >
-                    <h3 className="rounded-md rounded-b-none h-fit px-2 py-0.5 text-base bg-light/40">
+                    <h3 className="rounded-sm w-fit rounded-tl-md outline outline-dark/5 h-fit px-2 py-0.5 text-base bg-light/10 font-bold">
                       {axis}
                     </h3>
                     <ReactMarkdown
