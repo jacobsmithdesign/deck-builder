@@ -14,6 +14,7 @@ import { useCardList } from "@/app/context/CardListContext";
 import { useUser } from "@/app/context/userContext";
 import AddToCollectionButton from "./AddToCollectionButton";
 import { useIsDeckSaved } from "@/app/hooks/useIsDeckSaved";
+import { EditModeProvider } from "@/app/context/editModeContext";
 
 export default function AnimatedDeckView() {
   const { showBoard, bgColor } = useCompactView();
@@ -52,14 +53,16 @@ export default function AnimatedDeckView() {
                 ease: [0.22, 1, 0.36, 1],
               }}
               className={`w-full ${
-                !showBoard && "mb-1"
-              } absolute px-1 z-20 flex`}
+                !showBoard && "mb-1 "
+              } pt-1 absolute px-1 z-20 flex`}
             >
               {enableAddToCollectionButton && !userOwnsDeck && (
                 <AddToCollectionButton />
               )}
-              <div className={`w-full  transition-all`}>
-                <CardTable />
+              <div className={`w-full transition-all`}>
+                <EditModeProvider>
+                  <CardTable />
+                </EditModeProvider>
               </div>
             </motion.div>
             <motion.div className="z-10 h-full">

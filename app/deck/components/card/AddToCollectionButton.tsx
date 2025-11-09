@@ -6,6 +6,7 @@ import { useIsDeckSaved } from "@/app/hooks/useIsDeckSaved";
 import { useCardList } from "@/app/context/CardListContext";
 import Link from "next/link";
 import { RxArrowTopRight, RxCheck } from "react-icons/rx";
+import { Button } from "@/app/deck/components/button";
 export default function AddToCollectionButton() {
   const { showBoard } = useCompactView();
   const { deck } = useCardList(); // has deck?.id
@@ -46,21 +47,20 @@ export default function AddToCollectionButton() {
   return (
     <div className="z-20">
       <AnimatePresence>
+        {/* Add to collection button */}
         {!deckSaved ? (
-          <button
-            className={`absolute border shadow-inner h-7 rounded-md px-2 mt-1 backdrop-blur-sm cursor-pointer transition-all duration-150 ml-1 ${
-              showBoard ? "mt-2 ml-2" : "ml-25"
-            } text-dark/60 bg-light/40 md:hover:bg-light/80 border-light/60 md:hover:outline-light shadow-light/40`}
+          <Button
+            variant="frosted"
+            className={`${showBoard ? "mt-2 ml-50" : "ml-25"}`}
             onClick={toggleOpenModal}
-          >
-            {checkingSaved ? "Checking…" : "+ Add to collection"}
-          </button>
+            title={checkingSaved ? "Checking…" : "Add to Collection"}
+          />
         ) : (
           <Link
             href={`/deck/${userCopyDeckId}`}
-            className={`absolute border shadow-inner flex items-center h-7 rounded-md px-2 mt-1 backdrop-blur-sm cursor-pointer transition-all duration-150 group ml-1 ${
-              showBoard ? "mt-2 ml-2" : "ml-25 "
-            } bg-green-300/60 shadow-green-200/60 border-green-400 text-green-700 md:hover:bg-green-200/80
+            className={`absolute shadow-inner flex items-center h-7 rounded-md px-2 backdrop-blur-sm cursor-pointer transition-all duration-150 group ml-1 ${
+              showBoard ? "mt-1 ml-15" : "ml-27 "
+            } bg-green-300/60 shadow-green-200/60 text-green-700 md:hover:bg-green-200/80
                md:hover:pr-8 `}
           >
             <RxCheck className="mr-1 w-4 md:group-hover:w-0 transition-all" />

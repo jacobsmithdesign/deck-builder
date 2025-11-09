@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useCardList } from "@/app/context/CardListContext";
 import { DeckRecord, CardRecord } from "@/lib/schemas";
 import { CommanderCard } from "@/app/context/CommanderContext";
@@ -16,7 +16,7 @@ import { ArchetypeOverviewRow } from "@/lib/db/archetypeOverview";
 
 type DeckWithCards = DeckRecord & {
   cards: (CardRecord & { count: number; board_section: string })[];
-};
+} & { commander: CommanderCard };
 type CardRow = {
   uuid: string;
   name: string | null;
@@ -70,7 +70,7 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
     setArchetypeOverview,
   } = useCardList();
   const { setDeckDetails, setCommanderCard } = useCommander();
-
+  const [initialisedDeck, setInitialisedDeck] = useState<DeckWithCards>(deck);
   async function fetchDeckPage(): Promise<DeckRow[]> {
     const { data, error } = await supabase
       .from("decks")
@@ -121,50 +121,48 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
   // Fetch the compressed deck data
   async function buildDeckFeatures() {
     try {
-      const rows = await fetchDeckPage();
+      const deck = await fetchDeckPage();
       await Promise.allSettled(
-        rows.map((row) => {
-          const features = buildFeatures(row as any);
-          const landFeatures = compressLands(row as any);
+        deck.map((deck) => {
+          const features = buildFeatures(deck as any);
+          const landFeatures = compressLands(deck as any);
           setDeckFeatures(features);
           setLandFeatures(landFeatures);
-          console.log(landFeatures);
-
           // coerce ai_power_level number if DB stores as TEXT
           const power =
-            row.ai_power_level == null || row.ai_power_level === ""
+            deck.ai_power_level == null || deck.ai_power_level === ""
               ? null
-              : Number(row.ai_power_level);
+              : Number(deck.ai_power_level);
 
-          const hasExistingAI = !!row.ai_generated_at;
+          const hasExistingAI = !!deck.ai_generated_at;
 
           setAiOverview(
             hasExistingAI
               ? {
-                  tagline: row.tagline ?? null,
-                  ai_rank: row.ai_rank ?? null,
-                  ai_tags: row.ai_tags ?? null,
-                  ai_strengths: row.ai_strengths ?? null,
-                  ai_weaknesses: row.ai_weaknesses ?? null,
-                  ai_generated_at: row.ai_generated_at ?? null,
-                  ai_confidence: row.ai_confidence ?? null,
-                  ai_spec_version: row.ai_spec_version ?? null,
+                  tagline: deck.tagline ?? null,
+                  ai_rank: deck.ai_rank ?? null,
+                  ai_tags: deck.ai_tags ?? null,
+                  ai_strengths: deck.ai_strengths ?? null,
+                  ai_weaknesses: deck.ai_weaknesses ?? null,
+                  ai_generated_at: deck.ai_generated_at ?? null,
+                  ai_confidence: deck.ai_confidence ?? null,
+                  ai_spec_version: deck.ai_spec_version ?? null,
 
-                  ai_power_level: row.ai_power_level ?? null,
-                  ai_complexity: row.ai_complexity ?? null,
-                  ai_pilot_skill: row.ai_pilot_skill ?? null,
-                  ai_interaction: row.ai_interaction ?? null,
-                  ai_upkeep: row.ai_upkeep ?? null,
+                  ai_power_level: deck.ai_power_level ?? null,
+                  ai_complexity: deck.ai_complexity ?? null,
+                  ai_pilot_skill: deck.ai_pilot_skill ?? null,
+                  ai_interaction: deck.ai_interaction ?? null,
+                  ai_upkeep: deck.ai_upkeep ?? null,
 
                   ai_power_level_explanation:
-                    row.ai_power_level_explanation ?? null,
+                    deck.ai_power_level_explanation ?? null,
                   ai_complexity_explanation:
-                    row.ai_complexity_explanation ?? null,
+                    deck.ai_complexity_explanation ?? null,
                   ai_pilot_skill_explanation:
-                    row.ai_pilot_skill_explanation ?? null,
+                    deck.ai_pilot_skill_explanation ?? null,
                   ai_interaction_explanation:
-                    row.ai_interaction_explanation ?? null,
-                  ai_upkeep_explanation: row.ai_upkeep_explanation ?? null,
+                    deck.ai_interaction_explanation ?? null,
+                  ai_upkeep_explanation: deck.ai_upkeep_explanation ?? null,
                 }
               : null
           );
@@ -254,16 +252,14 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
     };
     setDeckDetails(commanderDeckDetails);
     // Initialise the Commander card info
-    const commanderCardRecord = deck.cards.find(
-      (card) => card.uuid === deck.commander_uuid
-    );
+    const commanderCardRecord = deck.commander;
     const commanderCard: CommanderCard = {
-      id: commanderCardRecord.uuid,
+      id: commanderCardRecord.id,
       name: commanderCardRecord.name,
       type: commanderCardRecord.type,
       mana_cost: commanderCardRecord.mana_cost,
-      colorIdentity: commanderCardRecord.color_identity,
-      cmc: commanderCardRecord.converted_mana_cost,
+      colorIdentity: commanderCardRecord.colorIdentity,
+      cmc: commanderCardRecord.cmc,
       text: commanderCardRecord.text,
       imageFrontUrl: `https://cards.scryfall.io/normal/front/${commanderCardRecord.identifiers.scryfallId[0]}/${commanderCardRecord.identifiers.scryfallId[1]}/${commanderCardRecord.identifiers.scryfallId}.jpg`,
 

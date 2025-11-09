@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "embed-cards": "tsx card-embeddings/embed-cards.ts",
     "ai:backfill": "tsx scripts/backfill-ai.ts",
     "ai:metrics-backfill": "tsx scripts/ai-metrics-backfill.ts",
     "ai:one": "tsx scripts/backfill-ai.ts --limit=1 --force"

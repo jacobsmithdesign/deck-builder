@@ -19,12 +19,16 @@ const buttonVariants = cva(
 
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        frosted:
+          "border shadow-inner h-7 rounded-sm px-2 backdrop-blur-sm cursor-pointer transition-all duration-150 text-dark/60 bg-light/40 md:hover:bg-light/80 border-light/60 md:hover:outline-light shadow-light/40",
+        darkFrosted:
+          "h-7 rounded-sm px-2 cursor-pointer transition-all duration-150 text-dark/60 bg-dark/10 md:hover:bg-light/60 border-dark/0",
       },
       size: {
-        default: "h-6 px-2 py-1 rounded-md md:text-sm text-xs",
-        sm: "h-8 rounded-md px-3 text-xs",
+        default: "h-6 px-2 py-1 md:text-sm text-xs",
+        sm: "h-8 px-3 text-xs",
         cardGroup: "h-9 pl-6 md:hover:pl-7",
-        lg: "h-10 rounded-md px-8",
+        lg: "h-10 px-8",
         icon: "h-9 w-9",
       },
     },
@@ -42,7 +46,10 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, title, variant, size, asChild = false, ...props }, ref) => {
+  (
+    { className, children, title, variant, size, asChild = false, ...props },
+    ref
+  ) => {
     const Comp = asChild ? Slot : "button";
     return (
       <Comp
@@ -50,6 +57,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         {...props}
       >
+        {children}
         {title}
       </Comp>
     );

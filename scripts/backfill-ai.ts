@@ -44,6 +44,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE, {
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
 // ---------- TYPES ----------
+
 export type CardRow = {
   uuid: string;
   name: string | null;
@@ -52,6 +53,7 @@ export type CardRow = {
   text: string | null;
 };
 
+// This is the type that the db returns and is what buildFeatures() expects
 export type DeckRow = {
   id: string;
   name: string;

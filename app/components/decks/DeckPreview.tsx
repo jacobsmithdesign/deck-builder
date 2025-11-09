@@ -13,7 +13,7 @@ export default function DeckPreview({ deck }: { deck: CommanderDeckRecord }) {
   const scryfallId = deck.commander.identifiers.scryfallId ?? null;
   const [front, back, artwork] = scryfallIdToUrls(scryfallId);
   return (
-    <div className="rounded-xl min-w-28 h-64 overflow-clip relative flex flex-col justify-between">
+    <div className="rounded-xl min-w-32 h-72 overflow-clip relative flex flex-col justify-between">
       {/* Top card details: colour identity, deck type */}
       {!openPanel && (
         <div className="relative flex justify-between z-10 p-2 w-full top-0 items-start pointer-events-none">
@@ -30,7 +30,7 @@ export default function DeckPreview({ deck }: { deck: CommanderDeckRecord }) {
       <div className="mb-9 absolute w-full p-2 bottom-0">
         <div
           className={`relative w-full p-2 z-10 rounded-lg shadow bg-gradient-to-b from-light to-light/60 transition-all ease-out duration-250 overflow-clip text-left ${
-            openPanel ? "h-51 backdrop-blur-sm" : "h-17 bg-light"
+            openPanel ? "h-59 backdrop-blur-sm" : "h-17 bg-light"
           } `}
         >
           <button

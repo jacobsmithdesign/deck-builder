@@ -13,6 +13,7 @@ import CustomScrollArea from "@/app/components/ui/CustomScrollArea";
 import { useCardList } from "@/app/context/CardListContext";
 import ArchetypeOverview from "./ArchetypeOverview";
 import PrimarySecondaryAxis from "./PrimarySecondaryAxist";
+import CardSuggestions from "./CardSuggestions";
 export default function Details() {
   const { showBoard } = useCompactView();
   const { deck } = useCardList();
@@ -37,6 +38,7 @@ export default function Details() {
                 {/* New components go here */}
                 <ArchetypeOverview />
                 <PrimarySecondaryAxis />
+                <CardSuggestions />
                 {/* In the future, when components have been built, replace this map with each component. it should fit the height properly  */}
                 {dummyData.map((item, index) => (
                   <Card className="" key={index}>

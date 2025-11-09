@@ -16,9 +16,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useCompactView } from "@/app/context/compactViewContext";
 import NewCardModal from "./NewCardModal";
 import CustomScrollArea from "@/app/components/ui/CustomScrollArea";
-interface MainBoardProps {
-  isEditMode: boolean;
-}
+import { useEditMode } from "@/app/context/editModeContext";
 
 const groupByCardType = (cards: any[] = []) => {
   const typeOrder = [
@@ -50,7 +48,8 @@ const groupByCardType = (cards: any[] = []) => {
     .filter((group) => group.cards && group.cards.length > 0);
 };
 
-export const MainBoard = ({ isEditMode }: MainBoardProps) => {
+export const MainBoard = () => {
+  const { editMode } = useEditMode();
   const { cards, removeCard } = useCardList();
   const [visibleGroups, setVisibleGroups] = useState<Set<string>>(new Set());
   const [openNewCardModal, setOpenNewCardModal] = useState<boolean>(false);
@@ -111,10 +110,10 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
   }, [showBoard, allTypes]);
 
   useEffect(() => {
-    if (!isEditMode) {
+    if (!editMode) {
       setOpenNewCardModal(false);
     }
-  }, [isEditMode]);
+  }, [editMode]);
   return (
     <AnimatePresence>
       <BoardContent
@@ -129,7 +128,13 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
             cardType={newCardType}
           />
         </div>
-        <div className="w-full h-full overflow-y-scroll hide-scrollbar absolute bg-light/50">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2 }}
+          className="w-full h-full overflow-y-scroll hide-scrollbar absolute bg-light/50"
+        >
           <CustomScrollArea
             className="h-full w-full"
             trackClassName="bg-dark/20 rounded-xs outline outline-dark/20 w-2 mr-1 my-1 rounded-br-sm"
@@ -162,45 +167,8 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
                         className="overflow-clip flex px-2"
                       >
                         <GroupItems key={group.type} className="mt-2">
-                          {group.cards.map((card, index) => {
-                            return (
-                              <motion.div
-                                key={card + index}
-                                initial={{ opacity: 0, scale: 0.85 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{
-                                  opacity: 0,
-                                  scale: 0.95,
-                                  transition: {
-                                    delay: 0,
-                                    duration: 0.15,
-                                    ease: "easeOut",
-                                  },
-                                }}
-                                transition={{
-                                  type: "spring",
-                                  stiffness: 250,
-                                  damping: 12,
-                                  bounce: 0.1,
-                                  delay: 0.03 * index,
-                                  duration: 0.2,
-                                }}
-                              >
-                                <PerspectiveCard
-                                  key={card.id}
-                                  id={card.id}
-                                  image={card.imageFrontUrl}
-                                  label={card.name}
-                                  isEditMode={isEditMode}
-                                  card={card}
-                                  inspectCard={handleInspectCard}
-                                />
-                              </motion.div>
-                            );
-                          })}
-
                           {/* This is the new card that appears at the end of every card group, onlly visible in edit mode */}
-                          {isEditMode && (
+                          {editMode && (
                             <motion.div
                               key="new-card"
                               initial={{ opacity: 0, scale: 0.85 }}
@@ -230,6 +198,42 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
                               </button>
                             </motion.div>
                           )}
+                          {group.cards.map((card, index) => {
+                            return (
+                              <motion.div
+                                key={card + index}
+                                initial={{ opacity: 0, scale: 0.85 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{
+                                  opacity: 0,
+                                  scale: 0.95,
+                                  transition: {
+                                    delay: 0,
+                                    duration: 0.15,
+                                    ease: "easeOut",
+                                  },
+                                }}
+                                transition={{
+                                  type: "spring",
+                                  stiffness: 250,
+                                  damping: 12,
+                                  bounce: 0.1,
+                                  delay: 0.03 * index,
+                                  duration: 0.2,
+                                }}
+                              >
+                                <PerspectiveCard
+                                  key={card.id}
+                                  id={card.id}
+                                  image={card.imageFrontUrl}
+                                  label={card.name}
+                                  isEditMode={editMode}
+                                  card={card}
+                                  inspectCard={handleInspectCard}
+                                />
+                              </motion.div>
+                            );
+                          })}
                         </GroupItems>
                       </motion.div>
                     )}
@@ -238,7 +242,7 @@ export const MainBoard = ({ isEditMode }: MainBoardProps) => {
               );
             })}{" "}
           </CustomScrollArea>
-        </div>
+        </motion.div>
       </BoardContent>
     </AnimatePresence>
   );

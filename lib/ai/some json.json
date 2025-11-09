@@ -1,0 +1,257 @@
+{
+  "progress": 100,
+  "deckId": "14a75930-f9eb-4968-883e-30fd8134d453",
+  "gaps": {
+    "archetype": "Equipment Voltron",
+    "primary_axes": ["Equipment", "Voltron"],
+    "commander_signals": [
+      "Equipment",
+      "Red",
+      "White",
+      "Green",
+      "Human",
+      "Legendary"
+    ],
+    "land_base_flags": [
+      "TappedEntry",
+      "Shocklands",
+      "Checklands",
+      "BasicLands",
+      "DualLands"
+    ],
+    "speed_profile": {
+      "instant": 3,
+      "sorcery": 8,
+      "permanent": 9
+    },
+    "interaction_profile": {
+      "spot": 5,
+      "wipes": 2,
+      "counters": 0,
+      "gy_hate": 1,
+      "art_ench_hate": 3
+    },
+    "redundancy_gaps": [
+      "Ramp",
+      "Card Draw",
+      "Spot Removal",
+      "Wipes",
+      "Graveyard Hate",
+      "Fixing"
+    ],
+    "needs": [
+      {
+        "role": "ramp",
+        "target_count": 3,
+        "cmc_range": [1, 3],
+        "preferred_speed": "sorcery",
+        "preferred_types": ["Sorcery", "Artifact"],
+        "color_focus": ["G", "W"],
+        "synergy_terms": ["Land"],
+        "effect_terms": ["Search library", "Mana ramp"],
+        "hard_must_have": ["land ramp"],
+        "hard_must_not": []
+      },
+      {
+        "role": "draw",
+        "target_count": 4,
+        "cmc_range": [1, 4],
+        "preferred_speed": "any",
+        "preferred_types": ["Instant", "Sorcery", "Artifact"],
+        "color_focus": ["W", "R", "G"],
+        "synergy_terms": ["Equipment", "Creature"],
+        "effect_terms": ["Card draw", "Scry", "Exile top card"],
+        "hard_must_have": ["card draw"],
+        "hard_must_not": []
+      },
+      {
+        "role": "spot_rm",
+        "target_count": 3,
+        "cmc_range": [1, 3],
+        "preferred_speed": "instant",
+        "preferred_types": ["Instant", "Sorcery"],
+        "color_focus": ["R", "W"],
+        "synergy_terms": ["Artifact"],
+        "effect_terms": [
+          "Destroy target artifact",
+          "Tap target creature",
+          "Damage"
+        ],
+        "hard_must_have": ["efficient interaction"],
+        "hard_must_not": ["high cmc"]
+      },
+      {
+        "role": "wipes",
+        "target_count": 2,
+        "cmc_range": [4, 8],
+        "preferred_speed": "sorcery",
+        "preferred_types": ["Sorcery"],
+        "color_focus": ["W", "R"],
+        "synergy_terms": ["Destroy all creatures"],
+        "effect_terms": ["Board wipe"],
+        "hard_must_have": ["board wipes"],
+        "hard_must_not": []
+      },
+      {
+        "role": "gy_hate",
+        "target_count": 1,
+        "cmc_range": [0, 3],
+        "preferred_speed": "any",
+        "preferred_types": ["Land", "Instant", "Sorcery"],
+        "color_focus": ["W", "R"],
+        "synergy_terms": ["Exile"],
+        "effect_terms": ["Graveyard hate"],
+        "hard_must_have": ["graveyard hate"],
+        "hard_must_not": []
+      },
+      {
+        "role": "art_ench_hate",
+        "target_count": 3,
+        "cmc_range": [1, 5],
+        "preferred_speed": "sorcery",
+        "preferred_types": ["Sorcery", "Instant"],
+        "color_focus": ["R", "W"],
+        "synergy_terms": ["Destroy artifact"],
+        "effect_terms": ["Destroy artifact", "Destroy enchantment"],
+        "hard_must_have": ["artifact removal"],
+        "hard_must_not": []
+      },
+      {
+        "role": "fixing",
+        "target_count": 5,
+        "cmc_range": [0, 0],
+        "preferred_speed": "permanent",
+        "preferred_types": ["Land"],
+        "color_focus": ["R", "W", "G"],
+        "synergy_terms": ["Mana fixing", "Check lands"],
+        "effect_terms": ["Mana fixing"],
+        "hard_must_have": ["color fixing"],
+        "hard_must_not": []
+      },
+      {
+        "role": "wincon",
+        "target_count": 2,
+        "cmc_range": [4, 6],
+        "preferred_speed": "permanent",
+        "preferred_types": ["Creature"],
+        "color_focus": ["R", "W"],
+        "synergy_terms": ["Menace", "Combat damage"],
+        "effect_terms": ["Win condition"],
+        "hard_must_have": ["win condition"],
+        "hard_must_not": []
+      },
+      {
+        "role": "engine",
+        "target_count": 2,
+        "cmc_range": [2, 4],
+        "preferred_speed": "permanent",
+        "preferred_types": ["Artifact", "Creature"],
+        "color_focus": ["R", "W"],
+        "synergy_terms": ["Treasure token", "Equipment synergy"],
+        "effect_terms": ["Card advantage", "Equipment synergy"],
+        "hard_must_have": ["equipment synergy"],
+        "hard_must_not": []
+      },
+      {
+        "role": "protect",
+        "target_count": 3,
+        "cmc_range": [0, 2],
+        "preferred_speed": "instant",
+        "preferred_types": ["Instant", "Artifact"],
+        "color_focus": ["R", "W"],
+        "synergy_terms": ["Indestructible", "Haste"],
+        "effect_terms": ["Protection", "Indestructible"],
+        "hard_must_have": ["protection"],
+        "hard_must_not": []
+      }
+    ],
+    "cuts": [
+      {
+        "card_name": "Colossus Hammer",
+        "cardId": "47460f7d-1bb1-5e3d-beb5-78356bc07fdc",
+        "reasons": [
+          "Overcosted equip cost",
+          "Lose flying is drawback",
+          "High equip cost limits equipment usage"
+        ],
+        "replacement_role": "wincon",
+        "replacement_cmc_hint": [1, 4]
+      },
+      {
+        "card_name": "Unfinished Business",
+        "cardId": "cb0b4f7f-f3b0-5a2b-928f-33b2c729f24e",
+        "reasons": [
+          "Very high cmc (5)",
+          "Narrow effect, hard to use consistently"
+        ],
+        "replacement_role": "draw",
+        "replacement_cmc_hint": [2, 4]
+      },
+      {
+        "card_name": "Secret Rendezvous",
+        "cardId": "785e3397-f5a1-5024-b12c-b6c6c398472c",
+        "reasons": [
+          "Symmetrical card draw not efficient for this archetype",
+          "High cmc"
+        ],
+        "replacement_role": "draw",
+        "replacement_cmc_hint": [1, 3]
+      },
+      {
+        "card_name": "Summon: Kujata",
+        "cardId": "b3d4c5b2-83ea-5db2-b8e6-25818d5f075b",
+        "reasons": [
+          "Too complex",
+          "High cmc 6",
+          "Not synergistic with equipment theme"
+        ],
+        "replacement_role": "wincon",
+        "replacement_cmc_hint": [3, 6]
+      },
+      {
+        "card_name": "Bastion Protector",
+        "cardId": "d4a1fafb-1b05-5cdb-8728-476c0eb821bf",
+        "reasons": [
+          "Requires specific commander type (Commander creatures)",
+          "Low impact on overall game plan"
+        ],
+        "replacement_role": "engine",
+        "replacement_cmc_hint": [2, 4]
+      },
+      {
+        "card_name": "Inspiring Statuary",
+        "cardId": "42e69582-e5f2-5ca0-bb4a-f0684e56be36",
+        "reasons": [
+          "Indirect synergy only",
+          "Improvise less consistent for equipment ramp"
+        ],
+        "replacement_role": "ramp",
+        "replacement_cmc_hint": [1, 3]
+      },
+      {
+        "card_name": "Rampant Growth",
+        "cardId": "18552b0c-39ae-58e1-8224-a2cae64738a0",
+        "reasons": ["Slow enter tapped ramp", "Less efficient than other ramp"],
+        "replacement_role": "ramp",
+        "replacement_cmc_hint": [1, 3]
+      },
+      {
+        "card_name": "Armory Automaton",
+        "cardId": "6262d9fa-0755-58f6-bd12-435c6f213119",
+        "reasons": ["Situational effect", "Slow and narrow synergy"],
+        "replacement_role": "wincon",
+        "replacement_cmc_hint": [3, 5]
+      },
+      {
+        "card_name": "Skullclamp",
+        "cardId": "6f656f18-5b67-5d98-91e1-c72762dab5b5",
+        "reasons": [
+          "Draw effect costly in creature positioning",
+          "Equipped creature gets -1 toughness"
+        ],
+        "replacement_role": "draw",
+        "replacement_cmc_hint": [2, 3]
+      }
+    ]
+  }
+}

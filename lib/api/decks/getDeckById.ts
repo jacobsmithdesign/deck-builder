@@ -6,7 +6,12 @@ export async function getDeckById(deckId: string) {
 
   const { data: deckData, error } = await supabase
     .from("decks")
-    .select("*, deck_cards(*, cards(*))")
+    .select(
+      `*, 
+      deck_cards(*, cards(*)), 
+      commander:cards!decks_commander_uuid_fkey( uuid, name, mana_value, mana_cost, type, text, color_identity, identifiers)
+      `
+    )
     .eq("id", deckId)
     .single();
 
@@ -27,6 +32,7 @@ export async function getDeckById(deckId: string) {
       isUserDeck,
       display_card_uuid: deckData.display_card_uuid ?? null,
       commander_uuid: deckData.commander_uuid ?? null,
+      commander: deckData.commander ?? null,
       cards: deckData.deck_cards.map((c: any) => {
         const card = c.cards;
         const identifiers = card.identifiers ?? {};
