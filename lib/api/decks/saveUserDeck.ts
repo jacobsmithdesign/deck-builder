@@ -2,14 +2,14 @@ import { v4 as uuidv4 } from "uuid";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 type SaveDeckArgs = {
-  preconDeckId: string;
+  deckId: string;
   name: string;
   description: string;
   isPublic: boolean;
 };
 
-export async function saveNewDeckOnServer({
-  preconDeckId,
+export async function saveDeckOnServer({
+  deckId,
   name,
   description,
   isPublic,
@@ -30,7 +30,7 @@ export async function saveNewDeckOnServer({
   const { data: preconDeck, error: deckError } = await supabase
     .from("decks")
     .select("*, deck_cards(*)")
-    .eq("id", preconDeckId)
+    .eq("id", deckId)
     .single();
 
   if (deckError || !preconDeck) {
@@ -52,7 +52,7 @@ export async function saveNewDeckOnServer({
 
   // Step 3: Copy over the deck_cards entries
   const newDeckCards = (preconDeck.deck_cards ?? []).map((card: any) => ({
-    deck_id: newDeckId,
+    deck_id: deckId,
     card_uuid: card.card_uuid,
     count: card.count,
     board_section: card.board_section ?? "mainboard",
@@ -69,5 +69,5 @@ export async function saveNewDeckOnServer({
     }
   }
 
-  return { newDeckId };
+  return { deckId };
 }
