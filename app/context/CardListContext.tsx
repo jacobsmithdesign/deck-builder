@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 import { CardRecord } from "@/lib/schemas";
 import type { DeckFeatureVector } from "@/lib/ai/features";
+import { useUser } from "./userContext";
 
 export interface DeckMetadata {
   id: string;
@@ -83,6 +84,7 @@ interface CardListContextType {
   // deck metadata
   deck: DeckMetadata | null;
   setDeck: (deck: DeckMetadata) => void;
+  userOwnsDeck: boolean;
 
   // features
   deckFeatures: DeckFeatureVector | null;
@@ -118,6 +120,11 @@ export const CardListProvider = ({ children }: { children: ReactNode }) => {
   const [landFeatures, setLandFeatures] = useState<LandFeatures | null>(null);
   const [archetypeOverview, setArchetypeOverview] =
     useState<ArchetypeOverview>(null);
+  const { profile } = useUser();
+
+  // derive ownership from user profile and deck userId
+  const userId = (profile as any)?.id || null;
+  const userOwnsDeck = !!deck && !!userId && deck.userId === userId;
 
   // card helpers
   const setCards = (newCards: CardRecord[]) => setCardsState(newCards);
@@ -138,6 +145,7 @@ export const CardListProvider = ({ children }: { children: ReactNode }) => {
   // AI overview helpers
   const setAiOverview = (overview: AiOverview | null) =>
     setAiOverviewState(overview);
+
   const resetAiOverview = () => setAiOverviewState(null);
   // AI Archetype Overview
   const resetArchetypeOverview = () => setArchetypeOverview(null);
@@ -154,6 +162,7 @@ export const CardListProvider = ({ children }: { children: ReactNode }) => {
         // deck
         deck,
         setDeck,
+        userOwnsDeck,
         // features
         deckFeatures,
         setDeckFeatures,

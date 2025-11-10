@@ -17,7 +17,6 @@ export default function AddToCollectionButton() {
     refetch: refetchSaved,
     linkId: userCopyDeckId,
   } = useIsDeckSaved(deck?.id);
-
   const [deckIsSaved, setDeckIsSaved] = useState<boolean>(false);
 
   const toggleCloseModal = () => setShowModal(false);
@@ -45,44 +44,49 @@ export default function AddToCollectionButton() {
   }, []);
 
   return (
-    <div className="z-20">
-      <AnimatePresence>
-        {/* Add to collection button */}
-        {!deckSaved ? (
-          <Button
-            variant="frosted"
-            className={`${showBoard ? "mt-2 ml-50" : "ml-25"}`}
-            onClick={toggleOpenModal}
-            title={checkingSaved ? "Checking…" : "Add to Collection"}
-          />
-        ) : (
-          <Link
-            href={`/deck/${userCopyDeckId}`}
-            className={`absolute shadow-inner flex items-center h-7 rounded-md px-2 backdrop-blur-sm cursor-pointer transition-all duration-150 group ml-1 ${
-              showBoard ? "mt-1 ml-15" : "ml-27 "
-            } bg-green-300/60 shadow-green-200/60 text-green-700 md:hover:bg-green-200/80
-               md:hover:pr-8 `}
-          >
-            <RxCheck className="mr-1 w-4 md:group-hover:w-0 transition-all" />
-            In your collection
-            <RxArrowTopRight className="w-0 md:group-hover:w-4 right-0 absolute mr-2 transition-all" />
-          </Link>
-        )}
+    <AnimatePresence>
+      {!checkingSaved && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.1 }}
+        >
+          {/* Add to collection button */}
+          {!deckSaved ? (
+            <button
+              className={`cursor-pointer bg-light/60 h-7 rounded-md backdrop-blur-md md:hover:bg-light/80 border border-dark/20 text-sm md:text-base px-2 md:hover:drop-shadow-sm transition-all duration-150 md:hover:border-light`}
+              onClick={toggleOpenModal}
+            >
+              + Add to collection
+            </button>
+          ) : (
+            <Link
+              href={`/deck/${userCopyDeckId}`}
+              className={`flex items-center h-7 rounded-md px-2 backdrop-blur-sm cursor-pointer transition-all duration-150 bg-green-300/60 text-green-700 md:hover:bg-green-200/50
+              group md:hover:pr-8 border border-green-500/70`}
+            >
+              <RxCheck className="mr-1 w-4 md:group-hover:w-0 transition-all" />
+              In your collection
+              <RxArrowTopRight className="w-0 md:group-hover:w-4 right-0 absolute mr-2 transition-all" />
+            </Link>
+          )}
 
-        {showModal && (
-          <div
-            className={`absolute ${
-              showBoard ? "mt-11 ml-2" : "mt-9 ml-1 "
-            } transition-all duration-150`}
-          >
-            <AddToCollectionModal
-              closeModal={toggleCloseModal}
-              onDeckCreated={handleDeckSaved}
-              saveDeck={handleDeckSaved}
-            />
-          </div>
-        )}
-      </AnimatePresence>
-    </div>
+          {showModal && (
+            <div
+              className={`absolute z-20 ${
+                showBoard ? "mt-1 -translate-x-14" : "mt-1"
+              } transition-all duration-150 `}
+            >
+              <AddToCollectionModal
+                closeModal={toggleCloseModal}
+                onDeckCreated={handleDeckSaved}
+                saveDeck={handleDeckSaved}
+              />
+            </div>
+          )}
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

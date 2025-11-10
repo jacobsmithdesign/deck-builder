@@ -34,12 +34,15 @@ export default function Details() {
               thumbClassName="bg-light/60 rounded-xs"
               autoHide={true}
             >
-              <div className="pt-8 pr-1">
+              <div className="pt-8 pr-1 flex flex-col">
                 {/* New components go here */}
                 <ArchetypeOverview />
-                <PrimarySecondaryAxis />
-                <CardSuggestions />
+                {/* <PrimarySecondaryAxis /> */}
+                {/* <CardSuggestions /> */}
                 {/* In the future, when components have been built, replace this map with each component. it should fit the height properly  */}
+                <h1 className="text-center w-fit text-lg font-bold mt-8 mx-auto px-2 flex bg-orange-300/40 rounded-md outline outline-orange-300/40 text-orange-500/40">
+                  /// PLACEHOLDER ANALYSIS ///
+                </h1>
                 {dummyData.map((item, index) => (
                   <Card className="" key={index}>
                     <CardContent className="border-b border-dark/20">

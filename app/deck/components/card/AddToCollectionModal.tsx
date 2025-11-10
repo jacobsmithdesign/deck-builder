@@ -6,6 +6,7 @@ import { RxCheck } from "react-icons/rx";
 import { AnimatedButton } from "../AnimatedButton";
 import { saveNewDeckClient } from "@/lib/api/decks/client/saveNewDeckClient";
 import { useCardList } from "@/app/context/CardListContext";
+import { useCompactView } from "@/app/context/compactViewContext";
 
 export default function AddToCollectionModal({
   closeModal,
@@ -16,6 +17,7 @@ export default function AddToCollectionModal({
   onDeckCreated?: (id: string) => void;
 }) {
   const { deck } = useCardList();
+  const { showBoard } = useCompactView();
   const [description, setDescription] = useState("");
   const [isPublic, setIsPublic] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -42,26 +44,29 @@ export default function AddToCollectionModal({
   };
 
   return (
-    <div className="top-0 overflow-clip hide-scrollbar bg-light/70 justify-between flex flex-col p-1 backdrop-blur-md px-1 pb-2 rounded-lg max-w-lg shadow-inner shadow-light/60">
-      <h2 className="text-lg font-bold rounded-sm px-1">Save new deck</h2>
+    <div
+      className={`top-0 overflow-clip hide-scrollbar bg-light justify-between flex flex-col p-1 max-w-lg text-left  ${
+        showBoard ? "outline outline-dark/5 rounded-br-lg" : ""
+      }`}
+    >
       <input
         type="text"
         placeholder="Deck Name"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        className="w-96 p-1 text-base bg-light/80 rounded-md mb-1"
+        className="w-96 p-1 text-base bg-dark/10 rounded-sm mb-1 border border-dark/10"
       />
       <textarea
         placeholder="Optional description..."
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        className="w-full p-2 bg-light/80 rounded-md mb-1 max-h-48 min-h-10"
+        className="w-full p-2 bg-dark/10 rounded-l-md rounded-t-md mb-1 max-h-48 min-h-10 border border-dark/10"
       />
       <Field className="flex items-center gap-2 group cursor-pointer">
         <Checkbox
           checked={isPublic}
           onChange={setIsPublic}
-          className="group size-6 rounded-md bg-light/50 p-1 ring-1 ring-light/30 ring-inset focus:not-data-focus:outline-none data-checked:bg-light data-focus:outline data-focus:outline-offset-2 data-focus:outline-light group-active:scale-90 transition-all duration-100 "
+          className="group size-6 rounded-md bg-light/50 p-1 ring-1 ring-light/30 ring-inset focus:not-data-focus:outline-none data-checked:bg-light data-focus:outline data-focus:outline-offset-2 data-focus:outline-light group-active:scale-90 transition-all duration-100 outline outline-dark/20"
         >
           <RxCheck className="hidden size-4 fill-black group-data-checked:block" />
         </Checkbox>
@@ -75,7 +80,7 @@ export default function AddToCollectionModal({
         />
         <button
           disabled={loading}
-          className="px-2 lg:text-base text-sm rounded-md h-6 bg-buttonBlue md:hover:bg-buttonBlue/80 text-light cursor-pointer"
+          className="px-2 lg:text-base text-sm rounded-sm h-6 bg-buttonBlue md:hover:bg-buttonBlue/80 text-light cursor-pointer"
           onClick={handleSaveClick}
         >
           {loading ? "Saving..." : "Save Deck"}

@@ -13,6 +13,7 @@ import { useCardList } from "@/app/context/CardListContext";
 import { AnimatedButtonLoading } from "../AnimatedButtonLoading";
 import { useAnalyseArchetypeProgress } from "@/app/hooks/useAnalyseArchetypeProgress";
 import { RadarIdentity } from "./RadarIdentity";
+import { arch } from "os";
 
 // This function makes a slug more presentable by capitalizing words and replacing underscores with spaces.
 function niceLabel(slug: string) {
@@ -41,6 +42,7 @@ export default function ArchetypeOverview() {
   const { archetypeOverview, deck, setArchetypeOverview } = useCardList();
   const { analysing, progress, step, start, error } =
     useAnalyseArchetypeProgress();
+  const { userOwnsDeck } = useCardList();
 
   // These two constants memoize the radar data and explanation array to avoid unnecessary re-renders.
   const radarData = React.useMemo(
@@ -58,6 +60,40 @@ export default function ArchetypeOverview() {
     if (!deck?.id || analysing) return;
     start(deck.id);
   };
+  if (!archetypeOverview)
+    return (
+      <Card className="w-full mt-2 text-dark/80 rounded-lg overflow-clip">
+        <CardHeader className="gap-1 py-1 rounded-md px-1 mb-1">
+          <CardTitle className="flex h-7 items-center justify-between rounded-md px-2">
+            <div className="flex gap-4 items-center ">
+              <span>Archetype Overview</span>
+              {userOwnsDeck && (
+                <AnimatedButtonLoading
+                  variant="aiAnalyse"
+                  size="sm"
+                  title={
+                    analysing
+                      ? `Analysing${progress ? ` (${progress}%)` : ""}`
+                      : archetypeOverview
+                      ? "Re-analyse"
+                      : "Analyse Now"
+                  }
+                  loading={analysing}
+                  onClick={handleAnalyse}
+                  disabled={!deck?.id}
+                />
+              )}
+            </div>
+          </CardTitle>
+          <h3 className="ml-2">
+            {userOwnsDeck
+              ? `Click Analyse Now to generate an archetype analysis of ${deck?.name}.`
+              : `The owner of ${deck?.name} has not specified an archetype overview yet. Add this deck to your collection to run an AI analysis of its archetype.`}
+          </h3>
+        </CardHeader>
+      </Card>
+    );
+  console.log(archetypeOverview);
 
   return (
     <Card className="w-full mt-2 text-dark/80 rounded-lg overflow-clip ">

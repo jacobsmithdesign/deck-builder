@@ -56,9 +56,6 @@ export default function AnimatedDeckView() {
                 !showBoard && "mb-1 "
               } pt-1 absolute px-1 z-20 flex`}
             >
-              {enableAddToCollectionButton && !userOwnsDeck && (
-                <AddToCollectionButton />
-              )}
               <div className={`w-full transition-all`}>
                 <EditModeProvider>
                   <CardTable />

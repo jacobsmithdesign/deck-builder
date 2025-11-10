@@ -33,6 +33,7 @@ export default function AuthPage() {
       setError(error.message);
     } else {
       router.push("/");
+      window.location.reload();
     }
   };
 
@@ -47,7 +48,7 @@ export default function AuthPage() {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
+          placeholder="email"
           className="w-full p-2 mb-2 border rounded"
         />
         <input

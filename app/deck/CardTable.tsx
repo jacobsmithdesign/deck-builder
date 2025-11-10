@@ -17,16 +17,29 @@ import EditButton from "./components/card/EditControls";
 import { Button } from "@/app/deck/components/button";
 import EditControls from "./components/card/EditControls";
 import { useEditMode } from "../context/editModeContext";
+import AddToCollectionButton from "./components/card/AddToCollectionButton";
 
 export const CardTable = () => {
   const { deck } = useCardList();
   const { editMode, toggleEditMode } = useEditMode();
+  const { profile } = useUser();
   const [isEditing, setIsEditing] = useState<boolean>(false); // State to manage if the deck is being edited (isOwner && editMode)
   const { showBoard, toggleShowBoard } = useCompactView();
+  const [userOwnsDeck, setUserOwnsDeck] = useState<boolean>(false);
+  const [enableAddToCollectionButton, setEnableAddToCollectionButton] =
+    useState<boolean>(false);
 
+  useEffect(() => {
+    if (deck && profile) {
+      setUserOwnsDeck(profile.id === deck.userId);
+      setEnableAddToCollectionButton(true);
+    }
+  }, [profile, deck]);
   if (!deck) {
     return <div className="text-center text-lg">Loading deck...</div>;
   }
+  const showAddToCollectionButton =
+    enableAddToCollectionButton && !userOwnsDeck;
 
   return (
     // This is the entire deck preview board, starting with the header containing edit/ save/ minimise buttons etc.
@@ -34,30 +47,39 @@ export const CardTable = () => {
 
     <Board
       className={` ${
-        showBoard ? "pb-2" : " h-8 w-27 "
-      } transition-all duration-200 relative z-0 overflow-y-scroll hide-scrollbar rounded-none ease-in-out px-1 text-center mt-0`}
+        showBoard ? "pb-2 w-full" : " h-8 w-full"
+      } transition-all duration-200 relative z-0 hide-scrollbar rounded-none ease-in-out px-1 text-center mt-0`}
     >
       {/* The header above the board of cards */}
       <BoardHeader
-        className={` bg-light/60 flex relative backdrop-blur-sm group rounded-md ${
+        className={`flex relative rounded-md ${
           showBoard
-            ? "rounded-b-none h-9 rounded-t-lg justify-between"
+            ? "bg-light/60 rounded-b-none h-9 rounded-t-lg justify-between"
             : "h-7 justify-start"
         }  transition-all duration-100 ease-out mx-auto items-center`}
       >
-        {!showBoard && <p className="pl-1"> Show cards</p>}
         {!showBoard ? (
-          <button className="absolute w-full h-7" onClick={toggleShowBoard} />
-        ) : (
-          // Back button to minimise the board
-          <Button
-            variant="darkFrosted"
-            className="h-7 w-12"
+          <button
+            className="bg-light/60 border border-dark/20 md:hover:border-light w-28 h-7 px-1 text-sm md:text-base md:hover:bg-light/80 md:hover: md:hover:drop-shadow-sm z-0 items-center justify-center flex rounded-md backdrop-blur-md transition-all duration-150 cursor-pointer"
             onClick={toggleShowBoard}
           >
-            <RxArrowLeft className="h-4 w-4" />
-          </Button>
+            <p> Show Cards</p>
+          </button>
+        ) : (
+          // Back button to minimise the board
+          <div className="flex gap-1">
+            <Button
+              variant="darkFrosted"
+              className="h-7 w-12 z-10"
+              onClick={toggleShowBoard}
+            >
+              <RxArrowLeft className="h-4 w-4" />
+            </Button>
+            {showAddToCollectionButton && <AddToCollectionButton />}
+          </div>
         )}
+
+        {showAddToCollectionButton && !showBoard && <AddToCollectionButton />}
         {/* Deck editing controls. e.g. Edit / Save */}
         {showBoard && <EditControls />}
       </BoardHeader>

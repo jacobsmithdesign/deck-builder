@@ -21,7 +21,8 @@ export default function UserIcon() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.refresh(); // or router.push("/") to go somewhere else after logout
+    router.push("/");
+    window.location.reload(); // or router.push("/") to go somewhere else after logout
   };
 
   if (loading) return null;
