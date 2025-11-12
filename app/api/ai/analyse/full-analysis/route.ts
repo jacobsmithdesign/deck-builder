@@ -182,11 +182,28 @@ export async function GET(req: NextRequest) {
 
           return `
           Return ONLY minified JSON with EXACT keys:
-              {
+            {
+              archetype: {
                 "axes": { "<slug-1>": 0, ... },
                 "explanation_md": { "<slug-1>": <markdown string>, ... }, 
                 "description": <text> (1-2 sentences)
-              }
+              },
+              sw: {
+                "strengths": { "name" (1-2 words): <markdown string> (3-5 sentences), ... },
+                "weaknesses": { "name" (1-2 words): <markdown string> (3-5 sentences), ... },
+
+              },
+              difficulty: {
+                "power_level": <number> (1-10),
+                "power_level_explanation": <string>(<=170),
+                "complexity":"Low"|"Medium"|"High",
+                "complexity_explanation":string(<=170),
+                "pilot_skill":"Beginner"|"Intermediate"|"Advanced",
+                "pilot_skill_explanation":string(<=170),
+                "interaction_intensity":"Low"|"Medium"|"High",
+                "interaction_explanation":string(<=170),              
+              },
+              pillars: { "<slug-1>": <markdown string> (2-4 sentences), ... }
 
             Archetype vocabulary=${TAG_VOCAB}
 
@@ -195,6 +212,8 @@ export async function GET(req: NextRequest) {
             axes: ranked 0–100, keys ⊆ archetypes, reflecting the strength of each chosen archetype in this deck.
 
             explanation_md: maximum 120 words in Markdown, purely extractive. Explain the reasoning behind the archetype's rank and its impact on the deck's playstyle. You may use some example cards from the card list justify the archetypes and their relative weighting. 
+
+            strengths/weaknesses: 2–4 items, 1–3 words.
 
             DECK INFO:
             Commander: ${commander}
@@ -210,7 +229,7 @@ export async function GET(req: NextRequest) {
             {
               role: "system",
               content:
-                "You are an expert MTG Commander deck analyst. Your job is to read a deck of any bracket to extract its core  archetypes. ONLY USE CARDS IN DECK INFO. Do not invent cards, categories, or details that are not directly supported. Return exactly one JSON object.",
+                "You are an expert MTG Commander deck analyst. Your job is to read a deck of any bracket to extract its core identity. You must identify its archetypes, strengths and weaknesses, accurately assess its difficulty for most players, and identify its main pillars. ONLY USE CARDS IN DECK INFO. Do not invent cards, categories, or details that are not directly supported. Return exactly one JSON object.",
             },
             { role: "user", content: prompt },
           ],
@@ -228,20 +247,43 @@ export async function GET(req: NextRequest) {
           completion.choices[0]?.message?.content ?? "{}"
         );
         // basic guards
-        if (!json || !json.explanation_md || !json.axes) {
+        if (!json || !json.archetype || !json.difficulty) {
           throw new Error("Model output missing required fields");
         }
-
+        console.log("Full analysis model output:", json);
         write("progress", { step: "saving", progress: 92 });
-
+        // 1) Add deck difficulty
+        await supabase.from("deck_ai_difficulty").upsert({
+          deck_id: deckId,
+          power_level: json.difficulty.power_level,
+          power_level_explanation: json.difficulty.power_level_explanation,
+          complexity: json.difficulty.complexity,
+          complexity_explanation: json.difficulty.complexity_explanation,
+          pilot_skill: json.difficulty.pilot_skill,
+          pilot_skill_explanation: json.difficulty.pilot_skill_explanation,
+          interaction_intensity: json.difficulty.interaction_intensity,
+          interaction_explanation: json.difficulty.interaction_explanation,
+          updated_at: new Date().toISOString(),
+        });
+        // 2) Add strengths and weaknesses
+        await supabase.from("deck_ai_strengths_weaknesses").upsert({
+          deck_id: deckId,
+          strengths: json.sw.strengths,
+          weaknesses: json.sw.weaknesses,
+        });
+        // 3) Add strengths and weaknesses
+        await supabase.from("deck_ai_pillars").upsert({
+          deck_id: deckId,
+          pillars: json.pillars,
+        });
         // 4) Add archetype overview
         const { error: updateErr } = await supabase
           .from("deck_archetype_overview")
           .upsert({
             deck_id: deckId,
-            axes: json.axes,
-            explanation_md: json.explanation_md,
-            description: json.description,
+            axes: json.archetype.axes,
+            explanation_md: json.archetype.explanation_md,
+            description: json.archetype.description,
             updated_at: new Date().toISOString(),
           });
         if (updateErr) throw updateErr;
@@ -249,9 +291,10 @@ export async function GET(req: NextRequest) {
           step: "done",
           progress: 100,
           deckId,
-          axes: json.axes,
-          explanation_md: json.explanation_md,
-          description: json.description,
+          archetype: json.archetype,
+          sw: json.sw,
+          pillars: json.pillars,
+          difficulty: json.difficulty,
         });
       } catch (err: any) {
         controller.enqueue(

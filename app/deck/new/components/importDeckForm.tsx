@@ -1,7 +1,7 @@
 import { CardTitle } from "@/app/components/ui/card";
 import { useState } from "react";
 import { Button } from "../../components/button";
-import { CardLine, parseDeckText } from "@/app/hooks/parseDeckText";
+import { parseDeckText } from "@/app/hooks/parseDeckText";
 import { useRouter } from "next/navigation";
 import { saveNewDeckClient } from "@/lib/api/decks/client/saveNewDeckClient";
 import { CommanderCard } from "@/app/context/CommanderContext";
@@ -16,13 +16,19 @@ interface dbCardInterface {
   count: number;
   board_section: string; // "mainboard" | "sideboard" etc
 }
+type CardLine = {
+  count: number;
+  name: string;
+  uuid?: string;
+  type?: string;
+};
 export default function ImportDeckForm() {
   const [description, setDescription] = useState("");
   const [isPublic, setIsPublic] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [deckText, setDeckText] = useState<string>("");
   const [importSuccess, setImportSuccess] = useState<boolean | null>(null);
-  const [commanderOptions, setCommanderOptions] = useState<string[] | null>(
+  const [commanderOptions, setCommanderOptions] = useState<CardLine[] | null>(
     null
   );
   const [name, setName] = useState<string | null>(null);
@@ -37,12 +43,12 @@ export default function ImportDeckForm() {
     const result = await parseDeckText(deckText);
     if (result) {
       setImportSuccess(true);
-      const commanderList: string[] = [];
+      const commanderList: CardLine[] = [];
       const cards: dbCardInterface[] = [];
       for (const card of result) {
         // If its legendary add to list of possible commanders
         if (/Legendary\b(?:\s+[^\s]+)*\s+Creature\b/i.test(card.type))
-          commanderList.push(card.name);
+          commanderList.push(card);
         // Otherwise add to full card list
         cards.push({
           card_uuid: card.uuid,
@@ -82,8 +88,8 @@ export default function ImportDeckForm() {
     }
   };
 
-  const handleSelectCommander = async (name: string) => {
-    const result = await searchCommander(name);
+  const handleSelectCommander = async (id?: string) => {
+    const result = await searchCommander(undefined, id);
     if (result) {
       setCommander(result[0]);
     }
@@ -144,19 +150,19 @@ export default function ImportDeckForm() {
           <div className="p-2 bg-dark/10 rounded-lg outline outline-dark/20">
             <p>Choose your commander</p>
             <div className="flex flex-col w-64">
-              {commanderOptions?.map((name) => (
+              {commanderOptions?.map((option) => (
                 <Button
-                  key={name}
+                  key={option.name}
                   variant={
-                    name === commander?.name
+                    option.name === commander?.name
                       ? "darkFrostedActive"
                       : "darkFrosted"
                   }
                   className="mt-2 justify-start text-base"
                   size="sm"
-                  onClick={() => handleSelectCommander(name)}
+                  onClick={() => handleSelectCommander(option.uuid)}
                 >
-                  {name}
+                  {option.name}
                 </Button>
               ))}
             </div>

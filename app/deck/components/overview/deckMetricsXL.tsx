@@ -41,90 +41,72 @@ export const interactionColors: Record<string, string> = {
 };
 
 type MetricKey =
-  | "ai_power_level"
-  | "ai_pilot_skill"
-  | "ai_interaction"
-  | "ai_complexity";
+  | "power_level"
+  | "pilot_skill"
+  | "interaction_intensity"
+  | "complexity";
 
 type MetricDef = {
   key: MetricKey;
   icon: React.ComponentType<{ className?: string }>;
   colorMap: Record<number, string> | Record<string, string>;
-  get: (ai: any) => number | string | null | undefined;
+  get: (d: any) => number | string | null | undefined;
   descKeys: string[];
 };
 
 const metricConfig: MetricDef[] = [
   {
-    key: "ai_power_level",
+    key: "power_level",
     colorMap: powerLevelColors,
     icon: BsFillLightningChargeFill,
-    get: (ai) => ai?.ai_power_level,
-    descKeys: [
-      "ai_power_level_explanation",
-      "ai_power_level_desc",
-      "ai_power_level_text",
-    ],
+    get: (d) => d?.power_level,
+    descKeys: ["power_level_explanation"],
   },
   {
-    key: "ai_pilot_skill",
+    key: "pilot_skill",
     colorMap: pilotSkillColors,
     icon: RiBrainFill,
-    get: (ai) => ai?.ai_pilot_skill,
-    descKeys: [
-      "ai_pilot_skill_explanation",
-      "ai_pilot_skill_desc",
-      "ai_pilot_skill_text",
-    ],
+    get: (d) => d?.pilot_skill,
+    descKeys: ["pilot_skill_explanation"],
   },
   {
-    key: "ai_interaction",
+    key: "interaction_intensity",
     colorMap: interactionColors,
     icon: AiFillInteraction,
-    get: (ai) => ai?.ai_interaction,
-    descKeys: [
-      "ai_interaction_explanation",
-      "ai_interaction_desc",
-      "ai_interaction_text",
-      "ai_interaction_intensity_explanation",
-    ],
+    get: (d) => d?.interaction_intensity,
+    descKeys: ["interaction_intensity_explanation", "interaction_explanation"],
   },
   {
-    key: "ai_complexity",
+    key: "complexity",
     colorMap: complexityColors,
     icon: IoExtensionPuzzle,
-    get: (ai) => ai?.ai_complexity,
-    descKeys: [
-      "ai_complexity_explanation",
-      "ai_complexity_desc",
-      "ai_complexity_text",
-    ],
+    get: (d) => d?.complexity,
+    descKeys: ["complexity_explanation"],
   },
 ];
 
 function prettyLabel(k: string) {
-  return k.replace("ai_", "").replace(/_/g, " ");
+  return k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
-function pickDescription(ai: any, candidates: string[]) {
+function pickDescription(obj: any, candidates: string[]) {
   for (const key of candidates) {
-    const v = ai?.[key];
+    const v = obj?.[key];
     if (typeof v === "string" && v.trim()) return v.trim();
   }
   return null;
 }
 
 export function DeckMetricsXL({ className = "" }: { className?: string }) {
-  const { aiOverview } = useCardList();
+  const { difficulty } = useCardList(); // new shape set via hydrateDeckIntoContext
   const [idx, setIdx] = useState(0);
-  if (!aiOverview) return null;
+  if (!difficulty) return null;
 
   const current = metricConfig[idx];
-  const cycle = () => setIdx((i) => (i + 1) % metricConfig.length);
+  const currentValue = current.get(difficulty);
 
-  // compute current state for bottom card
-  const currentValue = current.get(aiOverview);
+  // decide colour
   let currentColor = "bg-light/50";
-  if (current.key === "ai_power_level" && typeof currentValue === "number") {
+  if (current.key === "power_level" && typeof currentValue === "number") {
     const n = Math.max(1, Math.min(10, currentValue));
     currentColor =
       (powerLevelColors as Record<number, string>)[n] ?? currentColor;
@@ -133,18 +115,16 @@ export function DeckMetricsXL({ className = "" }: { className?: string }) {
       (current.colorMap as Record<string, string>)[currentValue] ??
       currentColor;
   }
+
   const CurrentIcon = current.icon;
   const description =
-    pickDescription(aiOverview, current.descKeys) ??
+    pickDescription(difficulty, current.descKeys) ??
     `No description provided yet for ${prettyLabel(current.key)}.`;
-  const handleIdxChange = (number: number) => {
-    setIdx(number);
-  };
-  return (
-    <div className="w-full h-full gap-1 flex flex-col">
-      {/* Top pills: now clickable to select the metric */}
 
-      {/* Bottom description panel (click to cycle, or use the pills above) */}
+  const handleIdxChange = (number: number) => setIdx(number);
+
+  return (
+    <div className={`w-full h-full gap-1 flex flex-col ${className}`}>
       <div
         id={`metric-panel-${current.key}`}
         className="w-full h-full text-left bg-light/60 rounded-md transition-all flex flex-col relative"
@@ -159,7 +139,7 @@ export function DeckMetricsXL({ className = "" }: { className?: string }) {
               {prettyLabel(current.key)} -
             </span>
             <div className="flex items-center gap-1">
-              {currentValue && (
+              {currentValue != null && currentValue !== "" && (
                 <span className="text-sm font-bold rounded text-dark/90 ">
                   {String(currentValue)}
                 </span>

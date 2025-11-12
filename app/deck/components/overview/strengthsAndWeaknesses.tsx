@@ -1,12 +1,13 @@
 import { useCardList } from "@/app/context/CardListContext";
 import { AnimatePresence, motion } from "framer-motion";
+import { niceLabel } from "../details/ArchetypeOverview";
 
 export function StrengthsAndWeaknesses({
   compactView = false,
 }: {
   compactView?: boolean;
 }) {
-  const { aiOverview } = useCardList();
+  const { strengthsAndWeaknesses } = useCardList();
   return (
     <AnimatePresence>
       {!compactView && (
@@ -31,19 +32,29 @@ export function StrengthsAndWeaknesses({
           <div className="flex flex-col h-full gap-1 p-1 bg-light/60 outline outline-dark/20 rounded-md">
             <div className="flex flex-wrap gap-1 text-sm">
               Strengths:
-              {aiOverview?.ai_strengths?.map((strength) => (
-                <div className="bg-green-300/40 w-fit px-1 text-sm rounded">
-                  {strength}
-                </div>
-              ))}
+              {Object.keys(strengthsAndWeaknesses?.strengths ?? {}).map(
+                (name) => (
+                  <div
+                    key={name}
+                    className="bg-green-300/40 w-fit px-1 text-sm rounded"
+                  >
+                    {niceLabel(name)}
+                  </div>
+                )
+              )}
             </div>
             <div className="flex flex-wrap gap-1 text-sm">
               Weaknesses:
-              {aiOverview?.ai_weaknesses?.map((weakeness) => (
-                <div className="bg-red-300/40 w-fit px-1 text-sm rounded">
-                  {weakeness}
-                </div>
-              ))}
+              {Object.keys(strengthsAndWeaknesses?.weaknesses ?? {}).map(
+                (name) => (
+                  <div
+                    key={name}
+                    className="bg-red-300/40 w-fit px-1 text-sm rounded"
+                  >
+                    {niceLabel(name)}
+                  </div>
+                )
+              )}
             </div>
           </div>
         </motion.div>

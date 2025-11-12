@@ -37,28 +37,26 @@ export type LandFeatures = {
 
 // AI overview payload we store in context
 export type AiOverview = {
-  tagline?: string | null;
-  ai_rank?: string[] | null;
-  ai_tags?: string[] | null;
-  ai_strengths?: string[] | null;
-  ai_weaknesses?: string[] | null;
+  tagline: string | null;
+  ai_rank: number | null;
+  ai_tags: string[] | null;
+  ai_strengths: Record<string, string> | null;
+  ai_weaknesses: Record<string, string> | null;
   ai_generated_at: string | null;
-  ai_confidence?: number | null;
-  ai_spec_version?: string | null;
+  ai_confidence: number | null;
+  ai_spec_version: string | null;
 
-  // difficulty axes
-  ai_power_level?: string | null; // 1–10
-  ai_complexity?: "Low" | "Medium" | "High" | null;
-  ai_pilot_skill?: "Beginner" | "Intermediate" | "Advanced" | null;
-  ai_interaction?: "Low" | "Medium" | "High" | null;
-  ai_upkeep?: "Low" | "Medium" | "High" | null;
+  ai_power_level: number | null;
+  ai_complexity: string | null;
+  ai_pilot_skill: string | null;
+  ai_interaction: string | null; // maps from interaction_intensity
+  ai_upkeep: string | null; // (no source in new schema → null)
 
-  // short explanations (≤160 chars each)
-  ai_power_level_explanation?: string | null;
-  ai_complexity_explanation?: string | null;
-  ai_pilot_skill_explanation?: string | null;
-  ai_interaction_explanation?: string | null;
-  ai_upkeep_explanation?: string | null;
+  ai_power_level_explanation: string | null;
+  ai_complexity_explanation: string | null;
+  ai_pilot_skill_explanation: string | null;
+  ai_interaction_explanation: string | null;
+  ai_upkeep_explanation: string | null;
 };
 
 // AI Archetype Overview
@@ -69,6 +67,32 @@ export type ArchetypeOverview = {
   description: string;
   updated_at?: string | null;
 } | null;
+
+export type StrengthsAndWeaknesses = {
+  deckId: string;
+  strengths: Record<string, string>;
+  weaknesses: Record<string, string>;
+  updated_at?: string | null;
+};
+
+export type Pillars = {
+  deckId: string;
+  pillars: Record<string, string>;
+  updated_at?: string | null;
+};
+
+export type Difficulty = {
+  deckId: string;
+  power_level: number;
+  power_level_explanation: string;
+  complexity: string;
+  complexity_explanation: string;
+  pilot_skill: string;
+  pilot_skill_explanation: string;
+  interaction_intensity: string;
+  interaction_intensity_explanation: string;
+  updatedAt?: string | null;
+};
 
 // rest of file unchanged
 
@@ -102,6 +126,12 @@ interface CardListContextType {
   resetAiOverview: () => void;
   archetypeOverview: ArchetypeOverview;
   setArchetypeOverview: (v: ArchetypeOverview) => void;
+  strengthsAndWeaknesses: StrengthsAndWeaknesses;
+  setStrengthsAndWeaknesses: (v: StrengthsAndWeaknesses) => void;
+  pillars: Pillars;
+  setPillars: (v: Pillars) => void;
+  difficulty: Difficulty;
+  setDifficulty: (v: Difficulty) => void;
   resetArchetypeOverview: () => void;
 }
 
@@ -118,9 +148,14 @@ export const CardListProvider = ({ children }: { children: ReactNode }) => {
   );
   const [aiOverview, setAiOverviewState] = useState<AiOverview | null>(null);
   const [landFeatures, setLandFeatures] = useState<LandFeatures | null>(null);
+  const { profile } = useUser();
+  // States for AI overviews
   const [archetypeOverview, setArchetypeOverview] =
     useState<ArchetypeOverview>(null);
-  const { profile } = useUser();
+  const [strengthsAndWeaknesses, setStrengthsAndWeaknesses] =
+    useState<StrengthsAndWeaknesses>(null);
+  const [pillars, setPillars] = useState<Pillars>(null);
+  const [difficulty, setDifficulty] = useState<Difficulty>(null);
 
   // derive ownership from user profile and deck userId
   const userId = (profile as any)?.id || null;
@@ -131,7 +166,6 @@ export const CardListProvider = ({ children }: { children: ReactNode }) => {
   const addCard = (card: CardRecord) =>
     setCardsState((prev) => [...prev, card]);
   const removeCard = (card: CardRecord) => {
-    console.log("Removing card:", card);
     setCardsState((prev) => prev.filter((c) => c !== card));
   };
   const resetCards = () => setCardsState(originalCards);
@@ -176,6 +210,12 @@ export const CardListProvider = ({ children }: { children: ReactNode }) => {
         archetypeOverview,
         setArchetypeOverview,
         resetArchetypeOverview,
+        strengthsAndWeaknesses,
+        setStrengthsAndWeaknesses,
+        pillars,
+        setPillars,
+        difficulty,
+        setDifficulty,
         // land features
         landFeatures,
         setLandFeatures,

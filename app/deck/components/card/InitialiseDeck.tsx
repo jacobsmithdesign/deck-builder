@@ -13,6 +13,7 @@ import { supabase } from "@/lib/supabase/client";
 import { buildFeatures } from "@/lib/ai/features";
 import { compressLands } from "@/lib/ai/landCompression";
 import { ArchetypeOverviewRow } from "@/lib/db/archetypeOverview";
+import { hydrateDeckIntoContext } from "@/lib/utils/hydrateDeckIntoContext";
 
 type DeckWithCards = DeckRecord & {
   cards: (CardRecord & { count: number; board_section: string })[];
@@ -26,7 +27,7 @@ type CardRow = {
   text: string | null;
 };
 
-type DeckRow = {
+export type DeckRow = {
   id: string;
   name: string;
   commander: CardRow | null;
@@ -68,46 +69,55 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
     setLandFeatures,
     setAiOverview,
     setArchetypeOverview,
+    setStrengthsAndWeaknesses,
+    setPillars,
+    setDifficulty,
   } = useCardList();
   const { setDeckDetails, setCommanderCard } = useCommander();
   const [initialisedDeck, setInitialisedDeck] = useState<DeckWithCards>(deck);
-  async function fetchDeckPage(): Promise<DeckRow[]> {
+  async function fetchDeckPage(): Promise<any[]> {
     const { data, error } = await supabase
       .from("decks")
       .select(
         `
-        id,
-        name,
-        
-        tagline,
-        ai_rank,
-        ai_tags,
-        ai_strengths,
-        ai_weaknesses,
-        ai_generated_at,
-        ai_confidence,
-        ai_spec_version,
+        id, name, user_id, type, code, release_date, sealed_product,
+      commander_uuid, display_card_uuid,
 
-        ai_power_level,
-        ai_complexity,
-        ai_pilot_skill,
-        ai_interaction,
-        ai_upkeep,
-        ai_power_level_explanation,
-        ai_complexity_explanation,
-        ai_pilot_skill_explanation,
-        ai_interaction_explanation,
-        ai_upkeep_explanation,
-
-        commander:cards!decks_commander_uuid_fkey(
-          uuid, name, mana_value, mana_cost, type, text, color_identity
-        ),
-        deck_cards(
-          count, board_section,
-          card:cards!deck_cards_card_uuid_fkey(
-            uuid, name, mana_value, mana_cost, type, text, color_identity
-          )
+      deck_cards:deck_cards!inner (
+        count, board_section,
+        card:cards!deck_cards_card_uuid_fkey (
+          uuid, name, mana_cost, mana_value, type, text, identifiers, color_identity
         )
+      ),
+
+      deck_ai_difficulty (
+        power_level,
+        power_level_explanation,
+        complexity,
+        complexity_explanation,
+        pilot_skill,
+        pilot_skill_explanation,
+        interaction_intensity,
+        interaction_explanation,
+        updated_at
+      ),
+
+      deck_ai_strengths_weaknesses (
+        strengths,
+        weaknesses,
+        created_at
+      ),
+
+      deck_ai_pillars (
+        pillars
+      ),
+
+      deck_archetype_overview (
+        axes,
+        explanation_md,
+        description,
+        updated_at
+      )
         `
       )
       .eq("id", deck.id)
@@ -121,48 +131,74 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
   // Fetch the compressed deck data
   async function buildDeckFeatures() {
     try {
-      const deck = await fetchDeckPage();
+      const deckRows = await fetchDeckPage();
+
       await Promise.allSettled(
-        deck.map((deck) => {
-          const features = buildFeatures(deck as any);
-          const landFeatures = compressLands(deck as any);
+        deckRows.map((row) => {
+          hydrateDeckIntoContext(row, {
+            setDeck,
+            setCards,
+            setArchetypeOverview,
+            setStrengthsAndWeaknesses,
+            setPillars,
+            setDifficulty,
+          });
+
+          const features = buildFeatures(row as any);
+          const landFeatures = compressLands(row as any);
           setDeckFeatures(features);
           setLandFeatures(landFeatures);
-          // coerce ai_power_level number if DB stores as TEXT
-          const power =
-            deck.ai_power_level == null || deck.ai_power_level === ""
-              ? null
-              : Number(deck.ai_power_level);
 
-          const hasExistingAI = !!deck.ai_generated_at;
+          // ---------- AI overview bridge ----------
+          const diff = row.deck_ai_difficulty ?? null;
+          const sw = row.deck_ai_strengths_weaknesses ?? null;
+
+          const timestamps = [
+            row.deck_archetype_overview?.updated_at ?? null,
+            sw?.created_at ?? null,
+            diff?.updated_at ?? null,
+          ].filter(Boolean) as string[];
+
+          const ai_generated_at =
+            timestamps.length > 0
+              ? timestamps.sort().slice(-1)[0] // latest
+              : null;
+
+          const hasExistingAI =
+            !!diff ||
+            !!sw ||
+            !!row.deck_ai_pillars ||
+            !!row.deck_archetype_overview;
 
           setAiOverview(
             hasExistingAI
               ? {
-                  tagline: deck.tagline ?? null,
-                  ai_rank: deck.ai_rank ?? null,
-                  ai_tags: deck.ai_tags ?? null,
-                  ai_strengths: deck.ai_strengths ?? null,
-                  ai_weaknesses: deck.ai_weaknesses ?? null,
-                  ai_generated_at: deck.ai_generated_at ?? null,
-                  ai_confidence: deck.ai_confidence ?? null,
-                  ai_spec_version: deck.ai_spec_version ?? null,
+                  tagline: null,
+                  ai_rank: null,
+                  ai_tags: null,
+                  ai_confidence: null,
+                  ai_spec_version: null,
 
-                  ai_power_level: deck.ai_power_level ?? null,
-                  ai_complexity: deck.ai_complexity ?? null,
-                  ai_pilot_skill: deck.ai_pilot_skill ?? null,
-                  ai_interaction: deck.ai_interaction ?? null,
-                  ai_upkeep: deck.ai_upkeep ?? null,
+                  // ✅ keep as Record<string,string> (or null)
+                  ai_strengths: sw?.strengths ?? null,
+                  ai_weaknesses: sw?.weaknesses ?? null,
+                  ai_generated_at, // make sure AiOverview expects string | null
+
+                  ai_power_level: diff?.power_level ?? null,
+                  ai_complexity: diff?.complexity ?? null,
+                  ai_pilot_skill: diff?.pilot_skill ?? null,
+                  ai_interaction: diff?.interaction_intensity ?? null,
+                  ai_upkeep: null,
 
                   ai_power_level_explanation:
-                    deck.ai_power_level_explanation ?? null,
+                    diff?.power_level_explanation ?? null,
                   ai_complexity_explanation:
-                    deck.ai_complexity_explanation ?? null,
+                    diff?.complexity_explanation ?? null,
                   ai_pilot_skill_explanation:
-                    deck.ai_pilot_skill_explanation ?? null,
+                    diff?.pilot_skill_explanation ?? null,
                   ai_interaction_explanation:
-                    deck.ai_interaction_explanation ?? null,
-                  ai_upkeep_explanation: deck.ai_upkeep_explanation ?? null,
+                    diff?.interaction_explanation ?? null,
+                  ai_upkeep_explanation: null,
                 }
               : null
           );
@@ -174,52 +210,42 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
       console.error("Error fetching compressed deck data: ", error);
     }
   }
+  const validatedCards = deck.cards.map((c) => {
+    const scryfallId = c.identifiers.scryfallId;
+    const scryfallBackId = c.identifiers?.scryfallCardBackId ?? null;
+    return {
+      id: c.uuid,
+      name: c.name,
+      type: c.type,
+      mana_cost: c.mana_cost,
+      colorIdentity: c.color_identity,
+      power: c.power,
+      toughness: c.toughness,
+      loyalty: c.loyalty,
+      keywords: c.keywords,
+      variations: c.variations,
+      edhrec_rank: c.edhrec_rank,
+      edhrec_saltiness: c.edhrec_saltiness,
+      purchase_urls: c.purchase_urls,
+      cmc: c.converted_mana_cost,
+      text: c.text,
+      flavourText: c.flavor_text,
+      board_section: c.board_section,
+      imageFrontUrl: scryfallId
+        ? `https://cards.scryfall.io/normal/front/${scryfallId[0]}/${scryfallId[1]}/${scryfallId}.jpg`
+        : null,
+      imageBackUrl: scryfallBackId
+        ? `https://cards.scryfall.io/normal/back/${scryfallBackId[0]}/${scryfallBackId[1]}/${scryfallBackId}.jpg`
+        : null,
+      isDoubleFaced: !!scryfallBackId,
+      identifiers: c.identifiers ?? {},
+      count: c.count ?? 1,
+    };
+  });
 
-  async function fetchArchetypeOverview(
-    deckId: string
-  ): Promise<ArchetypeOverviewRow | null> {
-    const { data, error } = await supabase
-      .from("deck_archetype_overview")
-      .select("deck_id, axes, explanation_md, description, updated_at")
-      .eq("deck_id", deckId)
-      .maybeSingle();
-
-    if (error) throw error;
-    return (data as ArchetypeOverviewRow) ?? null;
-  }
-
-  // console.log(
-  //   "Cards initialised: ",
-  //   deck.cards.map((c) => ({
-  //     name: c.name,
-  //     id: c.uuid,
-  //     scryfallId: c.identifiers?.scryfallId,
-  //   }))
-  // );
   useEffect(() => {
     // Get compressed deck data then build the features for the overview section
     buildDeckFeatures();
-    (async () => {
-      try {
-        const row = await fetchArchetypeOverview(deck.id);
-        if (row) {
-          setArchetypeOverview({
-            deckId: deck.id,
-            axes: row.axes,
-            explanation_md: row.explanation_md,
-            description: row.description,
-            updated_at: row.updated_at,
-          });
-        } else {
-          // no data yet
-          setArchetypeOverview(null);
-        }
-      } catch (e) {
-        console.error("[archetypeOverview] fetch error:", e);
-        setArchetypeOverview(null);
-      }
-    })();
-
     // Initialise the commander details overview. This gets sloppy around the image section but whatever.
     const commanderDeckDetails: CommanderDeckDetails = {
       id: deck.id,
@@ -269,48 +295,6 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
       identifiers: commanderCardRecord.identifiers,
     };
     setCommanderCard(commanderCard);
-    // Initialise the cards to be displayed in the deck table
-    const validatedCards = deck.cards.map((c) => {
-      const scryfallId = c.identifiers.scryfallId;
-      const scryfallBackId = c.identifiers?.scryfallCardBackId ?? null;
-
-      return {
-        id: c.uuid,
-        name: c.name,
-        type: c.type,
-        mana_cost: c.mana_cost,
-        colorIdentity: c.color_identity,
-        power: c.power,
-        toughness: c.toughness,
-        loyalty: c.loyalty,
-        keywords: c.keywords,
-        variations: c.variations,
-        edhrec_rank: c.edhrec_rank,
-        edhrec_saltiness: c.edhrec_saltiness,
-        purchase_urls: c.purchase_urls,
-        cmc: c.converted_mana_cost,
-        text: c.text,
-        flavourText: c.flavor_text,
-        board_section: c.board_section,
-        imageFrontUrl: scryfallId
-          ? `https://cards.scryfall.io/normal/front/${scryfallId[0]}/${scryfallId[1]}/${scryfallId}.jpg`
-          : null,
-        imageBackUrl: scryfallBackId
-          ? `https://cards.scryfall.io/normal/back/${scryfallBackId[0]}/${scryfallBackId[1]}/${scryfallBackId}.jpg`
-          : null,
-        isDoubleFaced: !!scryfallBackId,
-        identifiers: c.identifiers ?? {},
-        count: c.count ?? 1,
-      };
-    });
-    setCards(validatedCards);
-    setDeck({
-      id: deck.id,
-      name: deck.name,
-      userId: "user_id" in deck ? deck.user_id : null,
-      type: deck.type,
-      isUserDeck: "user_id" in deck,
-    });
   }, [deck?.id, setArchetypeOverview]);
 
   return null;

@@ -1,29 +1,8 @@
 import { CommanderCard } from "@/app/context/CommanderContext";
 import { supabase } from "@/lib/supabase/client";
 
-/**
- * Searches for commander-eligible cards from the database by name.
- * @param searchTerm User input for commander name
- * @returns Array of commander card objects (uuid, name)
- */
-export async function searchCommander(
-  searchTerm: string
-): Promise<CommanderCard[]> {
-  const q = searchTerm.trim();
-  if (!q) return [];
-
-  const { data, error } = await supabase.rpc("search_commanders", {
-    q,
-    lim: 24, // tweak as you like
-  });
-
-  if (error) {
-    console.error("search_commanders error:", error.message);
-    return [];
-  }
-  if (!data) return [];
-
-  return data.map((card: any) => ({
+function toCommanderCard(card: any): CommanderCard {
+  return {
     id: card.uuid,
     name: card.name,
     type: card.type,
@@ -32,10 +11,58 @@ export async function searchCommander(
     cmc: card.converted_mana_cost ?? card.mana_value ?? null,
     text: card.text,
     identifiers: card.identifiers,
-    imageFrontUrl: `https://cards.scryfall.io/normal/front/${card.identifiers.scryfallId[0]}/${card.identifiers.scryfallId[1]}/${card.identifiers.scryfallId}.jpg`,
-    artwork: `https://cards.scryfall.io/art_crop/front/${card.identifiers.scryfallId[0]}/${card.identifiers.scryfallId[1]}/${card.identifiers.scryfallId}.jpg`,
+    imageFrontUrl: card?.identifiers?.scryfallId
+      ? `https://cards.scryfall.io/normal/front/${card.identifiers.scryfallId[0]}/${card.identifiers.scryfallId[1]}/${card.identifiers.scryfallId}.jpg`
+      : null,
+    artwork: card?.identifiers?.scryfallId
+      ? `https://cards.scryfall.io/art_crop/front/${card.identifiers.scryfallId[0]}/${card.identifiers.scryfallId[1]}/${card.identifiers.scryfallId}.jpg`
+      : null,
     isDoubleFaced: !!card.identifiers?.scryfallCardBackId,
-  }));
+  };
+}
+
+/**
+ * Searches for commander-eligible cards from the database by name.
+ * @param searchTerm User input for commander name
+ * @param id id for commander
+ * @returns Array of commander card objects (uuid, name)
+ */
+export async function searchCommander(
+  searchTerm?: string,
+  id?: string
+): Promise<CommanderCard[]> {
+  const q = (searchTerm ?? "").trim();
+
+  // 1) Direct UUID lookup if explicit id provided
+  if (id?.trim()) {
+    const { data, error } = await supabase
+      .from("cards")
+      .select(
+        "uuid, name, type, mana_cost, mana_value, converted_mana_cost, text, identifiers, color_identity"
+      )
+      .eq("uuid", id.trim())
+      .maybeSingle();
+
+    if (error) {
+      console.error("cards by uuid error:", error.message);
+      return [];
+    }
+    return data ? [toCommanderCard(data)] : [];
+  }
+
+  // 2) Fallback: name search via RPC
+  if (!q) return [];
+  const { data, error } = await supabase.rpc("search_commanders", {
+    q,
+    lim: 20,
+  });
+
+  if (error) {
+    console.error("search_commanders error:", error.message);
+    return [];
+  }
+
+  return (data ?? []).map(toCommanderCard);
 }
 
 /**

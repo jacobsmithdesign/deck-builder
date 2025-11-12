@@ -53,28 +53,28 @@ const metricConfig: MetricDef[] = [
     key: "ai_power_level",
     colorMap: powerLevelColors,
     icon: BsFillLightningChargeFill,
-    get: (ai) => ai?.ai_power_level, // number 1–10
+    get: (ai) => ai?.power_level, // number 1–10
   },
   {
     index: 1,
     key: "ai_pilot_skill",
     colorMap: pilotSkillColors,
     icon: RiBrainFill,
-    get: (ai) => ai?.ai_pilot_skill, // "Beginner" | "Intermediate" | "Advanced"
+    get: (ai) => ai?.pilot_skill, // "Beginner" | "Intermediate" | "Advanced"
   },
   {
     index: 2,
     key: "ai_interaction",
     colorMap: interactionColors,
     icon: AiFillInteraction,
-    get: (ai) => ai?.ai_interaction, // "Low" | "Medium" | "High"
+    get: (ai) => ai?.interaction_intensity, // "Low" | "Medium" | "High"
   },
   {
     index: 3,
     key: "ai_complexity",
     colorMap: complexityColors,
     icon: IoExtensionPuzzle,
-    get: (ai) => ai?.ai_complexity, // "Low" | "Medium" | "High"
+    get: (ai) => ai?.complexity, // "Low" | "Medium" | "High"
   },
 ];
 
@@ -85,14 +85,14 @@ export function DeckMetricsMini({
   className?: string;
   compactView: boolean;
 }) {
-  const { aiOverview } = useCardList();
-  if (!aiOverview) return null;
+  const { difficulty } = useCardList();
+  if (!difficulty) return null;
 
   return (
     <AnimatePresence>
       <div className={`grid grid-rows-4 h-16 ${className} ml-1`}>
         {metricConfig.map(({ index, key, colorMap, icon: Icon, get }) => {
-          const value = get(aiOverview);
+          const value = get(difficulty);
           if (value === null || value === undefined || value === "")
             return null;
 
