@@ -10,6 +10,8 @@ const buttonVariants = cva("flex items-center justify-center cursor-pointer", {
       default:
         "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:shadow-lg bg-light/0 md:hover:bg-light md:hover:dropshadow-md",
       ai: "rounded-xl text-purple-400 hover:text-light hover:bg-purple-400 shadow-purple-300 hover:shadow-lg ease-in-out duration-150",
+      primaryBlue:
+        "rounded-xl text-buttonBlue hover:text-light hover:bg-buttonBlue bg-buttonBlue/20  hover:shadow-lg ease-in-out duration-100",
       destructive:
         "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
       outline:

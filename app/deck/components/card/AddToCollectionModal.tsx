@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Checkbox, Field, Label } from "@headlessui/react";
 import { RxCheck } from "react-icons/rx";
 import { AnimatedButton } from "../AnimatedButton";
-import { saveNewDeckClient } from "@/lib/api/decks/client/saveNewDeckClient";
 import { useCardList } from "@/app/context/CardListContext";
 import { useCompactView } from "@/app/context/compactViewContext";
+import { addToCollectionClient } from "@/lib/api/decks/client/addToCollectionClient";
 
 export default function AddToCollectionModal({
   closeModal,
@@ -22,13 +22,27 @@ export default function AddToCollectionModal({
   const [isPublic, setIsPublic] = useState(false);
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState<string>(deck?.name || "");
+  const modalRef = useRef<HTMLDivElement>(null);
 
-  const preconDeckId = deck?.id;
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target as Node)
+      ) {
+        closeModal();
+        document.removeEventListener("mousedown", handleClickOutside);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const existingDeckId = deck?.id;
   const handleSaveClick = async () => {
     setLoading(true);
     try {
-      const { newDeckId } = await saveNewDeckClient({
-        preconDeckId: deck.id,
+      const { newDeckId } = await addToCollectionClient({
+        existingDeckId: existingDeckId,
         name: deck.name,
         description: description,
         isPublic: isPublic,
@@ -45,8 +59,11 @@ export default function AddToCollectionModal({
 
   return (
     <div
+      ref={modalRef}
       className={`top-0 overflow-clip hide-scrollbar bg-light justify-between flex flex-col p-1 max-w-lg text-left  ${
-        showBoard ? "outline outline-dark/5 rounded-br-lg" : ""
+        showBoard
+          ? "outline outline-dark/5 rounded-br-lg"
+          : "rounded-lg outline outline-dark/15"
       }`}
     >
       <input

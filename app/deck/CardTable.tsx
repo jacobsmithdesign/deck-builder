@@ -20,26 +20,15 @@ import { useEditMode } from "../context/editModeContext";
 import AddToCollectionButton from "./components/card/AddToCollectionButton";
 
 export const CardTable = () => {
-  const { deck } = useCardList();
+  const { deck, userOwnsDeck } = useCardList();
   const { editMode, toggleEditMode } = useEditMode();
   const { profile } = useUser();
   const [isEditing, setIsEditing] = useState<boolean>(false); // State to manage if the deck is being edited (isOwner && editMode)
   const { showBoard, toggleShowBoard } = useCompactView();
-  const [userOwnsDeck, setUserOwnsDeck] = useState<boolean>(false);
-  const [enableAddToCollectionButton, setEnableAddToCollectionButton] =
-    useState<boolean>(false);
 
-  useEffect(() => {
-    if (deck && profile) {
-      setUserOwnsDeck(profile.id === deck.userId);
-      setEnableAddToCollectionButton(true);
-    }
-  }, [profile, deck]);
   if (!deck) {
     return <div className="text-center text-lg">Loading deck...</div>;
   }
-  const showAddToCollectionButton =
-    enableAddToCollectionButton && !userOwnsDeck;
 
   return (
     // This is the entire deck preview board, starting with the header containing edit/ save/ minimise buttons etc.
@@ -75,11 +64,11 @@ export const CardTable = () => {
             >
               <RxArrowLeft className="h-4 w-4" />
             </Button>
-            {showAddToCollectionButton && <AddToCollectionButton />}
+            {!userOwnsDeck && <AddToCollectionButton />}
           </div>
         )}
 
-        {showAddToCollectionButton && !showBoard && <AddToCollectionButton />}
+        {!userOwnsDeck && !showBoard && <AddToCollectionButton />}
         {/* Deck editing controls. e.g. Edit / Save */}
         {showBoard && <EditControls />}
       </BoardHeader>

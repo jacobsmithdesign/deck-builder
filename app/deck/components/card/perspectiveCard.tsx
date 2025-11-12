@@ -108,7 +108,7 @@ const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
                   bounce: 3,
                   duration: 0.005,
                 }}
-                className="will-change-[transform,opacity] absolute cursor-pointer justify-center z-10 drop-shadow-xl rounded-lg bg-light md:hover:bg-buttonRedHover ml-9 text-buttonRed top-2 right-2 w-8 h-8 transition-colors duration-100 overflow-visible "
+                className="will-change-[transform,opacity] absolute cursor-pointer justify-center z-10 drop-shadow-xl rounded-lg bg-light md:hover:bg-buttonRedHover ml-9 text-buttonRed top-9 right-5 w-8 h-8 transition-colors duration-100 overflow-visible "
                 onClick={() => setDeleteClicked(true)}
               >
                 <div className="w-8 h-8 text-shadow-lg font-bold text-sm flex justify-center items-center">
@@ -146,8 +146,8 @@ const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
                     bounce: 3,
                     duration: 0.005,
                   }}
-                  className={`will-change-[transform,opacity] absolute cursor-pointer justify-center z-10 drop-shadow-xl rounded-lg bg-light w-8 text-dark/80 hover:text-dark top-2 right-2 ${
-                    isEditMode ? "mr-9 " : ""
+                  className={`will-change-[transform,opacity] absolute cursor-pointer left-5 top-9 z-10 drop-shadow-xl rounded-lg bg-light w-8 text-dark/80 hover:text-dark ${
+                    isEditMode ? "mr-7 " : ""
                   }`}
                   onClick={() => {
                     inspectCard(id);
@@ -156,7 +156,7 @@ const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
                 >
                   <div className="w-full h-8 font-bold text-sm flex items-center overflow-x-clip relative">
                     <RxInfoCircled className="w-6 h-6 ml-1" />
-                    <p className="w-20 absolute ml-8 ">More info</p>
+                    <p className="w-20 absolute ml-6 ">More info</p>
                   </div>
                 </motion.div>
               </>
@@ -225,7 +225,10 @@ const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
                         duration: 0.005,
                       }}
                       className=" cursor-pointer justify-center z-10 rounded-sm hover:bg-buttonRedHoverDark text-buttonRed p-1 items-center flex h-6 px-2 transition-colors duration-150 pt-1.5"
-                      onClick={() => removeCard(id)}
+                      onClick={() => {
+                        console.log("Removing", card);
+                        if (card) removeCard(card);
+                      }}
                     >
                       <p>Remove</p>
                     </motion.div>

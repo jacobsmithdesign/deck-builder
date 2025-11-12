@@ -36,7 +36,7 @@ export default function NewCardModal({
   const { commanderCard } = useCommander();
   const { addCard } = useCardList();
   const [cards, setCards] = useState<any[]>([]);
-  const [cardName, setCardName] = useState<string>("");
+  const [cardNameSearch, setcardNameSearch] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
@@ -85,6 +85,7 @@ export default function NewCardModal({
       const suggestions = await searchCardsWithFilters({
         type: cardType,
         page: requestedPage,
+        name: cardNameSearch,
         commanderColors: commanderCard.colorIdentity,
         pageSize: PAGE_SIZE,
         ...filters,
@@ -188,8 +189,8 @@ export default function NewCardModal({
                 <input
                   type="text"
                   placeholder={`Search ${cardType}s`}
-                  value={cardName}
-                  onChange={(e) => setCardName(e.target.value)}
+                  value={cardNameSearch}
+                  onChange={(e) => setcardNameSearch(e.target.value)}
                   className="w-full px-3 py-1 bg-light/80 rounded-md mb-2"
                 />
                 <button
@@ -245,7 +246,7 @@ export default function NewCardModal({
                             .filter((card) =>
                               card.name
                                 ?.toLowerCase()
-                                .includes(cardName.toLowerCase())
+                                .includes(cardNameSearch.toLowerCase())
                             )
                             .map((card, index) => (
                               <motion.div

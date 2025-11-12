@@ -32,8 +32,8 @@ export default function AuthPage() {
     if (error) {
       setError(error.message);
     } else {
-      router.push("/");
       window.location.reload();
+      window.location.href = "/";
     }
   };
 

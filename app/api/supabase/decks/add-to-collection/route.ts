@@ -1,19 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { saveNewDeckOnServer } from "@/lib/api/decks/saveNewDeck";
+import { addToCollectionOnServer } from "@/lib/api/decks/addToCollection";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    const {
-      name,
-      type,
-      description,
-      commander_uuid,
-      display_card_uuid,
-      isPublic,
-      cards,
-    } = body ?? {};
+    const { existingDeckId, name, description, isPublic } = body ?? {};
     if (!name) {
       return NextResponse.json(
         { error: "Missing required fields" },
@@ -21,14 +13,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { newDeckId } = await saveNewDeckOnServer({
+    const { newDeckId } = await addToCollectionOnServer({
+      existingDeckId,
       name,
-      type,
-      commander_uuid,
-      display_card_uuid,
       description,
       isPublic,
-      cards,
     });
 
     return NextResponse.json({ success: true, newDeckId });

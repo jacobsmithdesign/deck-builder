@@ -78,7 +78,7 @@ interface CardListContextType {
   setCards: (cards: CardRecord[]) => void;
   resetCards: () => void;
   addCard: (card: CardRecord) => void;
-  removeCard: (cardUuid: string) => void;
+  removeCard: (card: CardRecord) => void;
   updateCard: (card: CardRecord) => void;
 
   // deck metadata
@@ -130,8 +130,10 @@ export const CardListProvider = ({ children }: { children: ReactNode }) => {
   const setCards = (newCards: CardRecord[]) => setCardsState(newCards);
   const addCard = (card: CardRecord) =>
     setCardsState((prev) => [...prev, card]);
-  const removeCard = (cardUuid: string) =>
-    setCardsState((prev) => prev.filter((c) => c.uuid !== cardUuid));
+  const removeCard = (card: CardRecord) => {
+    console.log("Removing card:", card);
+    setCardsState((prev) => prev.filter((c) => c !== card));
+  };
   const resetCards = () => setCardsState(originalCards);
   const updateCard = (updated: CardRecord) =>
     setCardsState((prev) =>

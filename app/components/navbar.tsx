@@ -11,12 +11,17 @@ export default function Navbar() {
      text-dark top-0"
     >
       <div className="flex w-full justify-between items-center bg-light/60 p-2 pl-2 rounded-xl">
-        <Link
-          href="/"
-          className="font-bold p-1 rounded-lg md:hover:bg-light/70  h-8 flex items-center md:hover:outline outline-light"
-        >
-          <p className="px-1">MTG Deck Builder</p>
-        </Link>
+        <div className="flex gap-2 items-center">
+          <Link
+            href="/"
+            className="font-bold p-1 rounded-lg md:hover:bg-light/70  h-8 flex items-center md:hover:outline outline-light"
+          >
+            <p className="px-1">MTG Deck Builder</p>
+          </Link>
+          <Link href="/deck/new">
+            <Button variant="primaryBlue">Add New Deck</Button>
+          </Link>
+        </div>
         <div className="space-x-3">
           {/* Display Log In button or profile button */}
           <UserIcon />

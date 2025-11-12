@@ -19,6 +19,7 @@ type UserProfile = {
 type UserContextType = {
   profile: UserProfile | null;
   loading: boolean;
+  userLoggedIn?: boolean;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -26,12 +27,14 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userLoggedIn, setUserLoggedIn] = useState<boolean>(false);
 
   const fetchUserProfile = async () => {
     setLoading(true);
     const profile = await getProfileFromAPI();
     setProfile(profile);
     setLoading(false);
+    setUserLoggedIn(!!profile); // If a profile is returned, user is logged in
   };
 
   useEffect(() => {

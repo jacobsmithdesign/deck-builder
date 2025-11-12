@@ -7,8 +7,10 @@ import { useCardList } from "@/app/context/CardListContext";
 import Link from "next/link";
 import { RxArrowTopRight, RxCheck } from "react-icons/rx";
 import { Button } from "@/app/deck/components/button";
+import { useUser } from "@/app/context/userContext";
 export default function AddToCollectionButton() {
   const { showBoard } = useCompactView();
+  const { userLoggedIn } = useUser();
   const { deck } = useCardList(); // has deck?.id
   const [showModal, setShowModal] = useState<boolean>(false);
   const {
@@ -78,6 +80,7 @@ export default function AddToCollectionButton() {
                 showBoard ? "mt-1 -translate-x-14" : "mt-1"
               } transition-all duration-150 `}
             >
+              {}
               <AddToCollectionModal
                 closeModal={toggleCloseModal}
                 onDeckCreated={handleDeckSaved}

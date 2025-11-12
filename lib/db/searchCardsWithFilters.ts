@@ -6,6 +6,7 @@ type FilterKey = "type" | "colorIdentity" | "rarity" | "manaCost" | "keywords";
 
 export interface CardSearchFilters {
   type?: string;
+  name?: string;
   colorIdentity?: string[];
   rarity?: string;
   manaCost?: number;

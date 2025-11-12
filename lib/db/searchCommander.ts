@@ -1,3 +1,4 @@
+import { CommanderCard } from "@/app/context/CommanderContext";
 import { supabase } from "@/lib/supabase/client";
 
 /**
@@ -5,31 +6,37 @@ import { supabase } from "@/lib/supabase/client";
  * @param searchTerm User input for commander name
  * @returns Array of commander card objects (uuid, name)
  */
-export const searchCommander = async (searchTerm: string) => {
-  const { data, error } = await supabase
-    .from("cards")
-    .select("uuid, name")
-    .ilike("name", `%${searchTerm}%`)
-    .ilike("type", "%Legendary%Creature%");
+export async function searchCommander(
+  searchTerm: string
+): Promise<CommanderCard[]> {
+  const q = searchTerm.trim();
+  if (!q) return [];
+
+  const { data, error } = await supabase.rpc("search_commanders", {
+    q,
+    lim: 24, // tweak as you like
+  });
 
   if (error) {
-    console.error("Supabase error:", error.message);
+    console.error("search_commanders error:", error.message);
     return [];
   }
+  if (!data) return [];
 
-  if (!data || data.length === 0) {
-    console.warn("No cards found for:", searchTerm);
-    return [];
-  }
-
-  const uniqueNames = new Map();
-  for (const card of data) {
-    if (!uniqueNames.has(card.name)) {
-      uniqueNames.set(card.name, card);
-    }
-  }
-  return [...uniqueNames.values()];
-};
+  return data.map((card: any) => ({
+    id: card.uuid,
+    name: card.name,
+    type: card.type,
+    mana_cost: card.mana_cost,
+    colorIdentity: card.color_identity,
+    cmc: card.converted_mana_cost ?? card.mana_value ?? null,
+    text: card.text,
+    identifiers: card.identifiers,
+    imageFrontUrl: `https://cards.scryfall.io/normal/front/${card.identifiers.scryfallId[0]}/${card.identifiers.scryfallId[1]}/${card.identifiers.scryfallId}.jpg`,
+    artwork: `https://cards.scryfall.io/art_crop/front/${card.identifiers.scryfallId[0]}/${card.identifiers.scryfallId[1]}/${card.identifiers.scryfallId}.jpg`,
+    isDoubleFaced: !!card.identifiers?.scryfallCardBackId,
+  }));
+}
 
 /**
  * Fetches all public decks that use the given commander UUID.

@@ -14,6 +14,8 @@ const buttonVariants = cva(
         secondary:
           "bg-primary text-primary-foreground hover:bg-primary/90 bg-buttonLight hover:bg-buttonHover",
         save: "bg-green-200/40 text-green-400 md:hover:bg-green-300/40 md:hover:text-green-600 transition-colors duration-150",
+        secondaryBlue:
+          "rounded-xl text-light hover:text-light/80 hover:bg-buttonBlue/80 bg-buttonBlue  hover:shadow-lg ease-in-out duration-100",
         cardGroup:
           "w-full rounded-xl bg-light/0 md:hover:bg-light md:hover:shadow-md shadow-darksecondary/5 ease-in-out duration-150 text-dark text-sm md:text-base font-bold ",
 
@@ -22,7 +24,14 @@ const buttonVariants = cva(
         frosted:
           "border shadow-inner h-7 rounded-sm px-2 backdrop-blur-sm cursor-pointer transition-all duration-150 text-dark/60 bg-light/40 md:hover:bg-light/80 border-light/60 md:hover:outline-light shadow-light/40",
         darkFrosted:
-          "h-7 rounded-sm px-2 cursor-pointer transition-all duration-150 text-dark/60 bg-dark/10 md:hover:bg-light/60 border-dark/0",
+          "h-7 rounded-sm px-2 cursor-pointer transition-all duration-150 text-dark/60 bg-dark/10 md:hover:bg-light/60 border-dark/10 transition-all duration-150 outline outline-current/30",
+        darkFrostedActive:
+          "h-7 rounded-sm px-2 cursor-pointer transition-all duration-150 text-light/80 bg-dark/80 border-dark/10 transition-all duration-150 outline outline-current/30",
+        selectionOption:
+          "cursor-pointer bg-dark/5 outline outline-dark/15 md:hover:bg-dark/20 md:hover:outline-dark/25 rounded-full",
+        selectionOptionActive: "cursor-pointer bg-dark text-light rounded-full",
+        selectionOptionDisabled:
+          "cursor-not-allowed bg-dark/20 text-dark/30 outline outline-dark/25 rounded-full",
       },
       size: {
         default: "h-6 px-2 py-1 md:text-sm text-xs",

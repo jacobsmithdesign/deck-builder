@@ -1,4 +1,4 @@
-import { createServerSupabase } from "@/lib/supabase/server"; // ✅ correct
+import { createServerSupabase } from "@/lib/supabase/server";
 export async function fetchCommanderDecks(page = 0, pageSize = 30) {
   const supabase = await createServerSupabase();
 

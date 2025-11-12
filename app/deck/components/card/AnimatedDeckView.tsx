@@ -16,6 +16,10 @@ import AddToCollectionButton from "./AddToCollectionButton";
 import { useIsDeckSaved } from "@/app/hooks/useIsDeckSaved";
 import { EditModeProvider } from "@/app/context/editModeContext";
 
+// This is the main section of the deck page that contains the
+// CardTable and Details view underneath the commander overview.
+//
+
 export default function AnimatedDeckView() {
   const { showBoard, bgColor } = useCompactView();
   const { deck } = useCardList();

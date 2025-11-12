@@ -5,7 +5,12 @@ import { useEffect, useState } from "react";
 import { useIsDeckSaved } from "@/app/hooks/useIsDeckSaved";
 import { useCardList } from "@/app/context/CardListContext";
 import Link from "next/link";
-import { RxArrowTopRight, RxCheck, RxCross1 } from "react-icons/rx";
+import {
+  RxArrowTopRight,
+  RxCheck,
+  RxCheckCircled,
+  RxCross1,
+} from "react-icons/rx";
 import { Button } from "@/app/deck/components/button";
 import { useUserOwnsDeck } from "@/app/hooks/useUserOwnsDeck";
 import { useSaveUserDeck } from "@/app/hooks/useSaveUserDeck";
@@ -15,7 +20,8 @@ import { useEditMode } from "@/app/context/editModeContext";
 export default function EditControls() {
   const { deck, cards } = useCardList();
   const { editMode, toggleEditMode } = useEditMode();
-  const { progress, step, saving, error, start, result } = useSaveUserDeck();
+  const { progress, step, saving, error, start, result, reset } =
+    useSaveUserDeck();
   const { isOwner: isOwner } = useUserOwnsDeck(deck?.id);
 
   if (!isOwner) return null;
@@ -30,7 +36,7 @@ export default function EditControls() {
   console.log(newCards);
 
   return (
-    <div className="flex gap-1">
+    <div className="flex gap-1 items-center">
       <AnimatePresence>
         {/* Save button */}
         {editMode && (
@@ -39,7 +45,7 @@ export default function EditControls() {
               variant="darkFrosted"
               title={step || error || "Save"}
               disabled={saving}
-              className={`bg-green-600/10 md:hover:bg-green-400/20 text-green-500/80 md:hover:text-green-500 gap-2 h-7`}
+              className={`bg-green-600/10 md:hover:bg-green-400/20 text-green-500/80 md:hover:text-green-500 gap-2 h-7 outline outline-current/30`}
               onClick={() => start(deck.id, newCards)}
             >
               {saving ? (
@@ -52,7 +58,13 @@ export default function EditControls() {
             </Button>
           </motion.div>
         )}
-
+        {/* Saved indication message */}
+        {result && !error && (
+          <div className="text-sm flex items-center rounded-sm h-6  px-1 text-green-500/80 cursor-default ">
+            <RxCheckCircled className=" h-5 w-5 mr-1" />
+            <p>Deck saved!</p>
+          </div>
+        )}
         {/* Edit/ cancel button */}
         <Button
           variant="darkFrosted"
@@ -62,7 +74,10 @@ export default function EditControls() {
               ? "bg-red-400/10 md:hover:bg-red-400/20 text-red-500/60 md:hover:text-red-500/80"
               : ""
           } w-20 h-7 gap-2`}
-          onClick={() => toggleEditMode()}
+          onClick={() => {
+            toggleEditMode();
+            reset();
+          }}
         >
           {editMode && <RxCross1 />}
         </Button>

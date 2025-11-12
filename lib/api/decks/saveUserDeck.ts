@@ -6,6 +6,11 @@ type SaveDeckArgs = {
   name: string;
   description: string;
   isPublic: boolean;
+  cards: Array<{
+    card_uuid: string;
+    count: number;
+    board_section: string; // "mainboard" | "sideboard" etc
+  }>;
 };
 
 export async function saveDeckOnServer({
@@ -13,6 +18,7 @@ export async function saveDeckOnServer({
   name,
   description,
   isPublic,
+  cards,
 }: SaveDeckArgs) {
   const supabase = await createServerSupabase();
 
@@ -27,47 +33,60 @@ export async function saveDeckOnServer({
   }
 
   // Step 1: Get the precon deck and its cards
-  const { data: preconDeck, error: deckError } = await supabase
+  const { data: deckData, error: deckError } = await supabase
     .from("decks")
-    .select("*, deck_cards(*)")
+    .select("*")
     .eq("id", deckId)
     .single();
 
-  if (deckError || !preconDeck) {
-    throw new Error(deckError?.message ?? "Precon deck not found");
+  if (deckError || !deckData) {
+    throw new Error(deckError?.message ?? "Deck not found");
+  }
+
+  if (deckData.user_id !== user.id) {
+    throw new Error("Forbidden: you do not own this deck");
   }
 
   // Step 2: Insert the new user deck
-  const { error: insertDeckError } = await supabase.from("decks").insert({
+  const { error: upsertDeckError } = await supabase.from("decks").upsert({
     name,
-    commander_uuid: preconDeck.commander_uuid,
-    display_card_uuid: preconDeck.display_card_uuid,
+    commander_uuid: deckData.commander_uuid,
+    display_card_uuid: deckData.display_card_uuid,
     is_public: isPublic,
     description,
   });
 
-  if (insertDeckError) {
-    throw new Error(insertDeckError.message);
+  if (upsertDeckError) {
+    throw new Error(upsertDeckError.message);
   }
 
-  // Step 3: Copy over the deck_cards entries
-  const newDeckCards = (preconDeck.deck_cards ?? []).map((card: any) => ({
-    deck_id: deckId,
-    card_uuid: card.card_uuid,
-    count: card.count,
-    board_section: card.board_section ?? "mainboard",
-  }));
+  // Step 3: Delete existing cards from deck.
+  const { error: deleteError } = await supabase
+    .from("deck_cards")
+    .delete()
+    .eq("deck_id", deckId);
 
-  if (newDeckCards.length > 0) {
-    const { error: cardInsertError } = await supabase
+  if (deleteError) {
+    throw new Error(deleteError.message);
+  }
+
+  // Step 4: Insert new cards into deck
+  if (cards.length > 0) {
+    const payload = cards.map((c) => ({
+      deck_id: deckId,
+      card_uuid: c.card_uuid,
+      count: c.count,
+      board_section: c.board_section ?? "mainboard",
+    }));
+
+    const { error: insertCardsError } = await supabase
       .from("deck_cards")
-      .insert(newDeckCards);
+      .insert(payload);
 
-    if (cardInsertError) {
-      // (Optional) attempt to roll back deck insert here if you want to be neat
-      throw new Error(cardInsertError.message);
+    if (insertCardsError) {
+      // if you want to be fancy you can attempt rollback here
+      throw new Error(insertCardsError.message);
     }
   }
-
   return { deckId };
 }

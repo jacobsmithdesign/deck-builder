@@ -10,8 +10,10 @@ import { ChevronUp } from "lucide-react";
 export default function DeckPreview({ deck }: { deck: CommanderDeckRecord }) {
   const [openPanel, setOpenPanel] = useState(false);
 
-  const scryfallId = deck.commander.identifiers.scryfallId ?? null;
-  const [front, back, artwork] = scryfallIdToUrls(scryfallId);
+  const scryfallId = deck.commander?.identifiers.scryfallId ?? null;
+  const [front, back, artwork] = scryfallId
+    ? scryfallIdToUrls(scryfallId)
+    : [null, null, null];
   return (
     <div className="rounded-xl min-w-32 h-72 overflow-clip relative flex flex-col justify-between">
       {/* Top card details: colour identity, deck type */}
@@ -22,7 +24,7 @@ export default function DeckPreview({ deck }: { deck: CommanderDeckRecord }) {
               <p>{deck.type}</p>
             </div>
           </div>
-          <ManaCost colorIdentity={deck.commander.color_identity} />
+          <ManaCost colorIdentity={deck.commander?.color_identity} />
         </div>
       )}
 

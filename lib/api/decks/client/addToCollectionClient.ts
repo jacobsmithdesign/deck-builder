@@ -1,17 +1,10 @@
-export async function saveNewDeckClient(payload: {
+export async function addToCollectionClient(payload: {
+  existingDeckId: string;
   name: string;
-  type: string;
-  commander_uuid?: string;
-  display_card_uuid?: string;
   description: string;
   isPublic: boolean;
-  cards: Array<{
-    card_uuid: string;
-    count: number;
-    board_section: string; // "mainboard" | "sideboard" etc
-  }>;
 }) {
-  const res = await fetch("/api/supabase/decks/save-new-deck", {
+  const res = await fetch("/api/supabase/decks/add-to-collection", {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },

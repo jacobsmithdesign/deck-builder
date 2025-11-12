@@ -17,6 +17,7 @@ export function useSaveUserDeck(
   const { toggleEditMode } = useEditMode();
   const { setCards } = useCardList();
 
+  // Async function that starts the fetch process
   const start = async (
     deckId: string,
     cards: Array<{ uuid: string; count: number; board_section?: string }>
@@ -62,7 +63,15 @@ export function useSaveUserDeck(
     }
   };
 
+  // Function that resets the states (for components that may want to reuse the hook)
+  const reset = () => {
+    setProgress(0);
+    setStep(null);
+    setError(null);
+    setResult(null);
+  };
+
   const saving = !!step && step !== "done" && !error;
 
-  return { progress, step, saving, error, result, start };
+  return { progress, step, saving, error, result, start, reset };
 }
