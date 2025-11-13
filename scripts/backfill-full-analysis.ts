@@ -147,46 +147,48 @@ function buildPrompt(cards: any[], landFeatures: any, commander: any) {
     '["token swarm","treasure","aristocrats","graveyard","reanimator","stax","voltron","spellslinger","blink","+1/+1 counters","lifegain","control","combo","camp","landfall","mill","extra turns","vehicles","dragons","elves","artifacts","enchantress","aura","discard","steal/copy","flicker","proliferate","burn","big mana"]';
 
   return `
-Return ONLY minified JSON with EXACT keys:
-{
-  "archetype": {
-    "axes": { "<slug-1>": 0, ... },
-    "explanation_md": { "<slug-1>": "<markdown>", ... }, 
-    "description": "<1-2 sentences>"
-  },
-  "sw": {
-    "strengths": { "<slug-1>": "<3-5 sentences markdown>", ... },
-    "weaknesses": { "<slug-1>": "<3-5 sentences markdown>", ... }
-  },
-  "difficulty": {
-    "power_level": 1-10,
-    "power_level_explanation":"<=170 chars",
-    "complexity":"Low"|"Medium"|"High",
-    "complexity_explanation":"<=170 chars",
-    "pilot_skill":"Beginner"|"Intermediate"|"Advanced",
-    "pilot_skill_explanation":"<=170 chars",
-    "interaction_intensity":"Low"|"Medium"|"High",
-    "interaction_explanation":"<=170 chars"
-  },
-  "pillars": { "<slug-1>": "<2-4 sentences markdown>", ... }
-}
+          Return ONLY minified JSON with EXACT keys:
+            {
+              archetype: {
+                "axes": { "<slug-1>": 0, ... },
+                "explanation_md": { "<slug-1>": <markdown string>, ... }, 
+                "description": <text> (1-2 sentences)
+              },
+              sw: {
+                "strengths": { "name" (1-2 words): <markdown string> (3-5 sentences), ... },
+                "weaknesses": { "name" (1-2 words): <markdown string> (3-5 sentences), ... },
 
-Archetype vocabulary=${TAG_VOCAB}
+              },
+              difficulty: {
+                "power_level": <number> (1-10),
+                "power_level_explanation": <string>(<=170),
+                "complexity":"Low"|"Medium"|"High",
+                "complexity_explanation":string(<=170),
+                "pilot_skill":"Beginner"|"Intermediate"|"Advanced",
+                "pilot_skill_explanation":string(<=170),
+                "interaction_intensity":"Low"|"Medium"|"High",
+                "interaction_explanation":string(<=170),              
+              },
+              pillars: { "<slug-1>": <markdown string> (2-4 sentences), ... }
 
-RULES:
-- Archetypes: 4–7 short lowercase slugs based on the deck’s actual cards.
-- Axes: 0–100; keys ⊆ archetypes; reflect strength in this list.
-- Explanations: purely extractive; only use provided cards.
-- Do NOT invent cards.
+            Archetype vocabulary=${TAG_VOCAB}
 
-DECK INFO:
-Commander: ${JSON.stringify({
-    name: commander?.name ?? null,
-    type: commander?.type ?? null,
-    text: commander?.text ?? null,
-  })}
-LandFeatures: ${LANDFEATURES}
-Cards: ${CARDS}
+            RULES:
+            archetypes: 4–7 short lowercase slugs that capture the deck’s playstyle and card frequency. Choose from archetype vocabulary. If an archetype that does not exist in the vocabular could be derived from the commander or the cards always include it. 
+            axes: ranked 0–100, keys ⊆ archetypes, reflecting the strength of each chosen archetype in this deck.
+
+            explanation_md: maximum 120 words in Markdown, purely extractive. Explain the reasoning behind the archetype's rank and its impact on the deck's playstyle. You may use some example cards from the card list justify the archetypes and their relative weighting. 
+
+            strengths/weaknesses: 2–4 items, 1–3 words.
+
+            DECK INFO:
+            Commander: ${JSON.stringify({
+              name: commander?.name ?? null,
+              type: commander?.type ?? null,
+              text: commander?.text ?? null,
+            })}
+            LandFeatures: ${LANDFEATURES}
+            Cards: ${CARDS}
 `.trim();
 }
 
@@ -229,7 +231,7 @@ async function runAnalysis(deck: DeckRow) {
       {
         role: "system",
         content:
-          "You are an expert MTG Commander deck analyst. Use only the provided cards. Return exactly one JSON object as specified.",
+          "You are an expert MTG Commander deck analyst. Your job is to read a deck of any bracket to extract its core identity. You must identify its archetypes, strengths and weaknesses, accurately assess its difficulty for most players, and identify its main pillars. ONLY USE CARDS IN DECK INFO. Do not invent cards, categories, or details that are not directly supported. Return exactly one JSON object.",
       },
       { role: "user", content: prompt },
     ],

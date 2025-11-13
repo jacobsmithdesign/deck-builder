@@ -18,6 +18,7 @@ import { Button } from "@/app/deck/components/button";
 import EditControls from "./components/card/EditControls";
 import { useEditMode } from "../context/editModeContext";
 import AddToCollectionButton from "./components/card/AddToCollectionButton";
+import SearchBox from "./components/card/SearchBox";
 
 export const CardTable = () => {
   const { deck, userOwnsDeck } = useCardList();
@@ -69,6 +70,7 @@ export const CardTable = () => {
         )}
 
         {!userOwnsDeck && !showBoard && <AddToCollectionButton />}
+        {userOwnsDeck && showBoard && <SearchBox />}
         {/* Deck editing controls. e.g. Edit / Save */}
         {showBoard && <EditControls />}
       </BoardHeader>

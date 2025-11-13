@@ -16,6 +16,7 @@ import { useUserOwnsDeck } from "@/app/hooks/useUserOwnsDeck";
 import { useSaveUserDeck } from "@/app/hooks/useSaveUserDeck";
 import { BsFillSaveFill } from "react-icons/bs";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import SearchBox from "./SearchBox";
 import { useEditMode } from "@/app/context/editModeContext";
 export default function EditControls() {
   const { deck, cards } = useCardList();
