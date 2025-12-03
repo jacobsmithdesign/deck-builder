@@ -52,20 +52,20 @@ export async function POST(req: NextRequest) {
   console.log("rows to save", rows);
 
   // delete old + insert new
-  //   const { error: delErr } = await supabase
-  //     .from("deck_cards")
-  //     .delete()
-  //     .eq("deck_id", deckId);
-  //   if (delErr) {
-  //     return NextResponse.json({ error: delErr.message }, { status: 500 });
-  //   }
+  const { error: delErr } = await supabase
+    .from("deck_cards")
+    .delete()
+    .eq("deck_id", deckId);
+  if (delErr) {
+    return NextResponse.json({ error: delErr.message }, { status: 500 });
+  }
 
-  //   if (rows.length) {
-  //     const { error: insErr } = await supabase.from("deck_cards").insert(rows);
-  //     if (insErr) {
-  //       return NextResponse.json({ error: insErr.message }, { status: 500 });
-  //     }
-  //   }
+  if (rows.length) {
+    const { error: insErr } = await supabase.from("deck_cards").insert(rows);
+    if (insErr) {
+      return NextResponse.json({ error: insErr.message }, { status: 500 });
+    }
+  }
 
   return NextResponse.json({ ok: true, deckId, savedCount: rows.length });
 }

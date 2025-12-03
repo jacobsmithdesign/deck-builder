@@ -5,6 +5,7 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
 interface EditModeContextType {
   editMode: boolean;
   toggleEditMode: () => void;
+  setEditMode: (value: React.SetStateAction<boolean>) => void;
 }
 
 // Create the context
@@ -25,6 +26,7 @@ export const EditModeProvider = ({ children }: { children: ReactNode }) => {
       value={{
         editMode,
         toggleEditMode,
+        setEditMode,
       }}
     >
       {children}

@@ -1,6 +1,7 @@
 import { useCardList } from "@/app/context/CardListContext";
 import { CommanderCard } from "@/app/context/CommanderContext";
 import { supabase } from "@/lib/supabase/client";
+import { CardRecord } from "../schemas";
 
 function toCommanderCard(card: any): CommanderCard {
   return {
@@ -58,6 +59,58 @@ export async function searchCardForDeck(
     uuid: row.uuid,
     name: row.name,
   }));
+}
+
+export async function selectCardDataFromId(id: string): Promise<CardRecord> {
+  const { data, error } = await supabase
+    .from("cards")
+    .select(
+      `
+    uuid, 
+    name, 
+    mana_cost, 
+    mana_value, 
+    type, 
+    text, 
+    flavor_text,
+    rarity,
+    identifiers, 
+    color_identity,
+    types
+    `
+    )
+    .eq("uuid", id)
+    .single();
+
+  if (error) throw error;
+
+  const identifiers = data.identifiers ?? {};
+  const scryfallId = identifiers.scryfallId ?? null;
+  const scryfallBackId = identifiers.scryfallCardBackId ?? null;
+  return {
+    uuid: data.uuid,
+    name: data.name,
+    type: data.type,
+    mana_cost: data.mana_cost,
+    colorIdentity: data.color_identity ?? [],
+    cmc: data.mana_value ?? 0,
+    text: data.text ?? "",
+    flavourText: data.flavor_text,
+    rarity: data.rarity,
+    count: 1,
+    board_section: "mainboard",
+    imageFrontUrl: scryfallId
+      ? `https://cards.scryfall.io/normal/front/${scryfallId[0]}/${scryfallId[1]}/${scryfallId}.jpg`
+      : null,
+    imageBackUrl: scryfallBackId
+      ? `https://cards.scryfall.io/normal/front/${scryfallBackId.slice(
+          0,
+          2
+        )}/${scryfallBackId}.jpg`
+      : null,
+    isDoubleFaced: !!scryfallBackId,
+    identifiers,
+  } as CardRecord;
 }
 
 /**

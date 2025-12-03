@@ -1,26 +1,17 @@
-import { useCompactView } from "@/app/context/compactViewContext";
 import { AnimatePresence, motion } from "framer-motion";
-import AddToCollectionModal from "./AddToCollectionModal";
-import { useEffect, useState } from "react";
-import { useIsDeckSaved } from "@/app/hooks/useIsDeckSaved";
 import { useCardList } from "@/app/context/CardListContext";
-import Link from "next/link";
-import {
-  RxArrowTopRight,
-  RxCheck,
-  RxCheckCircled,
-  RxCross1,
-} from "react-icons/rx";
+import { RxCheckCircled, RxCross1 } from "react-icons/rx";
 import { Button } from "@/app/deck/components/button";
 import { useUserOwnsDeck } from "@/app/hooks/useUserOwnsDeck";
 import { useSaveUserDeck } from "@/app/hooks/useSaveUserDeck";
 import { BsFillSaveFill } from "react-icons/bs";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import SearchBox from "./SearchBox";
 import { useEditMode } from "@/app/context/editModeContext";
+import { useEffect } from "react";
+import { set } from "zod";
 export default function EditControls() {
-  const { deck, cards } = useCardList();
-  const { editMode, toggleEditMode } = useEditMode();
+  const { deck, cards, changesMadeState, resetCards } = useCardList();
+  const { editMode, toggleEditMode, setEditMode } = useEditMode();
   const { progress, step, saving, error, start, result, reset } =
     useSaveUserDeck();
   const { isOwner: isOwner } = useUserOwnsDeck(deck?.id);
@@ -33,31 +24,52 @@ export default function EditControls() {
     count: c.count ?? 1,
     board_section: "mainboard",
   }));
-  console.log("cards ", cards);
-  console.log(newCards);
+
+  // This is purely for console logging the basic card data
+  const basicCardData = (cards ?? []).map((c) => ({
+    name: c.name,
+    type: c.type,
+    text: c.text,
+  }));
+  console.log("Simplified card data ", basicCardData);
 
   return (
     <div className="flex gap-1 items-center">
       <AnimatePresence>
         {/* Save button */}
-        {editMode && (
-          <motion.div>
+        {changesMadeState.length !== 0 && (
+          <>
+            <motion.div>
+              <Button
+                variant="darkFrosted"
+                title={step || error || "Save"}
+                disabled={saving}
+                className={`bg-green-600/10 md:hover:bg-green-400/20 text-green-500/80 md:hover:text-green-500 gap-2 h-7 outline outline-current/30`}
+                onClick={() => start(deck.id, newCards)}
+              >
+                {saving ? (
+                  <div className="animate-spin">
+                    <AiOutlineLoading3Quarters className="h-4" />
+                  </div>
+                ) : (
+                  <BsFillSaveFill className="h-4" />
+                )}
+              </Button>
+            </motion.div>{" "}
+            {/* Edit/ cancel button */}
             <Button
               variant="darkFrosted"
-              title={step || error || "Save"}
-              disabled={saving}
-              className={`bg-green-600/10 md:hover:bg-green-400/20 text-green-500/80 md:hover:text-green-500 gap-2 h-7 outline outline-current/30`}
-              onClick={() => start(deck.id, newCards)}
+              title={"Cancel"}
+              className={`bg-red-400/10 md:hover:bg-red-400/20 text-red-500/60 md:hover:text-red-500/80 w-20 h-7 gap-2`}
+              onClick={() => {
+                toggleEditMode();
+                resetCards();
+                reset();
+              }}
             >
-              {saving ? (
-                <div className="animate-spin">
-                  <AiOutlineLoading3Quarters className="h-4" />
-                </div>
-              ) : (
-                <BsFillSaveFill className="h-4" />
-              )}
+              <RxCross1 />
             </Button>
-          </motion.div>
+          </>
         )}
         {/* Saved indication message */}
         {result && !error && (
@@ -66,22 +78,6 @@ export default function EditControls() {
             <p>Deck saved!</p>
           </div>
         )}
-        {/* Edit/ cancel button */}
-        <Button
-          variant="darkFrosted"
-          title={editMode ? "Cancel" : "Edit Deck"}
-          className={`${
-            editMode
-              ? "bg-red-400/10 md:hover:bg-red-400/20 text-red-500/60 md:hover:text-red-500/80"
-              : ""
-          } w-20 h-7 gap-2`}
-          onClick={() => {
-            toggleEditMode();
-            reset();
-          }}
-        >
-          {editMode && <RxCross1 />}
-        </Button>
       </AnimatePresence>
     </div>
   );

@@ -15,7 +15,8 @@ export function useSaveUserDeck(
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<SaveResult | null>(null);
   const { toggleEditMode } = useEditMode();
-  const { setCards } = useCardList();
+  const { setChangesMadeState, cards, setCards } = useCardList();
+  let currentCards = cards;
 
   // Async function that starts the fetch process
   const start = async (
@@ -30,7 +31,6 @@ export function useSaveUserDeck(
     setResult(null);
 
     try {
-      // simple step updates so your button can react
       setStep("auth/verify");
       setProgress(20);
 
@@ -44,7 +44,7 @@ export function useSaveUserDeck(
       setProgress(70);
 
       const json = await res.json().catch(() => ({} as any));
-
+      console.log("Save response: ", json);
       if (!res.ok) {
         setError(json?.error || `Request failed: ${res.status}`);
         setStep("error");
@@ -55,6 +55,9 @@ export function useSaveUserDeck(
       setResult({ deckId: json.deckId, savedCount: json.savedCount ?? 0 });
       setStep("done");
       setProgress(100);
+      setCards(currentCards);
+      setChangesMadeState([]);
+      // Optionally reset cards in context to reflect saved state
       toggleEditMode();
     } catch (e: any) {
       setError(e?.message || "Network error");

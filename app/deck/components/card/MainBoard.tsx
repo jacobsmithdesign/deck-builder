@@ -8,27 +8,27 @@ import {
   GroupItems,
   GroupTitle,
 } from "./Board";
-import PerspectiveCard from "./perspectiveCard";
-import { ChevronDown, Minus } from "lucide-react";
-import { useCardList } from "@/app/context/CardListContext";
-import { RxCross2, RxInfoCircled, RxPlus } from "react-icons/rx";
+import PerspectiveCard from "./perspectiveCardUI/PerspectiveCard";
 import { motion, AnimatePresence } from "framer-motion";
+import { useCardList } from "@/app/context/CardListContext";
 import { useCompactView } from "@/app/context/compactViewContext";
 import NewCardModal from "./NewCardModal";
 import CustomScrollArea from "@/app/components/ui/CustomScrollArea";
 import { useEditMode } from "@/app/context/editModeContext";
+import UnsavedChanges from "./UnsavedChanges";
+
+const typeOrder = [
+  "Land",
+  "Creature",
+  "Enchantment",
+  "Artifact",
+  "Instant",
+  "Sorcery",
+  "Planeswalker",
+  "Other",
+];
 
 const groupByCardType = (cards: any[] = []) => {
-  const typeOrder = [
-    "Land",
-    "Creature",
-    "Enchantment",
-    "Artifact",
-    "Instant",
-    "Sorcery",
-    "Planeswalker",
-    "Other",
-  ];
   const grouped: Record<string, any[]> = {};
 
   for (const card of cards) {
@@ -37,9 +37,7 @@ const groupByCardType = (cards: any[] = []) => {
         card.type?.toLowerCase().includes(type.toLowerCase())
       ) || "Other";
 
-    if (!grouped[baseType]) {
-      grouped[baseType] = [];
-    }
+    if (!grouped[baseType]) grouped[baseType] = [];
     grouped[baseType].push(card);
   }
 
@@ -50,77 +48,82 @@ const groupByCardType = (cards: any[] = []) => {
 
 export const MainBoard = () => {
   const { editMode } = useEditMode();
-  const { cards, removeCard } = useCardList();
+  const { cards, changesMadeState } = useCardList();
   const [visibleGroups, setVisibleGroups] = useState<Set<string>>(new Set());
-  const [openNewCardModal, setOpenNewCardModal] = useState<boolean>(false);
+  const [openNewCardModal, setOpenNewCardModal] = useState(false);
   const [newCardType, setNewCardType] = useState<string>("");
-  const [openCardInfoModal, setOpenCardInfoModal] = useState<boolean>(false);
+  const [openCardInfoModal, setOpenCardInfoModal] = useState(false);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const { bgColor, showBoard } = useCompactView();
-  const groupedCardsArray = groupByCardType(cards);
 
-  // Hide / show card groups
+  // Group cards by type, memoised so we don’t rebuild it needlessly
+  const groupedCardsArray = useMemo(() => groupByCardType(cards), [cards]);
+
+  // All group types, derived from the grouped cards
+  const allTypes = useMemo(
+    () => groupedCardsArray.map((g) => g.type),
+    [groupedCardsArray]
+  );
+
+  // Initialise / update visible groups whenever the set of types changes
+  useEffect(() => {
+    setVisibleGroups(new Set(allTypes));
+  }, [allTypes, changesMadeState]);
+
+  // Toggle visibility for a single group
   const toggleGroupVisibility = (type: string) => {
     setVisibleGroups((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(type)) {
-        newSet.delete(type);
+      const next = new Set(prev);
+      if (next.has(type)) {
+        next.delete(type);
       } else {
-        newSet.add(type);
+        next.add(type);
       }
-      return newSet;
+      return next;
     });
   };
 
-  // Functions for toggling between showing or hiding all cards. Just pretty animation functions really.
   const hideAllGroups = () => {
     setVisibleGroups(new Set());
   };
-  const showAllGroups = (allTypes: string[]) => {
-    setVisibleGroups(new Set(allTypes));
+
+  const showAllGroups = (types: string[]) => {
+    setVisibleGroups(new Set(types));
   };
 
-  // Group cards by similar types
-  useEffect(() => {
-    const allTypes = groupByCardType(cards).map((group) => group.type);
-    setVisibleGroups(new Set(allTypes));
-  }, [cards]);
-
-  // function for handling the opening of the modal with card info
-  const handleInspectCard = (id: string) => {
-    setSelectedCardId(id);
-    setOpenCardInfoModal(true);
-  };
-  const toggleNewCardModal = (type?: string) => {
-    setNewCardType(type);
-    setOpenNewCardModal((prev) => (prev = !prev));
-  };
-
-  const allTypes = useMemo(
-    () => groupByCardType(cards).map((g) => g.type),
-    [cards]
-  );
-
+  // Respond to compact view's showBoard
   useEffect(() => {
     if (showBoard) {
       showAllGroups(allTypes);
     } else {
-      hideAllGroups;
+      hideAllGroups(); // <-- actually call the function
     }
   }, [showBoard, allTypes]);
+
+  // Card info modal handlers
+  const handleInspectCard = (id: string) => {
+    setSelectedCardId(id);
+    setOpenCardInfoModal(true);
+  };
+
+  const toggleNewCardModal = (type?: string) => {
+    if (type) setNewCardType(type);
+    setOpenNewCardModal((prev) => !prev);
+  };
 
   useEffect(() => {
     if (!editMode) {
       setOpenNewCardModal(false);
     }
   }, [editMode]);
+
   return (
     <AnimatePresence>
       <BoardContent
         style={{ background: bgColor }}
         className="hide-scrollbar transition-all duration-700 justify-center items-center relative rounded-t-none outline outline-dark/20 h-full "
       >
-        {/* This is the modal for choosing new cards */}
+        {/* New card modal */}
         <div className="z-50 w-full h-full pointer-events-none">
           <NewCardModal
             closeModal={toggleNewCardModal}
@@ -128,6 +131,13 @@ export const MainBoard = () => {
             cardType={newCardType}
           />
         </div>
+
+        {/* Unsaved changes */}
+        <div className="absolute right-5 top-2 z-10 pointer-events-none">
+          <UnsavedChanges />
+        </div>
+
+        {/* Scrollable grouped cards */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -141,106 +151,68 @@ export const MainBoard = () => {
             thumbClassName="bg-light/60 rounded-xs"
             autoHide={false}
           >
-            {groupedCardsArray.map((group, index) => {
-              if (!group.type) {
-                console.warn("Missing UUID at index", index, group);
-              }
-              return (
-                <Group key={group.type} className="">
-                  <GroupHeader
-                    className={`${index !== 0 ? "" : "border-t-0"} py-2`}
-                  >
-                    <GroupTitle
-                      type={group.type}
-                      visibleGroups={visibleGroups}
-                      toggleGroupVisibility={toggleGroupVisibility}
-                    />
-                  </GroupHeader>
+            {groupedCardsArray.map((group, index) => (
+              <Group key={group.type}>
+                <GroupHeader
+                  className={`${index !== 0 ? "" : "border-t-0"} py-2`}
+                >
+                  <GroupTitle
+                    type={group.type}
+                    visibleGroups={visibleGroups}
+                    toggleGroupVisibility={toggleGroupVisibility}
+                  />
+                </GroupHeader>
 
-                  <AnimatePresence>
-                    {visibleGroups.has(group.type) && (
-                      <motion.div
-                        key={`group-${group.type}`}
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 100 }}
-                        exit={{ height: 0 }}
-                        className="overflow-clip flex px-2"
-                      >
-                        <GroupItems key={group.type} className="mt-2">
-                          {/* This is the new card that appears at the end of every card group, onlly visible in edit mode */}
-                          {editMode && (
-                            <motion.div
-                              key="new-card"
-                              initial={{ opacity: 0, scale: 0.85 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              exit={{ opacity: 0, scale: 0.95 }}
-                              whileTap={{ scale: 0.95 }}
-                              transition={{
-                                type: "spring",
-                                stiffness: 250,
-                                damping: 12,
-                                bounce: 0.1,
-                                duration: 0.005,
-                              }}
-                            >
-                              <button
-                                className="relative w-46 h-64 transition-transform duration-300 ease-out [transform-style:preserve-3d] md:hover:[transform:rotateX(var(--y-rotation))_rotateY(var(--x-rotation))] justify-center items-center flex p-1 md:hover:scale-105 cursor-pointer group"
-                                onClick={() => toggleNewCardModal(group.type)}
-                              >
-                                <div className="bg-light/20 shadow-inner shadow-light/30 border border-light/60 w-full h-full rounded-lg flex items-center justify-center">
-                                  <div className="font-bold text-sm items-center flex flex-col w-8 h-8 md:group-hover:h-12 md:group-hover:w-34 overflow-x-clip text-nowrap text-center bg-light rounded-md relative p-2 transition-all duration-200">
-                                    <RxPlus className="w-4 h-4 absolute" />
-                                    <p className="w-40 md:group-hover:mt-4 md:group-hover:opacity-100 opacity-0 transition-all duration-200">
-                                      Add {group.type}
-                                    </p>
-                                  </div>
-                                </div>
-                              </button>
-                            </motion.div>
-                          )}
-                          {group.cards.map((card, index) => {
-                            return (
-                              <motion.div
-                                key={card + index}
-                                initial={{ opacity: 0, scale: 0.85 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{
-                                  opacity: 0,
-                                  scale: 0.95,
-                                  transition: {
-                                    delay: 0,
-                                    duration: 0.15,
-                                    ease: "easeOut",
-                                  },
-                                }}
-                                transition={{
-                                  type: "spring",
-                                  stiffness: 250,
-                                  damping: 12,
-                                  bounce: 0.1,
-                                  delay: 0.03 * index,
-                                  duration: 0.2,
-                                }}
-                              >
-                                <PerspectiveCard
-                                  key={card.id}
-                                  id={card.id}
-                                  image={card.imageFrontUrl}
-                                  label={card.name}
-                                  isEditMode={editMode}
-                                  card={card}
-                                  inspectCard={handleInspectCard}
-                                />
-                              </motion.div>
-                            );
-                          })}
-                        </GroupItems>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </Group>
-              );
-            })}{" "}
+                <AnimatePresence>
+                  {visibleGroups.has(group.type) && (
+                    <motion.div
+                      key={`group-${group.type}`}
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-clip flex px-2"
+                    >
+                      <GroupItems className="mt-2">
+                        {group.cards.map((card, index) => (
+                          <motion.div
+                            key={card.id} // <-- stable key per card
+                            initial={{ opacity: 0, scale: 0.85 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{
+                              opacity: 0,
+                              scale: 0.95,
+                              transition: {
+                                delay: 0,
+                                duration: 0.15,
+                                ease: "easeOut",
+                              },
+                            }}
+                            transition={{
+                              type: "spring",
+                              stiffness: 250,
+                              damping: 12,
+                              bounce: 0.1,
+                              delay: 0.03 * index,
+                              duration: 0.2,
+                            }}
+                          >
+                            <PerspectiveCard
+                              key={card.id}
+                              id={card.id}
+                              image={card.imageFrontUrl}
+                              label={card.name}
+                              isEditMode={editMode}
+                              card={card}
+                              inspectCard={handleInspectCard}
+                            />
+                          </motion.div>
+                        ))}
+                      </GroupItems>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </Group>
+            ))}
           </CustomScrollArea>
         </motion.div>
       </BoardContent>

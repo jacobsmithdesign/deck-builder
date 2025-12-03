@@ -41,7 +41,6 @@ export default function NewCardModal({
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
   const loadMoreRef = useRef<HTMLDivElement>(null);
-  const [visibleGroups, setVisibleGroups] = useState<Set<string>>(new Set());
   const [filters, setFilters] = useState<Record<string, string[]>>({});
   const [selectedCards, setSelectedCards] = useState<any[]>([]);
   const [saving, setSaving] = useState<boolean>(false);
@@ -52,18 +51,6 @@ export default function NewCardModal({
   const dynamicFilterConfig = useMemo(() => {
     return filterConfigByCardType[cardType] || {};
   }, [cardType]);
-
-  const toggleGroupVisibility = (type: string) => {
-    setVisibleGroups((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(type)) {
-        newSet.delete(type);
-      } else {
-        newSet.add(type);
-      }
-      return newSet;
-    });
-  };
 
   const toggleSelectedCards = (card: CardRecord) => {
     setSelectedCards((prev) => {

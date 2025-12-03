@@ -1,9 +1,16 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
 import { CardRecord } from "@/lib/schemas";
 import type { DeckFeatureVector } from "@/lib/ai/features";
 import { useUser } from "./userContext";
+import { useEditMode } from "./editModeContext";
 
 export interface DeckMetadata {
   id: string;
@@ -95,10 +102,16 @@ export type Difficulty = {
 };
 
 // rest of file unchanged
+type ChangesMade = {
+  card: CardRecord;
+  countChange: number;
+};
 
 interface CardListContextType {
   // cards
   cards: CardRecord[];
+  changesMadeState?: ChangesMade[];
+  setChangesMadeState: (changes: ChangesMade[]) => void;
   setCards: (cards: CardRecord[]) => void;
   resetCards: () => void;
   addCard: (card: CardRecord) => void;
@@ -141,6 +154,7 @@ const CardListContext = createContext<CardListContextType | undefined>(
 
 export const CardListProvider = ({ children }: { children: ReactNode }) => {
   const [cards, setCardsState] = useState<CardRecord[]>([]);
+  const [changesMadeState, setChangesMadeState] = useState<ChangesMade[]>([]);
   const [originalCards, setOriginalCards] = useState<CardRecord[]>([]);
   const [deck, setDeck] = useState<DeckMetadata | null>(null);
   const [deckFeatures, setDeckFeatures] = useState<DeckFeatureVector | null>(
@@ -162,13 +176,103 @@ export const CardListProvider = ({ children }: { children: ReactNode }) => {
   const userOwnsDeck = !!deck && !!userId && deck.userId === userId;
 
   // card helpers
-  const setCards = (newCards: CardRecord[]) => setCardsState(newCards);
-  const addCard = (card: CardRecord) =>
-    setCardsState((prev) => [...prev, card]);
-  const removeCard = (card: CardRecord) => {
-    setCardsState((prev) => prev.filter((c) => c !== card));
+  const setCards = (newCards: CardRecord[]) => {
+    setCardsState(newCards);
+    setOriginalCards(newCards);
   };
-  const resetCards = () => setCardsState(originalCards);
+
+  // Helper to compute updated cards
+  function buildUpdatedCards(
+    originalCards: CardRecord[],
+    changesMadeState: ChangesMade[]
+  ): CardRecord[] {
+    // Always copy so we don't mutate originalCards
+    let updatedCards = [...originalCards];
+
+    changesMadeState.forEach(({ card, countChange }) => {
+      const idx = updatedCards.findIndex((c) => c.uuid === card.uuid);
+
+      if (idx !== -1) {
+        const newCount = updatedCards[idx].count + countChange;
+
+        if (newCount <= 0) {
+          // Remove the card
+          updatedCards = updatedCards.filter((c) => c.uuid !== card.uuid);
+        } else {
+          // Update the count
+          updatedCards[idx] = { ...updatedCards[idx], count: newCount };
+        }
+      } else if (countChange > 0) {
+        // Card not present yet, add it
+        updatedCards = [...updatedCards, { ...card, count: countChange }];
+      }
+    });
+
+    return updatedCards;
+  }
+
+  // Run this whenever changesMadeState or originalCards changes
+  useEffect(() => {
+    setCardsState(buildUpdatedCards(originalCards, changesMadeState));
+  }, [originalCards, changesMadeState]);
+
+  useEffect(() => {
+    if (changesMadeState.length === 0) {
+      setCardsState(originalCards);
+    }
+  }, [changesMadeState]);
+
+  // The addCard and removeCard functions update the changesMadeState, then the useEffect runs every time
+  // changesMadeState is updated to recalculate the cardsState.
+  const addCard = (card: CardRecord) => {
+    setChangesMadeState((prev) => {
+      const idx = prev.findIndex((c) => c.card.uuid === card.uuid);
+
+      if (idx !== -1) {
+        let updated = [...prev];
+        console.log("updated cards", updated);
+        updated = updated.map((c) =>
+          c.card.uuid === card.uuid
+            ? { ...c, countChange: c.countChange + 1 }
+            : c
+        );
+        if (updated[idx].countChange === 0) {
+          // If countChange is zero, remove the entry
+          updated.splice(idx, 1);
+        }
+        return updated;
+      }
+
+      return [...prev, { card, countChange: 1 }];
+    });
+  };
+  const removeCard = (card: CardRecord) => {
+    setChangesMadeState((prev) => {
+      // Find the index of the card in the changes made list
+      const idx = prev.findIndex((c) => c.card.uuid === card.uuid);
+      console.log("Removing card, found at index: ", idx);
+      // If the card is already in the changes made list, decrement its countChange
+      if (idx !== -1) {
+        let updated = [...prev];
+        updated = updated.map((c) =>
+          c.card.uuid === card.uuid
+            ? { ...c, countChange: c.countChange - 1 }
+            : c
+        );
+        if (updated[idx].countChange === 0) {
+          // If countChange is zero, remove the entry
+          updated.splice(idx, 1);
+        }
+        return updated;
+      }
+      // If the card is not in the changes made list, set it with a countChange of -1
+      return [...prev, { card, countChange: -1 }];
+    });
+  };
+  const resetCards = () => {
+    setCardsState(originalCards);
+    setChangesMadeState([]);
+  };
   const updateCard = (updated: CardRecord) =>
     setCardsState((prev) =>
       prev.map((c) => (c.uuid === updated.uuid ? updated : c))
@@ -190,6 +294,8 @@ export const CardListProvider = ({ children }: { children: ReactNode }) => {
       value={{
         // cards
         cards,
+        changesMadeState,
+        setChangesMadeState,
         setCards,
         resetCards,
         addCard,

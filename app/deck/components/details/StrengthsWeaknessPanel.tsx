@@ -81,7 +81,7 @@ export function StrengthsWeaknessesPanel({
                     className="group rounded-lg p-1 transition-colors bg-gradient-to-t from-light/10 to-light/20 outline outline-light/20"
                   >
                     <dt className="mb-1 text-md font-semibold text-emerald-800 dark:text-emerald-300 bg-light/20 rounded-md w-fit px-2 outline outline-light/30">
-                      {niceLabel(key)}
+                      + {niceLabel(key)}
                     </dt>
                     <dd className="text-sm leading-snug text-emerald-950 dark:text-neutral-300 p-1">
                       {value}
@@ -132,7 +132,7 @@ export function StrengthsWeaknessesPanel({
                     className="group rounded-lg bg-gradient-to-t from-light/10 to-light/20 p-1 transition-colors outline outline-light/20"
                   >
                     <dt className="mb-1 text-base font-semibold text-rose-800 dark:text-rose-300 bg-light/15 w-fit px-2 outline outline-light/30 rounded-md">
-                      {niceLabel(key)}
+                      - {niceLabel(key)}
                     </dt>
                     <dd className="text-sm leading-snug text-rose-950 dark:text-neutral-300 p-1">
                       {value}

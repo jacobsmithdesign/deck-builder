@@ -54,9 +54,7 @@ export async function searchCardsWithFilters({
         ) {
           const sortedCommanderColors = [...commanderColors].sort();
           const arrayLiteral = `{${sortedCommanderColors.join(",")}}`;
-          console.log("arrayLiteral:", arrayLiteral);
           query = query.filter("color_identity", "cd", arrayLiteral);
-          console.log("No colours selected — fallback to commanderColors");
         }
         break;
       case "rarity":
@@ -77,13 +75,8 @@ export async function searchCardsWithFilters({
   }
   query = query.order("edhrec_rank", { ascending: true });
   query = query.range(page * pageSize, page * pageSize + pageSize - 1);
-  console.log("Search filters:", {
-    ...filters,
-  });
 
   const { data, error } = await query;
-
-  console.log("Filtered card data: ", data);
   if (error) {
     console.error("Card search error:", error);
     return [];

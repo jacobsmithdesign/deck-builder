@@ -1,30 +1,17 @@
 "use client";
-import { useEffect, useState } from "react";
-import {
-  Board,
-  BoardContent,
-  BoardHeader,
-  BoardTitle,
-} from "./components/card/Board";
-import { useUser } from "@/app/context/userContext";
+import { Board, BoardHeader } from "./components/card/Board";
 import { MainBoard } from "./components/card/MainBoard";
 import { useCardList } from "../context/CardListContext";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { useCompactView } from "../context/compactViewContext";
-import { CardDescription } from "../components/ui/card";
-import { RxArrowLeft, RxCross1, RxMinus, RxPlus } from "react-icons/rx";
-import EditButton from "./components/card/EditControls";
+import { RxArrowLeft } from "react-icons/rx";
 import { Button } from "@/app/deck/components/button";
 import EditControls from "./components/card/EditControls";
-import { useEditMode } from "../context/editModeContext";
 import AddToCollectionButton from "./components/card/AddToCollectionButton";
 import SearchBox from "./components/card/SearchBox";
 
 export const CardTable = () => {
   const { deck, userOwnsDeck } = useCardList();
-  const { editMode, toggleEditMode } = useEditMode();
-  const { profile } = useUser();
-  const [isEditing, setIsEditing] = useState<boolean>(false); // State to manage if the deck is being edited (isOwner && editMode)
   const { showBoard, toggleShowBoard } = useCompactView();
 
   if (!deck) {
@@ -44,7 +31,7 @@ export const CardTable = () => {
       <BoardHeader
         className={`flex relative rounded-md ${
           showBoard
-            ? "bg-light/60 rounded-b-none h-9 rounded-t-lg justify-between"
+            ? "bg-light/60 rounded-b-none h-9 rounded-t-lg justify-center"
             : "h-7 justify-start"
         }  transition-all duration-100 ease-out mx-auto items-center`}
       >
@@ -57,7 +44,7 @@ export const CardTable = () => {
           </button>
         ) : (
           // Back button to minimise the board
-          <div className="flex gap-1">
+          <div className="flex gap-1 absolute left-1">
             <Button
               variant="darkFrosted"
               className="h-7 w-12 z-10"
@@ -71,8 +58,6 @@ export const CardTable = () => {
 
         {!userOwnsDeck && !showBoard && <AddToCollectionButton />}
         {userOwnsDeck && showBoard && <SearchBox />}
-        {/* Deck editing controls. e.g. Edit / Save */}
-        {showBoard && <EditControls />}
       </BoardHeader>
       {/* The board holding all cards */}
       <AnimatePresence>

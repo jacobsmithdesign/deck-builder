@@ -12,6 +12,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 
 type Props = {
   children: React.ReactNode;
+  scrollAreaClassName?: string;
   className?: string;
   /** Width of the custom scrollbar (px). */
   thickness?: number; // default 8
@@ -25,17 +26,20 @@ type Props = {
   autoHide?: boolean; // default true
   /** Hide the native scrollbar (adds .no-scrollbar). */
   hideNativeScrollbar?: boolean; // default true
+  hideCustomScrollbar?: boolean; // default false
 };
 
 export default function CustomScrollArea({
   children,
   className,
+  scrollAreaClassName,
   thickness = 8,
   thumbMinSize = 24,
   trackClassName = "bg-neutral-800/10 dark:bg-white/10",
   thumbClassName = "bg-neutral-500/70 hover:bg-neutral-400 active:bg-neutral-300",
   autoHide = true,
   hideNativeScrollbar = true,
+  hideCustomScrollbar = false,
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -202,33 +206,42 @@ export default function CustomScrollArea({
       <div
         ref={containerRef}
         className={`${
-          hideNativeScrollbar ? "hide-scrollbar" : ""
-        } h-full w-full overflow-y-auto overflow-x-hidden outline-none pr-3`}
+          hideNativeScrollbar ? "hide-scrollbar " : ""
+        }  h-full w-full overflow-y-auto overflow-hidden outline-none ${
+          hideCustomScrollbar ? "pr-0" : "pr-3"
+        }`}
         tabIndex={0}
         onScroll={onScroll}
         onMouseEnter={() => setHovering(true)}
         onMouseLeave={() => setHovering(false)}
       >
-        <div ref={contentRef}>{children}</div>
+        <div
+          ref={contentRef}
+          className={`${scrollAreaClassName || ""} rounded-t-md`}
+        >
+          {children}
+        </div>
       </div>
 
       {/* Track + Thumb */}
-      <div
-        className={`pointer-events-auto absolute z-10 select-none overflow-clip ${trackClassName}`}
-        style={trackStyles}
-        onMouseDown={onTrackClick}
-        onMouseEnter={() => setHovering(true)}
-        onMouseLeave={() => setHovering(false)}
-        aria-hidden
-      >
+      {!hideCustomScrollbar && (
         <div
-          className={`absolute left-0 right-0 cursor-pointer ${thumbClassName}`}
-          style={thumbStyles}
-          onMouseDown={onThumbMouseDown}
-          data-role="thumb"
-          aria-label="Scroll thumb"
-        />
-      </div>
+          className={`pointer-events-auto absolute z-10 select-none overflow-clip ${trackClassName}`}
+          style={trackStyles}
+          onMouseDown={onTrackClick}
+          onMouseEnter={() => setHovering(true)}
+          onMouseLeave={() => setHovering(false)}
+          aria-hidden
+        >
+          <div
+            className={`absolute left-0 right-0 cursor-pointer ${thumbClassName}`}
+            style={thumbStyles}
+            onMouseDown={onThumbMouseDown}
+            data-role="thumb"
+            aria-label="Scroll thumb"
+          />
+        </div>
+      )}
 
       {/* Fade wrapper for auto-hide */}
       <style jsx>{`

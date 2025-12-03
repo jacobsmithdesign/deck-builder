@@ -14,8 +14,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { useCardList } from "@/app/context/CardListContext";
 import Tilt from "react-parallax-tilt";
-import { CardInfoPanel } from "./cardInfoPanel";
+import { CardInfoPanel } from "../cardInfoPanel";
 import { CardRecord } from "@/lib/schemas";
+import { useEditMode } from "@/app/context/editModeContext";
+import { IoTrashOutline } from "react-icons/io5";
+import { useUser } from "@/app/context/userContext";
+import { useUserOwnsDeck } from "@/app/hooks/useUserOwnsDeck";
+import ConfirmDelete from "./ConfirmDelete";
 
 interface PerspectiveCardProps {
   id: string;
@@ -34,10 +39,11 @@ const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
   card,
   inspectCard,
 }) => {
-  const boundingRef = useRef<DOMRect | null>(null);
   const [hovered, setHovered] = useState(false);
   const [deleteClicked, setDeleteClicked] = useState(false);
-  const { removeCard } = useCardList();
+  const { setEditMode } = useEditMode();
+  const { deck, removeCard } = useCardList();
+  const { isOwner } = useUserOwnsDeck(deck?.id);
   const [openInfo, setOpenInfo] = useState<boolean>(false);
 
   useEffect(() => {
@@ -53,16 +59,27 @@ const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
     <div className="[perspective:1500px]">
       <div>
         <Tilt
-          perspective={1500}
+          perspective={800}
           tiltMaxAngleX={6}
           tiltMaxAngleY={6}
           scale={1.05}
           transitionSpeed={500}
-          tiltReverse={true}
+          tiltReverse={false}
           onEnter={() => setHovered(true)}
           onLeave={() => setHovered(false)}
           className="relative w-46 h-64 transition-transform duration-300 ease-out [transform-style:preserve-3d] md:hover:[transform:rotateX(var(--y-rotation))_rotateY(var(--x-rotation))] justify-center items-center flex"
         >
+          {/* These are the menus that appear as an overlay on the card */}
+          <div className="w-full h-full absolute z-10 transition-transform duration-300 ease-out  [transform-style:preserve-3d] flex items-center justify-center">
+            {/* Confirm delete window */}
+            <ConfirmDelete
+              deleteClicked={deleteClicked}
+              setDeleteClicked={setDeleteClicked}
+              card={card}
+            />
+
+            {/* Change count window */}
+          </div>
           {/* Base card content */}
           <div className=" inset-0 [transform:translateZ(0px)] z-0 pointer-events-none">
             <Card className="p-1">
@@ -79,46 +96,68 @@ const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
               )}
             </Card>
           </div>
-
           {/* Floating delete button */}
           <AnimatePresence>
-            {isEditMode && !openInfo && (
+            {hovered && !openInfo && !deleteClicked && isOwner && (
               <motion.div
                 key="close"
                 initial={{
                   opacity: 0,
                   z: 0,
                   scale: 0,
+                  backdropFilter: "blur(0px)",
                 }}
                 animate={{
                   opacity: 1,
-                  z: 20,
+                  z: 25,
                   scale: 1,
+                  backdropFilter: "blur(2.5px)",
                 }}
                 exit={{
                   opacity: 0,
                   z: 0,
                   scale: 0.0,
+                  backdropFilter: "blur(0px)",
                 }}
-                whileTap={{ z: 5, scale: 0.9 }}
+                whileTap={{ z: 10, scale: 0.95, backdropFilter: "blur(1px)" }}
                 transition={{
                   type: "spring",
-                  stiffness: 650,
-                  damping: 20,
+                  stiffness: 450,
+                  damping: 30,
                   bounce: 3,
                   duration: 0.005,
                 }}
-                className="will-change-[transform,opacity] absolute cursor-pointer justify-center z-10 drop-shadow-xl rounded-lg bg-light md:hover:bg-buttonRedHover ml-9 text-buttonRed top-9 right-5 w-8 h-8 transition-colors duration-100 overflow-visible "
+                className="will-change-[transform,opacity] absolute cursor-pointer justify-center z-10 drop-shadow-xl rounded-lg bg-light/60 md:hover:bg-red-600/60 ml-9 text-red-500 top-9 right-5 transition-colors duration-150 overflow-visible group shadow-inner shadow-light/60 md:hover:shadow-light/30 border border-light/30 w-8 h-8 items-center flex"
                 onClick={() => setDeleteClicked(true)}
               >
-                <div className="w-8 h-8 text-shadow-lg font-bold text-sm flex justify-center items-center">
-                  <RxCross2 className="w-6 h-6" />
-                </div>
+                <IoTrashOutline className="h-4 w-4 mb-2 text-red-600 md:group-hover:text-light mt-1.5 transition-colors duration-150" />
+              </motion.div>
+            )}
+            {card.count > 1 && (
+              <motion.div
+                key={`count-${id}`}
+                initial={{ opacity: 0, z: 0, scale: 0 }}
+                animate={{
+                  opacity: 1,
+                  z: 20,
+                  scale: 1,
+                }}
+                exit={{ opacity: 0, z: 0, scale: 0 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 450,
+                  damping: 30,
+                  bounce: 3,
+                  duration: 0.005,
+                }}
+                className="will-change-[transform,opacity] absolute cursor-pointer justify-center items-center flex z-10 drop-shadow-xl rounded-lg bg-dark left-5 text-light top-9 w-fit px-2 h-8 transition-colors duration-100 overflow-visible font-bold"
+              >
+                x {card.count}
               </motion.div>
             )}
 
             {/* Floating info button */}
-            {hovered && !deleteClicked && !openInfo && (
+            {/* {hovered && !deleteClicked && !openInfo && (
               <>
                 <motion.div
                   key="info"
@@ -160,115 +199,9 @@ const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
                   </div>
                 </motion.div>
               </>
-            )}
+            )} */}
 
-            {/* Popup for Confirm Delete */}
-            {deleteClicked && (
-              <motion.div
-                key="popup"
-                initial={{
-                  opacity: 0,
-                  z: 0,
-                  scale: 0.95,
-                  backdropFilter: "blur(0px)",
-                }}
-                animate={{
-                  opacity: 1,
-                  z: 10,
-                  scale: 1,
-                  backdropFilter: "blur(4px)",
-                }}
-                exit={{
-                  opacity: 0,
-                  z: 0,
-                  scale: 0.95,
-                  backdropFilter: "blur(0px)",
-                }}
-                transition={{
-                  type: "spring",
-                  stiffness: 450,
-                  damping: 20,
-                  bounce: 1,
-                  duration: 0.005,
-                }}
-                className={`will-change-[transform,opacity] absolute justify-center z-10 drop-shadow-xl border border-light/40 rounded-lg bg-light/70 text-dark p-2 flex flex-col items-between text-center md:text-sm text-xs`}
-              >
-                <p>Confirm</p>
-                {/* Remove button */}
-                <AnimatePresence>
-                  <div className="flex gap-1 mt-2">
-                    <motion.div
-                      key="confirmRemove"
-                      initial={{
-                        opacity: 1,
-                        scale: 1,
-                      }}
-                      animate={{
-                        opacity: 1,
-                        z: 10,
-                        scale: 1,
-                      }}
-                      exit={{
-                        opacity: 0,
-                        z: 0,
-                        scale: 0.8,
-                      }}
-                      whileTap={{
-                        z: 15,
-                        scale: 0.9,
-                      }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 650,
-                        damping: 20,
-                        bounce: 3,
-                        duration: 0.005,
-                      }}
-                      className=" cursor-pointer justify-center z-10 rounded-sm hover:bg-buttonRedHoverDark text-buttonRed p-1 items-center flex h-6 px-2 transition-colors duration-150 pt-1.5"
-                      onClick={() => {
-                        console.log("Removing", card);
-                        if (card) removeCard(card);
-                      }}
-                    >
-                      <p>Remove</p>
-                    </motion.div>
-                    <motion.div
-                      key="cancelRemove"
-                      initial={{
-                        opacity: 0,
-                        z: 10,
-                        scale: 0.8,
-                      }}
-                      animate={{
-                        opacity: 1,
-                        z: 30,
-                        scale: 1,
-                      }}
-                      exit={{
-                        opacity: 0,
-                        z: 0,
-                        scale: 0.8,
-                      }}
-                      whileTap={{
-                        z: 15,
-                        scale: 0.9,
-                      }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 650,
-                        damping: 20,
-                        bounce: 3,
-                        duration: 0.005,
-                      }}
-                      className="cursor-pointer z-10 rounded-sm md:hover:bg-light text-dark justify-center flex items-center  p-1 h-6 px-2 transition-colors duration-150 pt-1.5"
-                      onClick={() => setDeleteClicked(false)}
-                    >
-                      <p>Cancel</p>
-                    </motion.div>
-                  </div>
-                </AnimatePresence>
-              </motion.div>
-            )}
+            {/* Below consists of the confirm delete popup window. The delete and cancel buttons and placed above a bottom plate to achieve desired floating design */}
           </AnimatePresence>
           {/* Card information panel */}
           {openInfo && (
