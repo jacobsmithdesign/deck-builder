@@ -21,6 +21,10 @@ export default function Navbar() {
           <Link href="/deck/new">
             <Button variant="primaryBlue">Add New Deck</Button>
           </Link>
+
+          <Link href="/explore/cards">
+            <Button variant="link">Explore Cards</Button>
+          </Link>
         </div>
         <div className="space-x-3">
           {/* Display Log In button or profile button */}

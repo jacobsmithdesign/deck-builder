@@ -5,21 +5,21 @@ import { BsFillLightningChargeFill } from "react-icons/bs";
 import { RiBrainFill } from "react-icons/ri";
 import { AiFillInteraction } from "react-icons/ai";
 import { IoExtensionPuzzle } from "react-icons/io5";
-import { ExpandablePills } from "./expandablePills";
-import { diff } from "util";
+import { useCardList } from "@/app/context/CardListContext";
+import { ExpandablePills } from "./expandablePillContextual";
 
 // Power Level: numeric 1–10
 export const powerLevelColors: Record<number, string> = {
-  1: "bg-green-200 outline outline-green-300 text-green-800/70",
-  2: "bg-green-200 outline outline-green-300 text-green-800/70",
-  3: "bg-green-200 outline outline-green-300 text-green-800/70",
-  4: "bg-yellow-200 outline outline-yellow-300 text-yellow-950/70",
-  5: "bg-yellow-200 outline outline-yellow-300 text-yellow-950/70",
-  6: "bg-orange-200 outline outline-orange-300 text-orange-950/70",
-  7: "bg-orange-200 outline outline-orange-300 text-orange-950/70",
-  8: "bg-red-200 outline outline-red-300 text-red-900/70",
-  9: "bg-red-200 outline outline-red-300 text-red-900/70",
-  10: "bg-red-300 outline outline-red-300 text-red-900/70",
+  1: "bg-green-200 outline outline-green-300 md:group-hover:bg-light text-green-800/70",
+  2: "bg-green-200 outline outline-green-300 md:group-hover:bg-light text-green-800/70",
+  3: "bg-green-200 outline outline-green-300 md:group-hover:bg-light text-green-800/70",
+  4: "bg-yellow-200 outline outline-yellow-300 md:group-hover:bg-light text-yellow-950/70",
+  5: "bg-yellow-200 outline outline-yellow-300 md:group-hover:bg-light text-yellow-950/70",
+  6: "bg-orange-200 outline outline-orange-300 md:group-hover:bg-light text-orange-950/70",
+  7: "bg-orange-200 outline outline-orange-300 md:group-hover:bg-light text-orange-950/70",
+  8: "bg-red-200 outline outline-red-300 md:group-hover:bg-light text-red-900/70",
+  9: "bg-red-200 outline outline-red-300 md:group-hover:bg-light text-red-900/70",
+  10: "bg-red-300 md:group-hover:bg-light outline outline-red-300 md:group-hover:bg-light text-red-900/70",
 };
 
 export const complexityColors: Record<string, string> = {
@@ -54,17 +54,6 @@ type MetricDef = {
   descKeys: string[];
 };
 
-type Difficulty = {
-  power_level?: number;
-  power_level_explanation?: string;
-  complexity?: "Low" | "Medium" | "High";
-  complexity_explanation?: string;
-  interaction_intensity?: "Low" | "Medium" | "High";
-  interaction_explanation?: string;
-  pilot_skill?: "Beginner" | "Intermediate" | "Advanced";
-  pilot_skill_explanation?: string;
-};
-
 const metricConfig: MetricDef[] = [
   {
     key: "power_level",
@@ -85,7 +74,7 @@ const metricConfig: MetricDef[] = [
     colorMap: interactionColors,
     icon: AiFillInteraction,
     get: (d) => d?.interaction_intensity,
-    descKeys: ["interaction_explanation", "interaction_explanation"],
+    descKeys: ["interaction_intensity_explanation", "interaction_explanation"],
   },
   {
     key: "complexity",
@@ -107,13 +96,9 @@ function pickDescription(obj: any, candidates: string[]) {
   return null;
 }
 
-export function DeckMetricsXL({
-  className = "",
-  difficulty,
-}: {
-  className?: string;
-  difficulty: Difficulty;
-}) {
+export function DeckMetricsXL({ className = "" }: { className?: string }) {
+  const { difficulty } = useCardList(); // new shape set via hydrateDeckIntoContext
+
   const [idx, setIdx] = useState(0);
   if (!difficulty) return null;
 
@@ -148,7 +133,7 @@ export function DeckMetricsXL({
         <div
           className={`items-start ${currentColor} rounded-md p-1 h-full flex flex-col`}
         >
-          <ExpandablePills setIndex={handleIdxChange} difficulty={difficulty} />
+          <ExpandablePills setIndex={handleIdxChange} />
           <div className="flex gap-1 items-center">
             <CurrentIcon className="h-3 min-w-3 text-dark/80" />
             <span className="text-sm font-bold rounded text-dark/90 ">

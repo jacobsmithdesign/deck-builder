@@ -9,34 +9,34 @@ import { AnimatePresence, motion } from "framer-motion";
 
 // Power Level: numeric 1–10
 export const powerLevelColors: Record<number, string> = {
-  1: "bg-green-200 outline outline-green-300",
-  2: "bg-green-200 outline outline-green-300",
-  3: "bg-green-200 outline outline-green-300",
-  4: "bg-yellow-200 outline outline-yellow-300",
-  5: "bg-yellow-200 outline outline-yellow-300",
-  6: "bg-orange-200 outline outline-orange-300",
-  7: "bg-orange-200 outline outline-orange-300",
-  8: "bg-red-200 outline outline-red-300",
-  9: "bg-red-200 outline outline-red-300",
-  10: "bg-red-300 outline outline-red-300",
+  1: "bg-green-200 outline outline-green-300 md:group-hover:bg-light text-green-800/70",
+  2: "bg-green-200 outline outline-green-300 md:group-hover:bg-light text-green-800/70",
+  3: "bg-green-200 outline outline-green-300 md:group-hover:bg-light text-green-800/70",
+  4: "bg-yellow-200 outline outline-yellow-300 md:group-hover:bg-light text-yellow-950/70",
+  5: "bg-yellow-200 outline outline-yellow-300 md:group-hover:bg-light text-yellow-950/70",
+  6: "bg-orange-200 outline outline-orange-300 md:group-hover:bg-light text-orange-950/70",
+  7: "bg-orange-200 outline outline-orange-300 md:group-hover:bg-light text-orange-950/70",
+  8: "bg-red-200 outline outline-red-300 md:group-hover:bg-light text-red-900/70",
+  9: "bg-red-200 outline outline-red-300 md:group-hover:bg-light text-red-900/70",
+  10: "bg-red-300 md:group-hover:bg-light outline outline-red-300 md:group-hover:bg-light text-red-900/70",
 };
 
 export const complexityColors: Record<string, string> = {
-  Low: "bg-green-200 outline outline-green-300",
-  Medium: "bg-yellow-200 outline outline-yellow-300",
-  High: "bg-red-200 outline outline-red-300",
+  Low: "bg-green-200 outline outline-green-300 text-green-800/70",
+  Medium: "bg-yellow-200 outline outline-yellow-300 text-yellow-950/70",
+  High: "bg-red-200 outline outline-red-300 text-red-950/70",
 };
 
 export const pilotSkillColors: Record<string, string> = {
-  Beginner: "bg-green-200 outline outline-green-300",
-  Intermediate: "bg-yellow-200 outline outline-yellow-300",
-  Advanced: "bg-red-200 outline outline-red-300",
+  Beginner: "bg-green-200 outline outline-green-300 text-green-800/70",
+  Intermediate: "bg-yellow-200 outline outline-yellow-300 text-yellow-950/70",
+  Advanced: "bg-red-200 outline outline-red-300 text-red-950/70",
 };
 
 export const interactionColors: Record<string, string> = {
-  Low: "bg-green-200 outline outline-green-300",
-  Medium: "bg-yellow-200 outline outline-yellow-300",
-  High: "bg-red-200 outline outline-red-300",
+  Low: "bg-green-200 outline outline-green-300 text-green-800/70",
+  Medium: "bg-yellow-200 outline outline-yellow-300 text-yellow-950/70",
+  High: "bg-red-200 outline outline-red-300 text-red-950/70",
 };
 
 type MetricDef = {

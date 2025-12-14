@@ -5,8 +5,7 @@ import { BsFillLightningChargeFill } from "react-icons/bs";
 import { RiBrainFill } from "react-icons/ri";
 import { AiFillInteraction } from "react-icons/ai";
 import { IoExtensionPuzzle } from "react-icons/io5";
-import { ExpandablePills } from "./expandablePills";
-import { diff } from "util";
+import { AnimatePresence, motion } from "framer-motion";
 
 // Power Level: numeric 1–10
 export const powerLevelColors: Record<number, string> = {
@@ -50,7 +49,7 @@ type MetricDef = {
   key: MetricKey;
   icon: React.ComponentType<{ className?: string }>;
   colorMap: Record<number, string> | Record<string, string>;
-  get: (d: any) => number | string | null | undefined;
+  get: (ai: any) => number | string | null | undefined;
   descKeys: string[];
 };
 
@@ -64,109 +63,113 @@ type Difficulty = {
   pilot_skill?: "Beginner" | "Intermediate" | "Advanced";
   pilot_skill_explanation?: string;
 };
-
 const metricConfig: MetricDef[] = [
   {
     key: "power_level",
     colorMap: powerLevelColors,
     icon: BsFillLightningChargeFill,
-    get: (d) => d?.power_level,
-    descKeys: ["power_level_explanation"],
+    get: (ai) => ai?.power_level,
+    descKeys: [
+      "power_level_explanation",
+      "power_level_desc",
+      "power_level_text",
+    ],
   },
   {
     key: "pilot_skill",
     colorMap: pilotSkillColors,
     icon: RiBrainFill,
-    get: (d) => d?.pilot_skill,
-    descKeys: ["pilot_skill_explanation"],
+    get: (ai) => ai?.pilot_skill,
+    descKeys: [
+      "pilot_skill_explanation",
+      "pilot_skill_desc",
+      "pilot_skill_text",
+    ],
   },
   {
     key: "interaction_intensity",
     colorMap: interactionColors,
     icon: AiFillInteraction,
-    get: (d) => d?.interaction_intensity,
-    descKeys: ["interaction_explanation", "interaction_explanation"],
+    get: (ai) => ai?.interaction_intensity,
+    descKeys: [
+      "interaction_explanation",
+      "interaction_intensity_desc",
+      "interaction_intensity_text",
+    ],
   },
   {
     key: "complexity",
     colorMap: complexityColors,
     icon: IoExtensionPuzzle,
-    get: (d) => d?.complexity,
-    descKeys: ["complexity_explanation"],
+    get: (ai) => ai?.complexity,
+    descKeys: ["complexity_explanation", "complexity_desc", "complexity_text"],
   },
 ];
 
 function prettyLabel(k: string) {
-  return k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
-function pickDescription(obj: any, candidates: string[]) {
-  for (const key of candidates) {
-    const v = obj?.[key];
-    if (typeof v === "string" && v.trim()) return v.trim();
-  }
-  return null;
+  return k.replace("", "").replace(/_/g, " ");
 }
 
-export function DeckMetricsXL({
+export function ExpandablePillsMini({
   className = "",
   difficulty,
 }: {
   className?: string;
   difficulty: Difficulty;
 }) {
-  const [idx, setIdx] = useState(0);
   if (!difficulty) return null;
 
-  const current = metricConfig[idx];
-  const currentValue = current.get(difficulty);
-
-  // decide colour
-  let currentColor = "bg-light/50";
-  if (current.key === "power_level" && typeof currentValue === "number") {
-    const n = Math.max(1, Math.min(10, currentValue));
-    currentColor =
-      (powerLevelColors as Record<number, string>)[n] ?? currentColor;
-  } else if (typeof currentValue === "string") {
-    currentColor =
-      (current.colorMap as Record<string, string>)[currentValue] ??
-      currentColor;
-  }
-
-  const CurrentIcon = current.icon;
-  const description =
-    pickDescription(difficulty, current.descKeys) ??
-    `No description provided yet for ${prettyLabel(current.key)}.`;
-
-  const handleIdxChange = (number: number) => setIdx(number);
-
   return (
-    <div className={`w-full h-full gap-1 flex flex-col ${className}`}>
-      <div
-        id={`metric-panel-${current.key}`}
-        className="w-full h-full text-left bg-light/60 rounded-md transition-all flex flex-col relative"
-      >
-        <div
-          className={`items-start ${currentColor} rounded-md p-1 h-full flex flex-col`}
-        >
-          <ExpandablePills setIndex={handleIdxChange} difficulty={difficulty} />
-          <div className="flex gap-1 items-center">
-            <CurrentIcon className="h-3 min-w-3 text-dark/80" />
-            <span className="text-sm font-bold rounded text-dark/90 ">
-              {prettyLabel(current.key)} -
-            </span>
-            <div className="flex items-center gap-1">
-              {currentValue != null && currentValue !== "" && (
-                <span className="text-sm font-bold rounded text-dark/90 ">
-                  {String(currentValue)}
-                </span>
-              )}
+    <div className={`flex gap-1`} role="tablist" aria-label="Deck metrics">
+      {metricConfig.map((def, i) => {
+        const value = def.get(difficulty);
+
+        let colorClass = "bg-light/50 outline outline-dark/10";
+        if (def.key === "power_level" && typeof value === "number") {
+          const n = Math.max(1, Math.min(10, value));
+          colorClass =
+            (powerLevelColors as Record<number, string>)[n] ?? colorClass;
+        } else if (typeof value === "string") {
+          colorClass =
+            (def.colorMap as Record<string, string>)[value] ?? colorClass;
+        }
+
+        const Icon = def.icon;
+
+        return (
+          <button
+            key={def.key}
+            type="button"
+            role="tab"
+            aria-controls={`metric-panel-${def.key}`}
+            onClick={() => {}}
+            className={
+              "relative group flex items-center rounded transition-transform cursor-pointer"
+            }
+          >
+            <div
+              className={`w-fit rounded-xs px-1 gap-1 flex items-center jsutify-center transition-all duration-200 ${colorClass} hover:opacity-80 group`}
+            >
+              <Icon
+                className={`"h-3.5 w-3.5 transition-all duration-200 text-dark outline-none ${colorClass}
+                `}
+              />
+              <p className="text-sm">{value}</p>
             </div>
-          </div>
-          <p className="text-sm text-dark/80 leading-snug my-auto">
-            {description}
-          </p>
-        </div>
-      </div>
+
+            {/* Tooltip */}
+            <div
+              className={`absolute left-0 bottom-7 ml-1 translate-y-0 group-hover:translate-y-1 transition-all duration-100 ease-out rounded px-1 whitespace-nowrap shadow z-20 ${colorClass} h-5 flex items-center pointer-events-none opacity-0 group-hover:opacity-100`}
+            >
+              <span
+                className={`font-medium text-sm outline-none ${colorClass}`}
+              >
+                {prettyLabel(def.key)}
+              </span>
+            </div>
+          </button>
+        );
+      })}
     </div>
   );
 }

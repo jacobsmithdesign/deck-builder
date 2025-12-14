@@ -28,7 +28,6 @@ interface PerspectiveCardProps {
   label: React.ReactNode;
   isEditMode: boolean;
   card: CardRecord;
-  inspectCard: (id: string) => void;
 }
 
 const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
@@ -37,7 +36,6 @@ const PerspectiveCard: React.FC<PerspectiveCardProps> = ({
   label,
   isEditMode = false,
   card,
-  inspectCard,
 }) => {
   const [hovered, setHovered] = useState(false);
   const [deleteClicked, setDeleteClicked] = useState(false);

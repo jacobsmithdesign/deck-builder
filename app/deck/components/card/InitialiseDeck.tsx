@@ -222,7 +222,7 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
       type: deck.type,
       isUserDeck: "user_id" in deck,
       cards: deck.cards.map((c) => ({
-        id: c.uuid,
+        uuid: c.uuid,
         name: c.name,
         type: c.type,
         mana_cost: c.mana_cost,

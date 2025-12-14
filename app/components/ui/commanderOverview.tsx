@@ -8,15 +8,7 @@ import {
 } from "./card";
 import { useCommander } from "@/app/context/CommanderContext";
 import { ManaCost } from "./manaCost";
-import {
-  Spell,
-  SpellCount,
-  SpellType,
-  Strength,
-  Weakeness,
-} from "./overviewButtons";
-import ScrollingLabels from "./scrollingLabels";
-import Image from "next/image";
+
 import { CommanderSkeleton } from "../commanderSkeleton";
 import { getAverageColorFromImage } from "@/lib/getAverageColour";
 import { useEffect, useState } from "react";
@@ -29,15 +21,14 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { useCompactView } from "@/app/context/compactViewContext";
 import { useCardList } from "@/app/context/CardListContext";
-import { ColouredManaCurve } from "@/app/deck/components/overview/colouredManaCurve";
 import { SpellTypeCounts } from "@/app/deck/components/overview/spellTypeCounts";
 import { ManaCurve } from "@/app/deck/components/overview/manaCurve";
-import { StrengthsAndWeaknesses } from "@/app/deck/components/overview/strengthsAndWeaknesses";
-import { DeckMetricsXL } from "@/app/deck/components/overview/deckMetricsXL";
+import { DeckMetricsXL } from "@/app/deck/components/overview/deckMetricsXLContextual";
 import { DeckMetricsMini } from "@/app/deck/components/overview/deckMetricsMini";
-import { AnimatedButton } from "@/app/deck/components/AnimatedButton";
 import { AnimatedButtonLoading } from "@/app/deck/components/AnimatedButtonLoading";
 import { useAnalyseProgress } from "@/app/hooks/useAnalyseProgress";
+import { StrengthsAndWeaknesses } from "@/app/deck/components/overview/strengthsAndWeaknesses";
+
 export default function CommanderOverview() {
   const { compactView, toggleCompactView, setBgColor, bgColor } =
     useCompactView();
@@ -45,7 +36,7 @@ export default function CommanderOverview() {
   const [artworkColor, setArtworkColor] = useState<string>();
   const [typeCount, setTypeCount] = useState<CardTypeCount[]>([]);
   const [keywordCount, setKeywordCount] = useState<KeywordCount[]>([]);
-  const { deckFeatures, aiOverview } = useCardList();
+  const { deckFeatures, aiOverview, strengthsAndWeaknesses } = useCardList();
   const { analysing, progress, step, start, error } = useAnalyseProgress();
   const [aiLoading, setAiLoading] = useState<boolean>(false);
   // Set the artworkColour from the card artwork image
@@ -328,7 +319,7 @@ export default function CommanderOverview() {
                                   compactView ? "w-1/2" : "w-full"
                                 }`}
                               ></div>
-                              {aiOverview && (
+                              {strengthsAndWeaknesses && (
                                 <DeckMetricsMini compactView={compactView} />
                               )}
                             </div>
@@ -337,7 +328,7 @@ export default function CommanderOverview() {
                             key={aiOverview ? "ai-loaded" : "ai-empty"}
                             className="row-span-2 gap-1 flex flex-col"
                           >
-                            {aiOverview ? (
+                            {strengthsAndWeaknesses ? (
                               <>
                                 <StrengthsAndWeaknesses
                                   compactView={compactView}

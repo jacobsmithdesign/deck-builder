@@ -1,28 +1,27 @@
 #!/usr/bin/env tsx
 import "dotenv/config";
 import OpenAI from "openai";
-import { Ollama } from "ollama";
-
-import pLimit from "p-limit";
+import ollama from "ollama";
 import dotenv from "dotenv";
+import pLimit from "p-limit";
 import { createClient } from "@supabase/supabase-js";
+import { zodToJsonSchema } from "zod-to-json-schema";
 
-import { buildFeatures } from "@/lib/ai/features";
-import { compressLands } from "@/lib/ai/landCompression";
-
+// If you can reuse your existing helpers, import them.
+// Otherwise copy the functions into this script or a shared package.
 dotenv.config({ path: ".env.local" });
-
-/** ---------- HARD-LOCK TO LOCAL OLLAMA ---------- */
-const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434/v1"; // OpenAI-compatible
-const MODEL = process.env.MODEL || "qwen3:4b"; // e.g. qwen2.5:14b, mistral:7b, mixtral:8x7b
 
 /** ---------- ENV ---------- */
 const SUPABASE_URL = process.env.SUPABASE_URL!;
 const SUPABASE_SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const AI_CONCURRENCY = Number(process.env.AI_CONCURRENCY ?? 1);
+const OLLAMA_URL = process.env.OLLAMA_URL || "http://127.0.0.1:11434";
+const LOCAL_MODEL = process.env.LOCAL_MODEL || "dolphin3:latest";
+const AI_CONCURRENCY = Number(process.env.AI_CONCURRENCY ?? 3);
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE) {
-  console.error("Missing env vars: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY");
+  console.error(
+    "Missing env vars. Required: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY"
+  );
   process.exit(1);
 }
 
@@ -33,32 +32,16 @@ const args = Object.fromEntries(
     return [k, v ?? "true"];
   })
 );
-/**
- * --limit=50          max rows per page (default 30)
- * --force=true|false  process even if already analysed (default false)
- * --pages=all|N       number of pages to scan (default "all")
- * --type="Commander Deck"  deck type filter
- */
+
 const LIMIT = Number(args.limit ?? 30);
 const FORCE = args.force === "true" || args.force === "1";
 const PAGES = args.pages ?? "all";
 const DECK_TYPE = args.type ?? "Commander Deck";
 
-/** ---------- SUPABASE / OPENAI (LOCAL ONLY) ---------- */
+/** ---------- SUPABASE ---------- */
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE, {
   auth: { persistSession: false },
 });
-
-// Key is required by SDK but ignored by Ollama
-const openai = new OpenAI({
-  apiKey: "ollama",
-  baseURL: OLLAMA_URL,
-});
-
-const ollama = new Ollama({
-  host: process.env.OLLAMA_HOST || "http://localhost:11434",
-});
-
 /** ---------- TYPES ---------- */
 type CardRow = {
   uuid: string;
@@ -83,8 +66,34 @@ type DeckRow = {
   deck_ai_pillars?: { deck_id: string } | null;
 };
 
+/** ---------- SCHEMA ---------- */
+import { z } from "zod";
+
+const DeckAnalysisSchema = z.object({
+  archetype: z.object({
+    axes: z.record(z.string(), z.number()),
+    description: z.string(),
+  }),
+  sw: z.object({
+    strengths: z.object({ name: z.string(), explanation: z.string() }),
+    weaknesses: z.object({ name: z.string(), explanation: z.string() }),
+  }),
+  difficulty: z.object({
+    power_level: z.number().min(1).max(10),
+    power_level_explanation: z.string().max(170),
+    complexity: z.enum(["Low", "Medium", "High"]),
+    complexity_explanation: z.string().max(170),
+    pilot_skill: z.enum(["Beginner", "Intermediate", "Advanced"]),
+    pilot_skill_explanation: z.string().max(170),
+    interaction_intensity: z.enum(["Low", "Medium", "High"]),
+    interaction_explanation: z.string().max(170),
+  }),
+  pillars: z.string().min(10).max(800),
+});
+const jsonSchema = zodToJsonSchema(DeckAnalysisSchema as any);
 /** ---------- FETCH PAGE ---------- */
 async function fetchDeckPage(offset = 0): Promise<DeckRow[]> {
+  // We pull related AI tables so we can skip already-analysed decks in code.
   const { data, error } = await supabase
     .from("decks")
     .select(
@@ -105,8 +114,8 @@ async function fetchDeckPage(offset = 0): Promise<DeckRow[]> {
       deck_ai_pillars(deck_id)
     `
     )
-    .eq("type", DECK_TYPE)
-    .is("user_id", null)
+    .eq("type", DECK_TYPE) // official precons
+    .is("user_id", null) // your “official WotC” criterion
     .order("id", { ascending: true })
     .range(offset, offset + LIMIT - 1);
 
@@ -137,112 +146,47 @@ function isSignalLand(card: {
     /can't be countered/,
   ];
   if (signalPatterns.some((re) => re.test(text))) return true;
+
   if (
     /nykthos|field of the dead|urza|bojuka bog|gaea|sanctum|cabal coffers|reliquary tower/.test(
       name
     )
-  )
+  ) {
     return true;
-
+  }
   return false;
 }
 
-function normaliseDifficulty(d: any) {
-  // Trim + case-normalise strings
-  const norm = (s?: string) => (typeof s === "string" ? s.trim() : "");
-
-  // Map a bunch of common variants → allowed enum
-  const mapToTriLevel = (v?: string) => {
-    const x = norm(v).toLowerCase();
-    if (["low", "lo", "light", "minimal", "little"].includes(x)) return "Low";
-    if (["medium", "med", "moderate", "mid", "avg", "average"].includes(x))
-      return "Medium";
-    if (["high", "hi", "heavy", "intense", "strong"].includes(x)) return "High";
-    // fallback if model gave junk
-    return "Medium";
-  };
-
-  // power level must be 1..10 integer
-  const pln = Number(d?.power_level);
-  const power_level = isFinite(pln)
-    ? Math.min(10, Math.max(1, Math.round(pln)))
-    : 5;
-
-  const out = {
-    power_level,
-    power_level_explanation: norm(d?.power_level_explanation).slice(0, 170),
-
-    complexity: mapToTriLevel(d?.complexity),
-    complexity_explanation: norm(d?.complexity_explanation).slice(0, 170),
-
-    pilot_skill: (() => {
-      const x = norm(d?.pilot_skill).toLowerCase();
-      if (["beginner", "novice", "new"].includes(x)) return "Beginner";
-      if (["intermediate", "mid", "average"].includes(x)) return "Intermediate";
-      if (["advanced", "expert"].includes(x)) return "Advanced";
-      return "Intermediate";
-    })(),
-    pilot_skill_explanation: norm(d?.pilot_skill_explanation).slice(0, 170),
-
-    interaction_intensity: mapToTriLevel(d?.interaction_intensity),
-    interaction_explanation: norm(d?.interaction_explanation).slice(0, 170),
-  };
-
-  return out;
-}
-
 /** ---------- PROMPT ---------- */
-function buildPrompt(cards: any[], landFeatures: any, commander: any) {
+function buildPrompt(cards: any[], commander: any) {
   const CARDS = JSON.stringify(cards);
-  const LANDFEATURES = JSON.stringify(landFeatures);
   const TAG_VOCAB =
     '["token swarm","treasure","aristocrats","graveyard","reanimator","stax","voltron","spellslinger","blink","+1/+1 counters","lifegain","control","combo","camp","landfall","mill","extra turns","vehicles","dragons","elves","artifacts","enchantress","aura","discard","steal/copy","flicker","proliferate","burn","big mana"]';
 
   return `
-Return ONLY minified JSON with EXACT keys:
-{
-  "archetype": {
-    "axes": { "<slug-1>": 0, ... },
-    "explanation_md": { "<slug-1>": "<markdown>", ... }, 
-    "description": "<1-2 sentences>"
-  },
-  "sw": {
-    "strengths": { "<slug-1>": "<3-5 sentences markdown>", ... },
-    "weaknesses": { "<slug-1>": "<3-5 sentences markdown>", ... }
-  },
-  "difficulty": {
-    "power_level": 1-10,
-    "power_level_explanation":"<=170 chars",
-    "complexity":"Low"|"Medium"|"High",
-    "complexity_explanation":"<=170 chars",
-    "pilot_skill":"Beginner"|"Intermediate"|"Advanced",
-    "pilot_skill_explanation":"<=170 chars",
-    "interaction_intensity":"Low"|"Medium"|"High",
-    "interaction_explanation":"<=170 chars"
-  },
-  "pillars": { "<slug-1>": "<2-4 sentences markdown>", ... }
-}
+            Archetype vocabulary=${TAG_VOCAB}
 
-Archetype vocabulary=${TAG_VOCAB}
-RULES:
-- Archetypes: 4–7 short lowercase slugs based on the deck’s actual cards.
-- Axes: 0–100; keys ⊆ archetypes; reflect strength in this list.
-- Explanations: purely extractive; only use provided cards.
-- Do NOT invent cards.
+            RULES:
+            archetypes: 4–7 short lowercase slugs that capture the deck’s playstyle and card frequency. Choose from archetype vocabulary. If an archetype that does not exist in the vocabular could be derived from the commander or the cards always include it. 
+            axes: ranked 0–100, keys ⊆ archetypes, reflecting the strength of each chosen archetype in this deck.
 
-DECK INFO:
-Commander: ${JSON.stringify({
-    name: commander?.name ?? null,
-    type: commander?.type ?? null,
-    text: commander?.text ?? null,
-  })}
-LandFeatures: ${LANDFEATURES}
-Cards: ${CARDS}
+            explanation_md: maximum 120 words in Markdown, purely extractive. Explain the reasoning behind the archetype's rank and its impact on the deck's playstyle. You may use some example cards from the card list justify the archetypes and their relative weighting. 
+
+            strengths/weaknesses: 2–4 items, 1–3 words.
+
+            DECK INFO:
+            Commander: ${JSON.stringify({
+              name: commander?.name ?? null,
+              type: commander?.type ?? null,
+              text: commander?.text ?? null,
+            })}
+            Cards: ${CARDS}
 `.trim();
 }
 
-/** ---------- AI CALL (LOCAL OLLAMA) ---------- */
+/** ---------- AI CALL ---------- */
 async function runAnalysis(deck: DeckRow) {
+  // Build filtered “cards” array used in your current route
   const main = (deck.deck_cards ?? [])
     .filter((dc) => (dc?.board_section || "").toLowerCase() === "mainboard")
     .map(({ card, count }) => ({
@@ -257,88 +201,52 @@ async function runAnalysis(deck: DeckRow) {
       return !isLand || isSignalLand(c);
     });
 
-  // You’re already using these elsewhere; leaving them for parity (even if not embedded into the prompt)
-  const _rawFeatures = buildFeatures({
-    id: deck.id,
-    name: deck.name,
-    commander: deck.commander,
-    deck_cards: deck.deck_cards,
-  } as any);
-  const landFeatures = compressLands({
-    id: deck.id,
-    name: deck.name,
-    commander: deck.commander,
-    deck_cards: deck.deck_cards,
-  } as any);
-
-  const prompt = buildPrompt(main, landFeatures, deck.commander);
+  const prompt = buildPrompt(main, deck.commander);
 
   const res = await ollama.chat({
-    model: process.env.MODEL || "qwen3:4b",
-    messages: [
-      { role: "system", content: "Return exactly one valid JSON object." },
-      { role: "user", content: prompt },
-    ],
-    format: "json", // enforces JSON from many Ollama models
-    options: {
-      num_ctx: 12000, // increase context
-      num_predict: 4096, // ensure enough output
-      // temperature: 0,
-    },
-  });
-
-  const completion = await openai.chat.completions.create({
-    model: MODEL,
-    temperature: 0,
+    model: "dolphin3:latest",
     messages: [
       {
         role: "system",
         content:
-          "You are an expert MTG Commander deck analyst. Return exactly one valid JSON object matching the schema. No extra text.",
+          "You are an expert MTG Commander deck analyst. Your job is to read a deck of any bracket to extract its core identity. You must identify its archetypes, strengths and weaknesses, accurately assess its difficulty for most players, and identify its main pillars. ONLY USE CARDS IN DECK INFO. Do not invent cards, categories, or details that are not directly supported. Return exactly one JSON object.",
       },
       { role: "user", content: prompt },
     ],
+    format: zodToJsonSchema(DeckAnalysisSchema as any),
   });
 
-  // res.message.content is your JSON string
-  const raw = res.message?.content ?? "{}";
-  let obj: any;
-  try {
-    obj = JSON.parse(raw);
-  } catch (e) {
-    // last-resort cleanup for trailing junk
-    const maybe = raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1);
-    obj = JSON.parse(maybe);
-  }
-
-  if (!obj || !obj.archetype || !obj.difficulty) {
+  const text = res?.message.content;
+  console.log("text from local model: ", text);
+  const json = JSON.parse(text);
+  // very light guard
+  if (!json || !json.archetype || !json.difficulty) {
     throw new Error("Model output missing required fields");
   }
-  return obj;
+
+  return json;
 }
 
 /** ---------- UPSERTS ---------- */
-
 async function upsertAll(deckId: string, json: any) {
-  const diff = normaliseDifficulty(json.difficulty);
-  // difficulty
+  // 1) difficulty
   {
     const { error } = await supabase.from("deck_ai_difficulty").upsert({
       deck_id: deckId,
-      power_level: diff.power_level,
-      power_level_explanation: diff.power_level_explanation,
-      complexity: diff.complexity,
-      complexity_explanation: diff.complexity_explanation,
-      pilot_skill: diff.pilot_skill,
-      pilot_skill_explanation: diff.pilot_skill_explanation,
-      interaction_intensity: diff.interaction_intensity,
-      interaction_explanation: diff.interaction_explanation,
+      power_level: json.difficulty.power_level,
+      power_level_explanation: json.difficulty.power_level_explanation,
+      complexity: json.difficulty.complexity,
+      complexity_explanation: json.difficulty.complexity_explanation,
+      pilot_skill: json.difficulty.pilot_skill,
+      pilot_skill_explanation: json.difficulty.pilot_skill_explanation,
+      interaction_intensity: json.difficulty.interaction_intensity,
+      interaction_explanation: json.difficulty.interaction_explanation,
       updated_at: new Date().toISOString(),
     });
     if (error) throw error;
   }
 
-  // strengths/weaknesses
+  // 2) strengths/weaknesses
   {
     const { error } = await supabase
       .from("deck_ai_strengths_weaknesses")
@@ -350,7 +258,7 @@ async function upsertAll(deckId: string, json: any) {
     if (error) throw error;
   }
 
-  // pillars
+  // 3) pillars
   {
     const { error } = await supabase.from("deck_ai_pillars").upsert({
       deck_id: deckId,
@@ -359,7 +267,7 @@ async function upsertAll(deckId: string, json: any) {
     if (error) throw error;
   }
 
-  // archetype overview
+  // 4) archetype overview
   {
     const { error } = await supabase.from("deck_archetype_overview").upsert({
       deck_id: deckId,
@@ -379,7 +287,7 @@ function nowMs() {
 
 (async () => {
   console.log(
-    `Backfilling (LOCAL OLLAMA)… type="${DECK_TYPE}" limit=${LIMIT} force=${FORCE} model=${MODEL} concurrency=${AI_CONCURRENCY} base=${OLLAMA_URL}`
+    `Backfilling full analysis… type="${DECK_TYPE}" limit=${LIMIT} force=${FORCE} model=${LOCAL_MODEL} concurrency=${AI_CONCURRENCY}`
   );
 
   const limit = pLimit(AI_CONCURRENCY);
@@ -392,23 +300,24 @@ function nowMs() {
     const decks = await fetchDeckPage(offset);
     if (decks.length === 0) break;
 
+    // Filter if not forcing: skip decks that already have AI rows
     const toProcess = FORCE
       ? decks
-      : decks.filter(
-          (d) =>
-            !(
-              d.deck_archetype_overview ||
-              d.deck_ai_difficulty ||
-              d.deck_ai_strengths_weaknesses ||
-              d.deck_ai_pillars
-            )
-        );
+      : decks.filter((d) => {
+          // consider analysed if ANY of the 4 exists; tune if you want ALL
+          return !(
+            d.deck_archetype_overview ||
+            d.deck_ai_difficulty ||
+            d.deck_ai_strengths_weaknesses ||
+            d.deck_ai_pillars
+          );
+        });
 
     console.log(
       `Page ${pageNum}: fetched ${decks.length} — will process ${toProcess.length}`
     );
 
-    await Promise.allSettled(
+    const results = await Promise.allSettled(
       toProcess.map((deck) =>
         limit(async () => {
           const t0 = nowMs();
@@ -420,6 +329,7 @@ function nowMs() {
               return;
             }
             const json = await runAnalysis(deck);
+            console.log(json);
             await upsertAll(deck.id, json);
             processed++;
             const dt = nowMs() - t0;
@@ -431,7 +341,12 @@ function nowMs() {
       )
     );
 
+    const failed = results.filter((r) => r.status === "rejected").length;
+    if (failed) console.warn(`⚠ ${failed} failed on this page`);
+
     if (PAGES !== "all" && pageNum >= Number(PAGES)) break;
+
+    // Only advance the offset when forcing, or always? We want to scan everything.
     offset += LIMIT;
   }
 

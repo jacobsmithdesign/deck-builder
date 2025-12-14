@@ -8,6 +8,7 @@ import {
   ReactNode,
 } from "react";
 import { getProfileFromAPI } from "@/lib/api/user/getProfile";
+import { supabase } from "@/lib/supabase/client";
 
 type UserProfile = {
   id: string;
@@ -31,10 +32,21 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchUserProfile = async () => {
     setLoading(true);
-    const profile = await getProfileFromAPI();
-    setProfile(profile);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    setProfile(data);
     setLoading(false);
-    setUserLoggedIn(!!profile); // If a profile is returned, user is logged in
+    setUserLoggedIn(!!data);
   };
 
   useEffect(() => {

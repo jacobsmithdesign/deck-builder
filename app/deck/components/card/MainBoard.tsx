@@ -203,7 +203,6 @@ export const MainBoard = () => {
                               label={card.name}
                               isEditMode={editMode}
                               card={card}
-                              inspectCard={handleInspectCard}
                             />
                           </motion.div>
                         ))}

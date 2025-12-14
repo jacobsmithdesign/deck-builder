@@ -35,10 +35,10 @@ export const DeckFeatureVectorSchema = z.object({
   }),
 
   // previous fields (kept)
-  counts: z.record(z.number()),
-  curve: z.record(z.number()),
-  type_counts: z.record(z.number()),
-  keyword_histogram: z.record(z.number()),
+  counts: z.record(z.string(), z.number()),
+  curve: z.record(z.string(), z.number()),
+  type_counts: z.record(z.string(), z.number()),
+  keyword_histogram: z.record(z.string(), z.number()),
   interaction_density: z.number(),
   stack_complexity_markers: z.array(z.string()),
   signals: z.array(
@@ -82,7 +82,7 @@ export const DeckFeatureVectorSchema = z.object({
     supply: z.number(), // number of reliable {C} sources (lands/rocks); coarse estimate
   }),
 
-  effective_curve: z.record(z.number()), // curve after alt-cost/discount heuristics
+  effective_curve: z.record(z.string(), z.number()), // curve after alt-cost/discount heuristics
 
   token_profile: z.object({
     rate: z.number(), // recurring token generation weight

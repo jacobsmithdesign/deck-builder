@@ -8,7 +8,6 @@ import { createClient } from "@supabase/supabase-js";
 // If you can reuse your existing helpers, import them.
 // Otherwise copy the functions into this script or a shared package.
 import { buildFeatures } from "@/lib/ai/features";
-import { compressLands } from "@/lib/ai/landCompression";
 
 dotenv.config({ path: ".env.local" });
 /** ---------- ENV ---------- */
@@ -140,9 +139,8 @@ function isSignalLand(card: {
 }
 
 /** ---------- PROMPT ---------- */
-function buildPrompt(cards: any[], landFeatures: any, commander: any) {
+function buildPrompt(cards: any[], commander: any) {
   const CARDS = JSON.stringify(cards);
-  const LANDFEATURES = JSON.stringify(landFeatures);
   const TAG_VOCAB =
     '["token swarm","treasure","aristocrats","graveyard","reanimator","stax","voltron","spellslinger","blink","+1/+1 counters","lifegain","control","combo","camp","landfall","mill","extra turns","vehicles","dragons","elves","artifacts","enchantress","aura","discard","steal/copy","flicker","proliferate","burn","big mana"]';
 
@@ -187,7 +185,6 @@ function buildPrompt(cards: any[], landFeatures: any, commander: any) {
               type: commander?.type ?? null,
               text: commander?.text ?? null,
             })}
-            LandFeatures: ${LANDFEATURES}
             Cards: ${CARDS}
 `.trim();
 }
@@ -203,26 +200,13 @@ async function runAnalysis(deck: DeckRow) {
       type: card?.type,
       text: card?.text ?? "",
       count: Number(count ?? 1),
-    }))
-    .filter((c) => {
-      const isLand = (c.type || "").toLowerCase().includes("land");
-      return !isLand || isSignalLand(c);
-    });
+    }));
+  // .filter((c) => {
+  //   const isLand = (c.type || "").toLowerCase().includes("land");
+  //   return !isLand || isSignalLand(c);
+  // });
 
-  const rawFeatures = buildFeatures({
-    id: deck.id,
-    name: deck.name,
-    commander: deck.commander,
-    deck_cards: deck.deck_cards,
-  } as any);
-  const landFeatures = compressLands({
-    id: deck.id,
-    name: deck.name,
-    commander: deck.commander,
-    deck_cards: deck.deck_cards,
-  } as any);
-
-  const prompt = buildPrompt(main, landFeatures, deck.commander);
+  const prompt = buildPrompt(main, deck.commander);
 
   const completion = await openai.chat.completions.create({
     model: MODEL,
@@ -236,9 +220,9 @@ async function runAnalysis(deck: DeckRow) {
       { role: "user", content: prompt },
     ],
   });
-
   const json = JSON.parse(completion.choices[0]?.message?.content ?? "{}");
 
+  console.log(json.counts);
   // very light guard
   if (!json || !json.archetype || !json.difficulty) {
     throw new Error("Model output missing required fields");
@@ -354,7 +338,7 @@ function nowMs() {
             const dt = nowMs() - t0;
             console.log(`✓ ${deck.name} — saved in ${dt}ms`);
           } catch (e: any) {
-            console.error(`✗ ${deck.id} (${deck.name}): ${e?.message || e}`);
+            // console.error(`✗ ${deck.id} (${deck.name}): ${e?.message || e}`);
           }
         })
       )

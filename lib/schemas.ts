@@ -1,4 +1,5 @@
 import { count } from "console";
+import { release } from "os";
 import { z } from "zod";
 
 // /////////////////////////////////////////////////////////////////////////
@@ -80,7 +81,7 @@ export const suggestedUpgradesSchema = z.object({
 });
 
 export const CardSchema = z.object({
-  uuid: z.string().uuid(),
+  uuid: z.string(),
   name: z.string().nullable(),
   mana_cost: z.string().nullable(),
   mana_value: z.number().nullable(),
@@ -109,8 +110,10 @@ export const CardSchema = z.object({
   artist_ids: z.array(z.string()).nullable(),
   edhrec_rank: z.number().int().nullable(),
   edhrec_saltiness: z.number().nullable(),
-  identifiers: z.record(z.any()).nullable(), // jsonb
-  purchase_urls: z.record(z.any()).nullable(), // jsonb
+  identifiers: z
+    .object({ scryfallId: z.string(), scryfallCardBackId: z.string() })
+    .nullable(), // jsonb
+  purchase_urls: z.object().nullable(), // jsonb
   type: z.string().nullable(),
   text: z.string(),
   count: z.number().default(1),
@@ -124,31 +127,45 @@ export const DeckSchema = z.object({
   name: z.string(),
   type: z.string(),
   board_section: z.string(),
-  user_id: z.string().uuid().nullable(),
+  user_id: z.string().nullable(),
   release_date: z.string().nullable(),
   sealed_product: z.string().nullable(),
   is_public: z.boolean().nullable().default(false),
   description: z.string().nullable(),
   original_deck_id: z.string().nullable(),
-  commander_uuid: z.string().uuid().nullable(),
-  display_card_uuid: z.string().uuid().nullable(),
+  commander_uuid: z.string().nullable(),
+  display_card_uuid: z.string().nullable(),
+  sets: z
+    .object({
+      code: z.string().nullable(),
+      name: z.string().nullable(),
+      type: z.string().nullable(),
+      release_date: z.string().nullable(),
+    })
+    .nullable(),
 
-  // --- AI summary content (kept) ---
-  tagline: z.string().nullable(),
-  ai_tags: z.array(z.string()).nullable(), // 3–6 tags
-  ai_strengths: z.array(z.string()).nullable(), // 2–4 short tags
-  ai_weaknesses: z.array(z.string()).nullable(), // 2–4 short tags
-  ai_generated_at: z.string().datetime().nullable(),
+  deck_ai_strengths_weaknesses: z.object({
+    strengths: z.object({ name: z.string(), explanation: z.string() }),
+    weaknesses: z.object({ name: z.string(), explanation: z.string() }),
+  }),
 
   // --- New difficulty axes ---
   // Note: DB stores power as TEXT; accept both to be resilient.
-  ai_power_level: z.union([z.string(), z.number()]).nullable(),
-  ai_complexity: z.enum(["Low", "Medium", "High"]).nullable(),
-  ai_pilot_skill: z.enum(["Beginner", "Intermediate", "Advanced"]).nullable(),
-  ai_interaction: z.enum(["Low", "Medium", "High"]).nullable(),
+  deck_ai_difficulty: z.object({
+    power_level: z.number().nullable(),
+    power_level_explanation: z.string().nullable(),
+    complexity: z.enum(["Low", "Medium", "High"]).nullable(),
+    complexity_explanation: z.string().nullable(),
+    pilot_skill: z.enum(["Beginner", "Intermediate", "Advanced"]).nullable(),
+    pilot_skill_explanation: z.string().nullable(),
+    interaction_intensity: z.enum(["Low", "Medium", "High"]).nullable(),
+    interaction_explanation: z.string().nullable(),
+  }),
 
-  // --- Legacy (kept for back-compat; safe to remove later) ---
-  ai_rank: z.enum(["Beginner", "Intermediate", "Competitive"]).nullable(),
+  deck_archetype_overview: z.object({
+    axes: z.record(z.string(), z.number()),
+    description: z.string(),
+  }),
 });
 
 export type DeckRecord = z.infer<typeof DeckSchema>;

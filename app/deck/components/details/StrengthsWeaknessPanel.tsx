@@ -25,9 +25,9 @@ export function StrengthsWeaknessesPanel({
   weaknesses?: Record<string, string> | null;
   title?: string;
 }) {
-  const { aiOverview } = useCardList();
-  const strengths = strengthsProp ?? aiOverview?.ai_strengths ?? {};
-  const weaknesses = weaknessesProp ?? aiOverview?.ai_weaknesses ?? {};
+  const { strengthsAndWeaknesses } = useCardList();
+  const strengths = strengthsProp ?? strengthsAndWeaknesses?.strengths ?? {};
+  const weaknesses = weaknessesProp ?? strengthsAndWeaknesses?.weaknesses ?? {};
 
   const hasStrengths = strengths && Object.keys(strengths).length > 0;
   const hasWeaknesses = weaknesses && Object.keys(weaknesses).length > 0;
