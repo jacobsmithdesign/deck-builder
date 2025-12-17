@@ -15,6 +15,9 @@ const nextConfig: NextConfig = {
     };
     return config;
   },
+
+  // Setting a blank turbopack config to stop build error
+  turbopack: {},
   env: {
     TRANSFORMERS_JS_BACKEND: process.env.TRANSFORMERS_JS_BACKEND || "wasm",
   },
