@@ -8,6 +8,7 @@ import Link from "next/link";
 import { ChevronUp } from "lucide-react";
 import { ExpandablePillsMini } from "@/app/deck/components/overview/expandablePillsMini";
 import { AnimatePresence, motion } from "framer-motion";
+import { niceLabel } from "@/app/deck/components/details/ArchetypeOverview";
 
 export default function DeckPreview({ deck }: { deck: CommanderDeckRecord }) {
   const [openPanel, setOpenPanel] = useState(false);
@@ -70,7 +71,7 @@ export default function DeckPreview({ deck }: { deck: CommanderDeckRecord }) {
                       key={name}
                       className="bg-green-300/40 w-fit px-1 rounded"
                     >
-                      {name}
+                      {niceLabel(name)}
                     </div>
                   ))}
                 </div>
@@ -86,7 +87,7 @@ export default function DeckPreview({ deck }: { deck: CommanderDeckRecord }) {
                       key={name}
                       className="bg-red-400/30 w-fit h-fit px-1 rounded"
                     >
-                      {name}
+                      {niceLabel(name)}
                     </div>
                   ))}
                 </div>

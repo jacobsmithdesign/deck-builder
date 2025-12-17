@@ -2,27 +2,31 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  webpack(config) {
+  webpack: (config, { isServer }) => {
     config.module.rules.push({
       test: /\.svg$/,
       use: ["@svgr/webpack"],
     });
-    config.resolve.alias = {
-      ...(config.resolve.alias || {}),
-      "onnxruntime-node": false,
-      "onnxruntime-node/dist": false,
-      "onnxruntime-web": false,
-    };
 
-    //
-    // Block fs, path, os, etc.
-    //
-    config.resolve.fallback = {
-      ...(config.resolve.fallback || {}),
-      fs: false,
-      path: false,
-      os: false,
-    };
+    if (!isServer) {
+      config.resolve.alias = {
+        ...(config.resolve.alias || {}),
+        // Prevent Node-only deps from being bundled client-side
+        sharp$: false,
+        "onnxruntime-node$": false,
+
+        // IMPORTANT: if you are using browser WASM, do NOT disable onnxruntime-web
+        // (so remove your current "onnxruntime-web": false)
+      };
+
+      config.resolve.fallback = {
+        ...(config.resolve.fallback || {}),
+        fs: false,
+        path: false,
+        os: false,
+      };
+    }
+
     return config;
   },
   env: {

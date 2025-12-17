@@ -11,6 +11,16 @@ type SearchResult = {
   similarity: number;
 };
 
+/*
+
+ChatGPT isn't very helpful for this because its quite a complicated issue.
+I'm tired and need sleep before my flight tomorrow. Here is the tutorial I found from xenova to fix the build issues.
+https://huggingface.co/docs/transformers.js/tutorials/next
+
+Remove me and associated files from the .gitignore document when fixed.
+
+*/
+
 export default function EmbeddingSearch() {
   const [searchText, setSearchText] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -28,7 +38,7 @@ export default function EmbeddingSearch() {
       const vector = await embedQuery(searchText);
 
       // 2. Send vector to Supabase search route
-      const res = await fetch("/api/search", {
+      const res = await fetch("/api/supabase/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ vector }),

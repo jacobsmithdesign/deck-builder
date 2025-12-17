@@ -43,5 +43,7 @@ next-env.d.ts
 # project files
 Deck Builder AI Cost breakdown.txt
 
-# WIP features
+# WIP Embedding features
 /app/explore
+/app/api/search
+/lib/client
