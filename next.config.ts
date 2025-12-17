@@ -17,7 +17,12 @@ const nextConfig: NextConfig = {
   },
 
   // Setting a blank turbopack config to stop build error
-  turbopack: {},
+  turbopack: (config) => {
+    config.module.rules.push({
+      test: /\.svg$/,
+      use: ["@svgr/webpack"],
+    });
+  },
   env: {
     TRANSFORMERS_JS_BACKEND: process.env.TRANSFORMERS_JS_BACKEND || "wasm",
   },

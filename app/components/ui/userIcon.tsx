@@ -2,7 +2,7 @@
 
 import { useUser } from "@/app/context/userContext";
 import { Button } from "./button";
-import DefaultAvatar from "@/public/default-avatar.svg";
+
 import { useState } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { RxAvatar, RxExit } from "react-icons/rx";
@@ -33,7 +33,7 @@ export default function UserIcon() {
           {profile.avatar_url ? (
             <img src={profile.avatar_url} />
           ) : (
-            <DefaultAvatar />
+            <RxAvatar className="w-full h-full text-dark/80" />
           )}
         </MenuButton>
       ) : (
@@ -50,7 +50,7 @@ export default function UserIcon() {
       >
         <MenuItem
           as="button"
-          className="md:hover:bg-darksecondary/10 w-full text-left rounded-sm p-1 px-2 flex items-center gap-3"
+          className="md:hover:bg-darksecondary/10 w-full text-left rounded-sm p-1 px-2 flex items-center gap-3 bg-dark/20"
           onClick={() => {
             router.push("/profile");
           }}
