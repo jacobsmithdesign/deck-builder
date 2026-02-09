@@ -1,6 +1,6 @@
 import { CardTitle } from "@/app/components/ui/card";
 import { useState } from "react";
-import { Button } from "../../components/button";
+import { Button } from "../../components/primitives/button";
 import { parseDeckText } from "@/app/hooks/parseDeckText";
 import { useRouter } from "next/navigation";
 import { saveNewDeckClient } from "@/lib/api/decks/client/saveNewDeckClient";
@@ -29,7 +29,7 @@ export default function ImportDeckForm() {
   const [deckText, setDeckText] = useState<string>("");
   const [importSuccess, setImportSuccess] = useState<boolean | null>(null);
   const [commanderOptions, setCommanderOptions] = useState<CardLine[] | null>(
-    null
+    null,
   );
   const [name, setName] = useState<string | null>(null);
   const [commander, setCommander] = useState<CommanderCard | null>(null);

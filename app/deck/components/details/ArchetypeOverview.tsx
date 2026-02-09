@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/app/components/ui/card";
 import { useCardList } from "@/app/context/CardListContext";
-import { AnimatedButtonLoading } from "../AnimatedButtonLoading";
+import { AnimatedButtonLoading } from "../primitives/AnimatedButtonLoading";
 import { RadarIdentity } from "./RadarIdentity";
 import { useFullAnalysis } from "@/app/hooks/useFullAnalysis";
 import { AnimatePresence, motion } from "framer-motion";
@@ -46,11 +46,11 @@ export default function ArchetypeOverview() {
   // These two constants memoize the radar data and explanation array to avoid unnecessary re-renders.
   const radarData = React.useMemo(
     () => toRadarData(archetypeOverview?.axes),
-    [archetypeOverview?.axes]
+    [archetypeOverview?.axes],
   );
   const explanationArray = React.useMemo(
     () => toExplanationArray(archetypeOverview?.explanation_md),
-    [archetypeOverview?.explanation_md]
+    [archetypeOverview?.explanation_md],
   );
 
   const hasData = explanationArray.length > 0 && radarData.length > 0;
@@ -74,8 +74,8 @@ export default function ArchetypeOverview() {
                     analysing
                       ? `Analysing${progress ? ` (${progress}%)` : ""}`
                       : archetypeOverview
-                      ? "Re-analyse"
-                      : "Analyse Now"
+                        ? "Re-analyse"
+                        : "Analyse Now"
                   }
                   loading={analysing}
                   onClick={handleAnalyse}
@@ -113,8 +113,8 @@ export default function ArchetypeOverview() {
                     analysing
                       ? `Analysing${progress ? ` (${progress}%)` : ""}`
                       : archetypeOverview
-                      ? "Re-analyse"
-                      : "Analyse Now"
+                        ? "Re-analyse"
+                        : "Analyse Now"
                   }
                   loading={analysing}
                   onClick={handleAnalyse}

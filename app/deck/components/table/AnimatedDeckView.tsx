@@ -9,10 +9,10 @@ import {
 import { AnimatePresence, motion, useTime } from "framer-motion";
 import { use, useEffect, useState } from "react";
 import Details from "../details/details";
-import AddToCollectionModal from "./AddToCollectionModal";
+import AddToCollectionModal from "../overlays/AddToCollectionModal";
 import { useCardList } from "@/app/context/CardListContext";
 import { useUser } from "@/app/context/userContext";
-import AddToCollectionButton from "./AddToCollectionButton";
+import AddToCollectionButton from "../card/AddToCollectionButton";
 import { useIsDeckSaved } from "@/app/hooks/useIsDeckSaved";
 import { EditModeProvider } from "@/app/context/editModeContext";
 

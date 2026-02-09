@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { Checkbox, Field, Label } from "@headlessui/react";
 import { RxCheck } from "react-icons/rx";
-import { AnimatedButton } from "../../components/AnimatedButton";
+import { AnimatedButton } from "../../components/primitives/AnimatedButton";
 import { saveNewDeckClient } from "@/lib/api/decks/client/saveNewDeckClient";
 import { useCardList } from "@/app/context/CardListContext";
 import { useCompactView } from "@/app/context/compactViewContext";

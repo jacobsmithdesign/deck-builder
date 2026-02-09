@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useCardList } from "@/app/context/CardListContext";
 import { RxCheckCircled, RxCross1 } from "react-icons/rx";
-import { Button } from "@/app/deck/components/button";
+import { Button } from "@/app/deck/components/primitives/button";
 import { useUserOwnsDeck } from "@/app/hooks/useUserOwnsDeck";
 import { useSaveUserDeck } from "@/app/hooks/useSaveUserDeck";
 import { BsFillSaveFill } from "react-icons/bs";

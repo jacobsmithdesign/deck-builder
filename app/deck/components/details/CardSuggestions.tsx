@@ -8,7 +8,7 @@ import {
 } from "@/app/components/ui/card";
 import { useCardList } from "@/app/context/CardListContext";
 import { useAnalyseCardSuggestions } from "@/app/hooks/useAnalyseCardSuggestions";
-import { AnimatedButtonLoading } from "../AnimatedButtonLoading";
+import { AnimatedButtonLoading } from "../primitives/AnimatedButtonLoading";
 
 export default function CardSuggestions() {
   const { deck } = useCardList();

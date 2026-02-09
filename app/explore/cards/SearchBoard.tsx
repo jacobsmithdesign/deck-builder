@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { embedQuery } from "@/lib/client/embedQuery";
+// import { embedQuery } from "@/lib/embedding/embedQuery";
 
 import {
   BoardContent,
@@ -10,7 +10,7 @@ import {
   GroupHeader,
   GroupItems,
   GroupTitle,
-} from "@/app/deck/components/card/Board"; // adjust path if needed
+} from "@/app/deck/components/primitives/Board"; // adjust path if needed
 
 import PerspectiveCard from "@/app/deck/components/card/perspectiveCardUI/PerspectiveCard";
 import CustomScrollArea from "@/app/components/ui/CustomScrollArea";
@@ -34,7 +34,7 @@ const groupByCardType = (cards: any[] = []) => {
   for (const card of cards) {
     const baseType =
       typeOrder.find((type) =>
-        card.type?.toLowerCase().includes(type.toLowerCase())
+        card.type?.toLowerCase().includes(type.toLowerCase()),
       ) || "Other";
 
     if (!grouped[baseType]) grouped[baseType] = [];
@@ -79,6 +79,7 @@ export default function SearchBoard() {
     if (!searchText.trim()) return;
 
     const vector = await embedQuery(searchText);
+    console.log(vector);
 
     setLoading(true);
 
@@ -88,12 +89,17 @@ export default function SearchBoard() {
     params.append("limit", "100");
 
     // Make a request to the /classify route on the server.
-    const result = await fetch(`/api/supabase/search?${params.toString()}`);
+    try {
+      const result = await fetch(`/api/supabase/search?${params.toString()}`);
 
-    const json = await result.json();
-    setResults(json.data);
-    console.log("Results returned from embed search: ", result);
-    setLoading(false);
+      const json = await result.json();
+
+      console.log("Results returned from embed search: ", json);
+      setLoading(false);
+      return setResults(json.data);
+    } catch (error) {
+      console.log("Error embedding search", error);
+    }
   }
 
   return (
@@ -108,13 +114,13 @@ export default function SearchBoard() {
           value={searchText}
           placeholder="Search for cards…"
           onChange={(e) => setSearchText(e.target.value)}
-          className="flex-1 p-3 rounded-md border border-dark/40 bg-black/40 text-light placeholder-light/50"
+          className="flex-1 p-3 rounded-md border border-dark/40 bg-black/40 text-dark placeholder-light/50"
         />
 
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 bg-primary text-white rounded-md disabled:opacity-50"
+          className="px-4 py-2 bg-primary text-dark rounded-md disabled:opacity-50"
         >
           {loading ? "Searching…" : "Search"}
         </button>
@@ -141,7 +147,8 @@ export default function SearchBoard() {
             )}
 
             {/* Results */}
-            {grouped.map((group, index) => (
+
+            {/* {grouped.map((group, index) => (
               <Group key={group.type}>
                 <GroupHeader className="py-2">
                   <GroupTitle
@@ -187,7 +194,7 @@ export default function SearchBoard() {
                   )}
                 </AnimatePresence>
               </Group>
-            ))}
+            ))} */}
           </CustomScrollArea>
         </motion.div>
       </BoardContent>

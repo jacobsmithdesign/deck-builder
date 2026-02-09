@@ -6,7 +6,7 @@ import { useCardList } from "@/app/context/CardListContext";
 import { useUser } from "@/app/context/userContext";
 import { Link } from "lucide-react";
 import { RxArrowRight } from "react-icons/rx";
-import { Button } from "../button";
+import { Button } from "../primitives/button";
 export default function DeckEditTools() {
   // Get deck and user info from context
   const { profile } = useUser();

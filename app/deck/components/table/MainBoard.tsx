@@ -7,15 +7,15 @@ import {
   GroupHeader,
   GroupItems,
   GroupTitle,
-} from "./Board";
-import PerspectiveCard from "./perspectiveCardUI/PerspectiveCard";
+} from "../primitives/Board";
+import PerspectiveCard from "../card/perspectiveCardUI/PerspectiveCard";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCardList } from "@/app/context/CardListContext";
 import { useCompactView } from "@/app/context/compactViewContext";
-import NewCardModal from "./NewCardModal";
+import NewCardModal from "../card/NewCardModal";
 import CustomScrollArea from "@/app/components/ui/CustomScrollArea";
 import { useEditMode } from "@/app/context/editModeContext";
-import UnsavedChanges from "./UnsavedChanges";
+import UnsavedChanges from "../card/UnsavedChanges";
 
 const typeOrder = [
   "Land",
@@ -34,7 +34,7 @@ const groupByCardType = (cards: any[] = []) => {
   for (const card of cards) {
     const baseType =
       typeOrder.find((type) =>
-        card.type?.toLowerCase().includes(type.toLowerCase())
+        card.type?.toLowerCase().includes(type.toLowerCase()),
       ) || "Other";
 
     if (!grouped[baseType]) grouped[baseType] = [];
@@ -62,7 +62,7 @@ export const MainBoard = () => {
   // All group types, derived from the grouped cards
   const allTypes = useMemo(
     () => groupedCardsArray.map((g) => g.type),
-    [groupedCardsArray]
+    [groupedCardsArray],
   );
 
   // Initialise / update visible groups whenever the set of types changes

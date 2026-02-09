@@ -7,7 +7,7 @@ import {
 import { dummyData } from "./dummyData";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Board, BoardContent } from "../card/Board";
+import { Board, BoardContent } from "../primitives/Board";
 import { useCompactView } from "@/app/context/compactViewContext";
 import CustomScrollArea from "@/app/components/ui/CustomScrollArea";
 import { useCardList } from "@/app/context/CardListContext";

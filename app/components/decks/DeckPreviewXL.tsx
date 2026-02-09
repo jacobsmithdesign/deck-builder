@@ -12,7 +12,7 @@ import { Card, CardDescription, CardTitle } from "../ui/card";
 import { DeckMetricsXL } from "@/app/deck/components/overview/deckMetricsXL";
 import { niceLabel } from "@/app/deck/components/details/ArchetypeOverview";
 import ArchetypeOverview from "./ArchetypeOverviewMini";
-import { Button } from "@/app/deck/components/button";
+import { Button } from "@/app/deck/components/primitives/button";
 
 export default function DeckPreviewXL({ deck }: { deck: CommanderDeckRecord }) {
   const scryfallId = deck.commander.identifiers.scryfallId ?? null;
@@ -96,7 +96,7 @@ export default function DeckPreviewXL({ deck }: { deck: CommanderDeckRecord }) {
                   Strengths
                 </span>
                 {Object.keys(
-                  deck.deck_ai_strengths_weaknesses?.strengths ?? {}
+                  deck.deck_ai_strengths_weaknesses?.strengths ?? {},
                 ).map((name) => (
                   <div
                     key={name}
@@ -112,7 +112,7 @@ export default function DeckPreviewXL({ deck }: { deck: CommanderDeckRecord }) {
                 </span>
 
                 {Object.keys(
-                  deck.deck_ai_strengths_weaknesses?.weaknesses ?? {}
+                  deck.deck_ai_strengths_weaknesses?.weaknesses ?? {},
                 ).map((name) => (
                   <div
                     key={name}

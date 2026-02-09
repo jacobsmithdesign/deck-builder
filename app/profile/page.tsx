@@ -2,7 +2,7 @@
 import { User } from "lucide-react";
 import { Card, CardContent, CardTitle } from "../components/ui/card";
 import { useUser } from "../context/userContext";
-import { BoardTitle } from "../deck/components/card/Board";
+import { BoardTitle } from "../deck/components/primitives/Board";
 import UserDeckList from "./components/userDeckList";
 
 export default function Profile() {

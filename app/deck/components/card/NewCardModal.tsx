@@ -7,9 +7,9 @@ import { searchCardsWithFilters } from "@/lib/db/searchCardsWithFilters";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/app/components/ui/button";
-import { AnimatedButton } from "../AnimatedButton";
-import { Group, GroupHeader, GroupItems } from "./Board";
-import { GroupTitle } from "./Board";
+import { AnimatedButton } from "../primitives/AnimatedButton";
+import { Group, GroupHeader, GroupItems } from "../primitives/Board";
+import { GroupTitle } from "../primitives/Board";
 import { FilterPanel } from "./FilterPanel";
 import { filterConfigByCardType } from "@/lib/utils";
 import { useCardList } from "@/app/context/CardListContext";
@@ -81,7 +81,7 @@ export default function NewCardModal({
         debug: true,
       });
       setCards((prev) =>
-        requestedPage === 0 ? suggestions : [...prev, ...suggestions]
+        requestedPage === 0 ? suggestions : [...prev, ...suggestions],
       );
       setHasMore(suggestions.length > 0);
     } catch (e) {
@@ -114,7 +114,7 @@ export default function NewCardModal({
           setPage((prev) => prev + 1);
         }
       },
-      { threshold: 1 }
+      { threshold: 1 },
     );
 
     observer.observe(current);
@@ -233,7 +233,7 @@ export default function NewCardModal({
                             .filter((card) =>
                               card.name
                                 ?.toLowerCase()
-                                .includes(cardNameSearch.toLowerCase())
+                                .includes(cardNameSearch.toLowerCase()),
                             )
                             .map((card, index) => (
                               <motion.div
@@ -255,7 +255,7 @@ export default function NewCardModal({
                                 <div
                                   className={`transition-all absolute w-full h-full flex z-10 bg-green-500/30 justify-end pr-1 pt-1 ${
                                     selectedCards.some(
-                                      (c) => c.uuid === card.uuid
+                                      (c) => c.uuid === card.uuid,
                                     )
                                       ? "opacity-100"
                                       : "opacity-0"

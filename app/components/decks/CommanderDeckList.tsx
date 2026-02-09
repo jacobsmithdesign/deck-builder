@@ -9,7 +9,7 @@ import {
 import DeckPreview from "./DeckPreview";
 import CustomScrollArea from "../ui/CustomScrollArea";
 import DeckPreviewXL from "./DeckPreviewXL";
-import { Button } from "@/app/deck/components/button";
+import { Button } from "@/app/deck/components/primitives/button";
 import { CommanderDeckRecord, DeckRecord } from "@/lib/schemas";
 
 type deckViewType = {
@@ -28,7 +28,7 @@ export default function CommanderDeckList() {
     setLoading(true);
     try {
       const res = await fetch(
-        `/api/supabase/decks/fetch-commander-decks?page=${page}`
+        `/api/supabase/decks/fetch-commander-decks?page=${page}`,
       );
       const json = await res.json();
 
@@ -64,7 +64,7 @@ export default function CommanderDeckList() {
           setPage((prev) => prev + 1);
         }
       },
-      { threshold: 1 }
+      { threshold: 1 },
     );
     const currentRef = loadMoreRef.current;
     if (currentRef) observer.observe(currentRef);

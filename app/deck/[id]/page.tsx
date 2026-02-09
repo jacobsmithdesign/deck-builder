@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
 import { CardListProvider } from "@/app/context/CardListContext";
-import InitialiseDeck from "../components/card/InitialiseDeck";
+import InitialiseDeck from "../components/InitialiseDeck";
 import { CommanderProvider } from "@/app/context/CommanderContext";
 import { CompactViewProvider } from "@/app/context/compactViewContext";
 import { getDeckById } from "@/lib/api/decks/getDeckById";
-import AnimatedDeckView from "../components/card/AnimatedDeckView";
+import AnimatedDeckView from "../components/table/AnimatedDeckView";
 
 export default async function DeckPage({
   params,

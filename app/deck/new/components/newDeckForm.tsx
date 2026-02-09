@@ -1,7 +1,7 @@
 "use client";
 import { CardDescription, CardTitle } from "@/app/components/ui/card";
 import { useState } from "react";
-import { Button } from "../../components/button";
+import { Button } from "../../components/primitives/button";
 import CommanderFormatForm from "./commanderFormatForm";
 import { CardLine, parseDeckText } from "@/app/hooks/parseDeckText";
 import { set } from "zod";
@@ -13,7 +13,7 @@ export default function NewDeckForm() {
   const [deckText, setDeckText] = useState<string>("");
   const [importSuccess, setImportSuccess] = useState<boolean | null>(null);
   const [commanderSelection, setCommanderSelection] = useState<string[] | null>(
-    null
+    null,
   );
   const [commander, setCommander] = useState<string | null>(null);
   const [cardList, setCardList] = useState<CardLine[] | null>(null);

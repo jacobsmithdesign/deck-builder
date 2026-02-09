@@ -25,7 +25,7 @@ import { SpellTypeCounts } from "@/app/deck/components/overview/spellTypeCounts"
 import { ManaCurve } from "@/app/deck/components/overview/manaCurve";
 import { DeckMetricsXL } from "@/app/deck/components/overview/deckMetricsXLContextual";
 import { DeckMetricsMini } from "@/app/deck/components/overview/deckMetricsMini";
-import { AnimatedButtonLoading } from "@/app/deck/components/AnimatedButtonLoading";
+import { AnimatedButtonLoading } from "@/app/deck/components/primitives/AnimatedButtonLoading";
 import { useAnalyseProgress } from "@/app/hooks/useAnalyseProgress";
 import { StrengthsAndWeaknesses } from "@/app/deck/components/overview/strengthsAndWeaknesses";
 
@@ -45,7 +45,7 @@ export default function CommanderOverview() {
       if (commanderCard?.artwork) {
         console.log("Commander artwork found");
         const proxiedUrl = `/api/proxy?url=${encodeURIComponent(
-          commanderCard.artwork
+          commanderCard.artwork,
         )}`;
         const color = await getAverageColorFromImage(proxiedUrl);
         setArtworkColor(color);

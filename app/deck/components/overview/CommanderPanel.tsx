@@ -9,8 +9,8 @@ import {
   CardTitle,
 } from "@/app/components/ui/card";
 import Image from "next/image";
-import { Panel } from "../Panel";
-import { Button } from "../button";
+import { Panel } from "../primitives/Panel";
+import { Button } from "../primitives/button";
 
 // Temporary array of buttons for the Commander panel
 const buttons = [
