@@ -1,6 +1,6 @@
 "use client";
 
-import { CardTable } from "../../CardTable";
+import { CardTable } from "./CardTable";
 import CommanderOverview from "@/app/components/ui/commanderOverview";
 import {
   CompactViewProvider,

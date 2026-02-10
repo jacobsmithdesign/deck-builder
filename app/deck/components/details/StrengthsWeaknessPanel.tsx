@@ -57,7 +57,7 @@ export function StrengthsWeaknessesPanel({
               duration: 0.005,
               delay: 0.8,
             }}
-            className="rounded-xl border border-emerald-600/10 bg-emerald-300/15 p-2 backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/50"
+            className="rounded-xl border border-emerald-600/10 bg-emerald-500/15 p-2 backdrop-blur "
           >
             <header className="mb-3 flex items-center justify-center p-1">
               <CardTitle className="text-emerald-600">Strengths</CardTitle>
@@ -80,10 +80,10 @@ export function StrengthsWeaknessesPanel({
                     key={key}
                     className="group rounded-lg p-1 transition-colors bg-gradient-to-t from-light/10 to-light/20 outline outline-light/20"
                   >
-                    <dt className="mb-1 text-md font-semibold text-emerald-800 dark:text-emerald-300 bg-light/20 rounded-md w-fit px-2 outline outline-light/30">
+                    <dt className="mb-1 text-md font-semibold text-emerald-800  bg-light/20 rounded-md w-fit px-2 outline outline-light/30">
                       + {niceLabel(key)}
                     </dt>
-                    <dd className="text-sm leading-snug text-emerald-950 dark:text-neutral-300 p-1">
+                    <dd className="text-sm leading-snug text-emerald-950  p-1">
                       {value}
                     </dd>
                   </motion.div>
@@ -108,7 +108,7 @@ export function StrengthsWeaknessesPanel({
               duration: 0.005,
               delay: 1,
             }}
-            className="rounded-xl border border-red-600/10 bg-red-300/15 p-2 backdrop-blur"
+            className="rounded-xl border border-red-600/10 bg-red-700/15 p-2 backdrop-blur"
           >
             <header className="mb-3 flex items-center justify-center p-1">
               <CardTitle className="text-red-700">Weaknesses</CardTitle>
@@ -131,10 +131,10 @@ export function StrengthsWeaknessesPanel({
                     key={key}
                     className="group rounded-lg bg-gradient-to-t from-light/10 to-light/20 p-1 transition-colors outline outline-light/20"
                   >
-                    <dt className="mb-1 text-base font-semibold text-rose-800 dark:text-rose-300 bg-light/15 w-fit px-2 outline outline-light/30 rounded-md">
+                    <dt className="mb-1 text-base font-semibold text-rose-800 bg-light/15 w-fit px-2 outline outline-light/30 rounded-md">
                       - {niceLabel(key)}
                     </dt>
-                    <dd className="text-sm leading-snug text-rose-950 dark:text-neutral-300 p-1">
+                    <dd className="text-sm leading-snug text-rose-950 p-1">
                       {value}
                     </dd>
                   </motion.div>
@@ -182,46 +182,36 @@ export function StrengthsWeaknessesWide({
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <section className="rounded-xl border border-neutral-200/60 bg-white/80 shadow-sm backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/50">
-          <header className="sticky top-0 z-10 border-b border-neutral-200/60 bg-white/80 p-4 backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/60">
+        <section className="rounded-xl border border-neutral-200/60 bg-white/80 shadow-sm backdrop-blur ">
+          <header className="sticky top-0 z-10 border-b border-neutral-200/60 bg-white/80 p-4 backdrop-blur ">
             <h3 className="text-base font-medium">Strengths</h3>
           </header>
           <div style={{ maxHeight }} className="overflow-auto px-4 py-3">
             <dl className="space-y-4">
               {Object.entries(strengths).map(([k, v]) => (
-                <div
-                  key={k}
-                  className="rounded-xl p-2 hover:bg-emerald-50/60 dark:hover:bg-emerald-400/10"
-                >
-                  <dt className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
+                <div key={k} className="rounded-xl p-2 hover:bg-emerald-50/60 ">
+                  <dt className="text-sm font-semibold text-emerald-800 ">
                     {niceLabel(k)}
                   </dt>
-                  <dd className="text-sm text-neutral-700 dark:text-neutral-300">
-                    {v}
-                  </dd>
+                  <dd className="text-sm text-neutral-700 ">{v}</dd>
                 </div>
               ))}
             </dl>
           </div>
         </section>
 
-        <section className="rounded-2xl border border-neutral-200/60 bg-white/80 shadow-sm backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/50">
-          <header className="sticky top-0 z-10 border-b border-neutral-200/60 bg-white/80 p-4 backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/60">
+        <section className="rounded-2xl border border-neutral-200/60 bg-white/80 shadow-sm backdrop-blur  ">
+          <header className="sticky top-0 z-10 border-b border-neutral-200/60 bg-white/80 p-4 backdrop-blur ">
             <h3 className="text-base font-medium">Weaknesses</h3>
           </header>
           <div style={{ maxHeight }} className="overflow-auto px-4 py-3">
             <dl className="space-y-4">
               {Object.entries(weaknesses).map(([k, v]) => (
-                <div
-                  key={k}
-                  className="rounded-xl p-2 hover:bg-rose-50/60 dark:hover:bg-rose-400/10"
-                >
-                  <dt className="text-sm font-semibold text-rose-800 dark:text-rose-300">
+                <div key={k} className="rounded-xl p-2 hover:bg-rose-50/60 ">
+                  <dt className="text-sm font-semibold text-rose-800 ">
                     {niceLabel(k)}
                   </dt>
-                  <dd className="text-sm text-neutral-700 dark:text-neutral-300">
-                    {v}
-                  </dd>
+                  <dd className="text-sm text-neutral-700 ">{v}</dd>
                 </div>
               ))}
             </dl>

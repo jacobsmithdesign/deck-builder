@@ -1,14 +1,14 @@
 "use client";
-import { Board, BoardHeader } from "./components/primitives/Board";
-import { MainBoard } from "./components/table/MainBoard";
-import { useCardList } from "../context/CardListContext";
+import { Board, BoardHeader } from "../primitives/Board";
+import { MainBoard } from "./MainBoard";
+import { useCardList } from "../../../context/CardListContext";
 import { AnimatePresence } from "framer-motion";
-import { useCompactView } from "../context/compactViewContext";
+import { useCompactView } from "../../../context/compactViewContext";
 import { RxArrowLeft } from "react-icons/rx";
 import { Button } from "@/app/deck/components/primitives/button";
-import EditControls from "./components/table/EditControls";
-import AddToCollectionButton from "./components/card/AddToCollectionButton";
-import SearchBox from "./components/table/SearchBox";
+import EditControls from "./EditControls";
+import AddToCollectionButton from "../card/AddToCollectionButton";
+import SearchBox from "./SearchBox";
 
 export const CardTable = () => {
   const { deck, userOwnsDeck } = useCardList();
