@@ -54,8 +54,8 @@ type DeckRow = {
   } | null;
 
   deck_ai_difficulty?: {
-    power_level: number;
-    power_level_explanation: string;
+    bracket: number;
+    bracket_explanation: string;
     complexity: string;
     complexity_explanation: string;
     pilot_skill: string;
@@ -81,7 +81,7 @@ export function hydrateDeckIntoContext(
     setDeckFeatures?: (f: DeckFeatureVector | null) => void;
     setLandFeatures?: (f: any) => void;
     setAiOverview?: (v: AiOverview | null) => void;
-  }
+  },
 ) {
   // 1) Deck metadata
   const deckMeta: DeckMetadata = {
@@ -166,8 +166,8 @@ export function hydrateDeckIntoContext(
   if (row.deck_ai_difficulty) {
     opts.setDifficulty({
       deckId: row.id,
-      power_level: row.deck_ai_difficulty.power_level,
-      power_level_explanation: row.deck_ai_difficulty.power_level_explanation,
+      bracket: row.deck_ai_difficulty.bracket,
+      bracket_explanation: row.deck_ai_difficulty.bracket_explanation,
       complexity: row.deck_ai_difficulty.complexity,
       complexity_explanation: row.deck_ai_difficulty.complexity_explanation,
       pilot_skill: row.deck_ai_difficulty.pilot_skill,
@@ -213,13 +213,13 @@ export function hydrateDeckIntoContext(
           ai_generated_at,
 
           // Difficulty
-          ai_power_level: diff?.power_level ?? null,
+          ai_bracket: diff?.bracket ?? null,
           ai_complexity: diff?.complexity ?? null,
           ai_pilot_skill: diff?.pilot_skill ?? null,
           ai_interaction: diff?.interaction_intensity ?? null,
           ai_upkeep: null, // no source in new schema
 
-          ai_power_level_explanation: diff?.power_level_explanation ?? null,
+          ai_bracket_explanation: diff?.bracket_explanation ?? null,
           ai_complexity_explanation: diff?.complexity_explanation ?? null,
           ai_pilot_skill_explanation: diff?.pilot_skill_explanation ?? null,
           ai_interaction_explanation: diff?.interaction_explanation ?? null,

@@ -20,7 +20,7 @@ const AI_CONCURRENCY = Number(process.env.AI_CONCURRENCY ?? 3);
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE) {
   console.error(
-    "Missing env vars. Required: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY"
+    "Missing env vars. Required: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY",
   );
   process.exit(1);
 }
@@ -30,7 +30,7 @@ const args = Object.fromEntries(
   process.argv.slice(2).map((a) => {
     const [k, v] = a.replace(/^--/, "").split("=");
     return [k, v ?? "true"];
-  })
+  }),
 );
 
 const LIMIT = Number(args.limit ?? 30);
@@ -79,8 +79,8 @@ const DeckAnalysisSchema = z.object({
     weaknesses: z.object({ name: z.string(), explanation: z.string() }),
   }),
   difficulty: z.object({
-    power_level: z.number().min(1).max(10),
-    power_level_explanation: z.string().max(170),
+    bracket: z.number().min(1).max(10),
+    bracket_explanation: z.string().max(170),
     complexity: z.enum(["Low", "Medium", "High"]),
     complexity_explanation: z.string().max(170),
     pilot_skill: z.enum(["Beginner", "Intermediate", "Advanced"]),
@@ -112,7 +112,7 @@ async function fetchDeckPage(offset = 0): Promise<DeckRow[]> {
       deck_ai_difficulty(deck_id),
       deck_ai_strengths_weaknesses(deck_id),
       deck_ai_pillars(deck_id)
-    `
+    `,
     )
     .eq("type", DECK_TYPE) // official precons
     .is("user_id", null) // your “official WotC” criterion
@@ -149,7 +149,7 @@ function isSignalLand(card: {
 
   if (
     /nykthos|field of the dead|urza|bojuka bog|gaea|sanctum|cabal coffers|reliquary tower/.test(
-      name
+      name,
     )
   ) {
     return true;
@@ -233,8 +233,8 @@ async function upsertAll(deckId: string, json: any) {
   {
     const { error } = await supabase.from("deck_ai_difficulty").upsert({
       deck_id: deckId,
-      power_level: json.difficulty.power_level,
-      power_level_explanation: json.difficulty.power_level_explanation,
+      bracket: json.difficulty.bracket,
+      bracket_explanation: json.difficulty.bracket_explanation,
       complexity: json.difficulty.complexity,
       complexity_explanation: json.difficulty.complexity_explanation,
       pilot_skill: json.difficulty.pilot_skill,
@@ -287,7 +287,7 @@ function nowMs() {
 
 (async () => {
   console.log(
-    `Backfilling full analysis… type="${DECK_TYPE}" limit=${LIMIT} force=${FORCE} model=${LOCAL_MODEL} concurrency=${AI_CONCURRENCY}`
+    `Backfilling full analysis… type="${DECK_TYPE}" limit=${LIMIT} force=${FORCE} model=${LOCAL_MODEL} concurrency=${AI_CONCURRENCY}`,
   );
 
   const limit = pLimit(AI_CONCURRENCY);
@@ -314,7 +314,7 @@ function nowMs() {
         });
 
     console.log(
-      `Page ${pageNum}: fetched ${decks.length} — will process ${toProcess.length}`
+      `Page ${pageNum}: fetched ${decks.length} — will process ${toProcess.length}`,
     );
 
     const results = await Promise.allSettled(
@@ -324,7 +324,7 @@ function nowMs() {
           try {
             if (!deck.commander || (deck.deck_cards?.length ?? 0) === 0) {
               console.warn(
-                `Skipping ${deck.id} (${deck.name}): no commander or cards`
+                `Skipping ${deck.id} (${deck.name}): no commander or cards`,
               );
               return;
             }
@@ -337,8 +337,8 @@ function nowMs() {
           } catch (e: any) {
             console.error(`✗ ${deck.id} (${deck.name}): ${e?.message || e}`);
           }
-        })
-      )
+        }),
+      ),
     );
 
     const failed = results.filter((r) => r.status === "rejected").length;

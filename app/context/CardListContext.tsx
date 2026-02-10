@@ -53,13 +53,13 @@ export type AiOverview = {
   ai_confidence: number | null;
   ai_spec_version: string | null;
 
-  ai_power_level: number | null;
+  ai_bracket: number | null;
   ai_complexity: string | null;
   ai_pilot_skill: string | null;
   ai_interaction: string | null; // maps from interaction_intensity
   ai_upkeep: string | null; // (no source in new schema → null)
 
-  ai_power_level_explanation: string | null;
+  ai_bracket_explanation: string | null;
   ai_complexity_explanation: string | null;
   ai_pilot_skill_explanation: string | null;
   ai_interaction_explanation: string | null;
@@ -90,8 +90,8 @@ export type Pillars = {
 
 export type Difficulty = {
   deckId: string;
-  power_level: number;
-  power_level_explanation: string;
+  bracket: number;
+  bracket_explanation: string;
   complexity: string;
   complexity_explanation: string;
   pilot_skill: string;
@@ -149,7 +149,7 @@ interface CardListContextType {
 }
 
 const CardListContext = createContext<CardListContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export const CardListProvider = ({ children }: { children: ReactNode }) => {
@@ -158,7 +158,7 @@ export const CardListProvider = ({ children }: { children: ReactNode }) => {
   const [originalCards, setOriginalCards] = useState<CardRecord[]>([]);
   const [deck, setDeck] = useState<DeckMetadata | null>(null);
   const [deckFeatures, setDeckFeatures] = useState<DeckFeatureVector | null>(
-    null
+    null,
   );
   const [aiOverview, setAiOverviewState] = useState<AiOverview | null>(null);
   const [landFeatures, setLandFeatures] = useState<LandFeatures | null>(null);
@@ -184,7 +184,7 @@ export const CardListProvider = ({ children }: { children: ReactNode }) => {
   // Helper to compute updated cards
   function buildUpdatedCards(
     originalCards: CardRecord[],
-    changesMadeState: ChangesMade[]
+    changesMadeState: ChangesMade[],
   ): CardRecord[] {
     // Always copy so we don't mutate originalCards
     let updatedCards = [...originalCards];
@@ -234,7 +234,7 @@ export const CardListProvider = ({ children }: { children: ReactNode }) => {
         updated = updated.map((c) =>
           c.card.uuid === card.uuid
             ? { ...c, countChange: c.countChange + 1 }
-            : c
+            : c,
         );
         if (updated[idx].countChange === 0) {
           // If countChange is zero, remove the entry
@@ -257,7 +257,7 @@ export const CardListProvider = ({ children }: { children: ReactNode }) => {
         updated = updated.map((c) =>
           c.card.uuid === card.uuid
             ? { ...c, countChange: c.countChange - 1 }
-            : c
+            : c,
         );
         if (updated[idx].countChange === 0) {
           // If countChange is zero, remove the entry
@@ -275,7 +275,7 @@ export const CardListProvider = ({ children }: { children: ReactNode }) => {
   };
   const updateCard = (updated: CardRecord) =>
     setCardsState((prev) =>
-      prev.map((c) => (c.uuid === updated.uuid ? updated : c))
+      prev.map((c) => (c.uuid === updated.uuid ? updated : c)),
     );
 
   const resetLandFeatures = () => setLandFeatures(null);

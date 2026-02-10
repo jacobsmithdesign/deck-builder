@@ -12,12 +12,12 @@ export const commanderSchema = z.object({
   type: z
     .string()
     .describe(
-      "The type of commander (e.g. Legendary Creature - Human Knight)."
+      "The type of commander (e.g. Legendary Creature - Human Knight).",
     ),
   mana_cost: z
     .object({ mana: z.string() })
     .describe(
-      "The mana cost of the commander (e.g. {2}{G}{W} = 2GW. {U}{U}{U}{R}{R}{R} = UUURRR)."
+      "The mana cost of the commander (e.g. {2}{G}{W} = 2GW. {U}{U}{U}{R}{R}{R} = UUURRR).",
     ),
   colorIdentity: z
     .array(z.string())
@@ -152,8 +152,8 @@ export const DeckSchema = z.object({
   // --- New difficulty axes ---
   // Note: DB stores power as TEXT; accept both to be resilient.
   deck_ai_difficulty: z.object({
-    power_level: z.number().nullable(),
-    power_level_explanation: z.string().nullable(),
+    bracket: z.number().nullable(),
+    bracket_explanation: z.string().nullable(),
     complexity: z.enum(["Low", "Medium", "High"]).nullable(),
     complexity_explanation: z.string().nullable(),
     pilot_skill: z.enum(["Beginner", "Intermediate", "Advanced"]).nullable(),

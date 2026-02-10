@@ -9,17 +9,12 @@ import { ExpandablePills } from "./expandablePills";
 import { diff } from "util";
 
 // Power Level: numeric 1–10
-export const powerLevelColors: Record<number, string> = {
-  1: "bg-green-200 outline outline-green-300 text-green-800/70",
-  2: "bg-green-200 outline outline-green-300 text-green-800/70",
-  3: "bg-green-200 outline outline-green-300 text-green-800/70",
-  4: "bg-yellow-200 outline outline-yellow-300 text-yellow-950/70",
-  5: "bg-yellow-200 outline outline-yellow-300 text-yellow-950/70",
-  6: "bg-orange-200 outline outline-orange-300 text-orange-950/70",
-  7: "bg-orange-200 outline outline-orange-300 text-orange-950/70",
-  8: "bg-red-200 outline outline-red-300 text-red-900/70",
-  9: "bg-red-200 outline outline-red-300 text-red-900/70",
-  10: "bg-red-300 outline outline-red-300 text-red-900/70",
+export const bracketColors: Record<number, string> = {
+  1: "bg-green-200 outline outline-green-300",
+  2: "bg-yellow-200 outline outline-yellow-300",
+  3: "bg-amber-200 outline outline-amber-300",
+  4: "bg-orange-200 outline outline-orange-300",
+  5: "bg-red-200 outline outline-red-300",
 };
 
 export const complexityColors: Record<string, string> = {
@@ -41,7 +36,7 @@ export const interactionColors: Record<string, string> = {
 };
 
 type MetricKey =
-  | "power_level"
+  | "bracket"
   | "pilot_skill"
   | "interaction_intensity"
   | "complexity";
@@ -55,8 +50,8 @@ type MetricDef = {
 };
 
 type Difficulty = {
-  power_level?: number;
-  power_level_explanation?: string;
+  bracket?: number;
+  bracket_explanation?: string;
   complexity?: "Low" | "Medium" | "High";
   complexity_explanation?: string;
   interaction_intensity?: "Low" | "Medium" | "High";
@@ -67,11 +62,11 @@ type Difficulty = {
 
 const metricConfig: MetricDef[] = [
   {
-    key: "power_level",
-    colorMap: powerLevelColors,
+    key: "bracket",
+    colorMap: bracketColors,
     icon: BsFillLightningChargeFill,
-    get: (d) => d?.power_level,
-    descKeys: ["power_level_explanation"],
+    get: (d) => d?.bracket,
+    descKeys: ["bracket_explanation"],
   },
   {
     key: "pilot_skill",
@@ -122,10 +117,9 @@ export function DeckMetricsXL({
 
   // decide colour
   let currentColor = "bg-light/50";
-  if (current.key === "power_level" && typeof currentValue === "number") {
+  if (current.key === "bracket" && typeof currentValue === "number") {
     const n = Math.max(1, Math.min(10, currentValue));
-    currentColor =
-      (powerLevelColors as Record<number, string>)[n] ?? currentColor;
+    currentColor = (bracketColors as Record<number, string>)[n] ?? currentColor;
   } else if (typeof currentValue === "string") {
     currentColor =
       (current.colorMap as Record<string, string>)[currentValue] ??

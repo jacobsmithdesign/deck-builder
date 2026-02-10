@@ -36,8 +36,8 @@ export async function fetchCommanderDecks(page = 0, pageSize = 30) {
       deck_ai_strengths_weaknesses (strengths, weaknesses),
       
       deck_ai_difficulty (
-        power_level,
-        power_level_explanation,
+        bracket,
+        bracket_explanation,
         complexity,
         complexity_explanation,
         pilot_skill,
@@ -47,7 +47,7 @@ export async function fetchCommanderDecks(page = 0, pageSize = 30) {
         updated_at
       ),
       deck_archetype_overview(axes, description)`,
-      { count: "exact" }
+      { count: "exact" },
     )
     .eq("type", "Commander Deck") // adjust this if needed
     .is("user_id", null)

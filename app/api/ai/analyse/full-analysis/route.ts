@@ -78,10 +78,10 @@ export async function GET(req: NextRequest) {
           .select(
             `
             id, name, user_id,
-            commander:cards!decks_commander_uuid_fkey(uuid,name,mana_value,mana_cost,type,text),
+            commander:cards!decks_commander_uuid_fkey(uuid,name,mana_value,mana_cost,type,text,power,toughness),
             deck_cards(
               count, board_section,
-              card:cards!deck_cards_card_uuid_fkey(uuid,name,mana_value,mana_cost,type,text)
+              card:cards!deck_cards_card_uuid_fkey(uuid,name,mana_value,mana_cost,type,text,power,toughness)
             )
           `,
           )
@@ -194,24 +194,20 @@ export async function GET(req: NextRequest) {
 
               },
               difficulty: {
-                "power_level": <number> (1-10),
-                "power_level_explanation": <string>(<=170),
                 "complexity":"Low"|"Medium"|"High",
                 "complexity_explanation":string(<=170),
                 "pilot_skill":"Beginner"|"Intermediate"|"Advanced",
                 "pilot_skill_explanation":string(<=170),
                 "interaction_intensity":"Low"|"Medium"|"High",
                 "interaction_explanation":string(<=170),   
-                "bracket":<number> (1-5),           
+                "bracket":<number> (1-5),         
+                "bracket_explanation": <string>(<=170),  
               },
               pillars: { "<slug-1>": <markdown string> (2-4 sentences), ... }
 
             Archetype vocabulary=${TAG_VOCAB}
 
             RULES:
-            You MUST be accurate about difficulty and power level assessment. 
-            Consider the intent of play, not just the content of cards. Use this to determine relative strength and bracket. 
-
             archetypes: 4–7 short lowercase slugs that capture the deck’s playstyle and card frequency. Choose from archetype vocabulary. If an archetype that does not exist in the vocabular could be derived from the commander or the cards always include it. 
             axes: ranked 0–100, keys ⊆ archetypes, reflecting the strength of each chosen archetype in this deck.
 
@@ -219,21 +215,22 @@ export async function GET(req: NextRequest) {
 
             strengths/weaknesses: 2–4 items, 1–3 words.
             
-
-            Power brackets must follow this distribution:
+            Power bracket distribution:  
             Bracket 1 - 2: ~50% of decks
             Bracket 3: 30%
             bracket 4-5: 20%
-            Most decks are likely to be low. If uncertain, rank lower, not higher.
+            
+            You MUST be accurate about bracket assessment. 
+            Bracket is NOT relative to the population.
+            Bracket is absolute and must be justified by deck capabilities.
 
-            Brackets 1 & 2) NO game changers, NO mass land denial, NO chaining extra turns, NO 2-card combos
-            Bracket 3) 0-3 game changers, NO mass land denial, NO chaning extra turns, NO 2-card combos (before turn six)
+            Use these hard ceilings:
 
-            Bracket 1 Exhibitionist - Mostly focuses theme or goal over power
-            Bracket 2 Core - Average power level deck with winning potential
-            Bracket 3 Upgraded - A more powerful, focussed deck deck with high quality cards
-            Bracket 4 Optimized - A well optimized deck focusing on lethality and winning quickly
-            Bracket 5 cEDH - Competitive decks designed to win ASAP using metagame rules
+            If goldfish win ≥ T9 AND interaction < 8 AND tutors ≤ 1 → bracket ≤ 2
+            If goldfish win T7–8 OR interaction 8–11 → bracket ≤ 3
+            If consistent win attempts by T6 OR interaction ≥ 12 → bracket ≥ 4 possible
+            Bracket 5 requires fast mana + compact win lines + redundancy
+
 
             DECK INFO:
             Commander: ${commander}
@@ -249,7 +246,7 @@ export async function GET(req: NextRequest) {
             {
               role: "system",
               content:
-                "You are an expert MTG Commander deck analyst. You must analyse cards from a deck to accurately determine it's strengths, weaknesses, archetype, power level, and difficulty with brutal honesty and high precision. DO NOT RANK BRACKET TOO HIGH Return only JSON in the provided format.",
+                "You are an expert MTG Commander deck analyst. You must analyse cards from a deck to accurately determine it's bracket, strengths, weaknesses, archetype, and difficulty. Return only JSON in the provided format.",
             },
             { role: "user", content: prompt },
           ],
@@ -275,8 +272,6 @@ export async function GET(req: NextRequest) {
         // 1) Add deck difficulty
         await supabase.from("deck_ai_difficulty").upsert({
           deck_id: deckId,
-          power_level: json.difficulty.power_level,
-          power_level_explanation: json.difficulty.power_level_explanation,
           complexity: json.difficulty.complexity,
           complexity_explanation: json.difficulty.complexity_explanation,
           pilot_skill: json.difficulty.pilot_skill,
@@ -284,6 +279,7 @@ export async function GET(req: NextRequest) {
           interaction_intensity: json.difficulty.interaction_intensity,
           interaction_explanation: json.difficulty.interaction_explanation,
           bracket: json.difficulty.bracket,
+          bracket_explanation: json.difficulty.bracket_explanation,
           updated_at: new Date().toISOString(),
         });
         // 2) Add strengths and weaknesses

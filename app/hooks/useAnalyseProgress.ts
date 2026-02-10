@@ -59,17 +59,16 @@ export function useAnalyseProgress(opts?: {
         ai_spec_version: "v5-difficulty-axes-gpt-4.1",
 
         // difficulty (note: DB stores power level as text in your type)
-        ai_power_level:
-          typeof d?.difficulty?.power_level === "number"
-            ? String(d.difficulty.power_level)
-            : d?.difficulty?.power_level ?? null,
+        ai_bracket:
+          typeof d?.difficulty?.bracket === "number"
+            ? String(d.difficulty.bracket)
+            : (d?.difficulty?.bracket ?? null),
         ai_complexity: d?.difficulty?.complexity ?? null,
         ai_pilot_skill: d?.difficulty?.pilot_skill ?? null,
         ai_interaction: d?.difficulty?.interaction_intensity ?? null,
         ai_upkeep: d?.difficulty?.upkeep ?? null,
 
-        ai_power_level_explanation:
-          d?.difficulty?.power_level_explanation ?? null,
+        ai_bracket_explanation: d?.difficulty?.bracket_explanation ?? null,
         ai_complexity_explanation:
           d?.difficulty?.complexity_explanation ?? null,
         ai_pilot_skill_explanation:

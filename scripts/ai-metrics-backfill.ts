@@ -31,8 +31,8 @@ const DIFFICULTY_FN = {
       type: "object",
       additionalProperties: false,
       properties: {
-        power_level: { type: "integer", minimum: 1, maximum: 10 },
-        power_level_explanation: { type: "string", maxLength: 160 },
+        bracket: { type: "integer", minimum: 1, maximum: 10 },
+        bracket_explanation: { type: "string", maxLength: 160 },
         complexity: { type: "string", enum: ["Low", "Medium", "High"] },
         complexity_explanation: { type: "string", maxLength: 160 },
         pilot_skill: {
@@ -50,8 +50,8 @@ const DIFFICULTY_FN = {
         confidence: { type: "number", minimum: 0, maximum: 1 },
       },
       required: [
-        "power_level",
-        "power_level_explanation",
+        "bracket",
+        "bracket_explanation",
         "complexity",
         "complexity_explanation",
         "pilot_skill",
@@ -74,7 +74,7 @@ const LOG_TOKENS = true;
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE || !OPENAI_API_KEY) {
   console.error(
-    "Missing env vars: SUPABASE_URL, SUPABASE_SERVICE_ROLE, OPENAI_API_KEY"
+    "Missing env vars: SUPABASE_URL, SUPABASE_SERVICE_ROLE, OPENAI_API_KEY",
   );
   process.exit(1);
 }
@@ -84,7 +84,7 @@ const args = Object.fromEntries(
   process.argv.slice(2).map((a) => {
     const [k, v] = a.replace(/^--/, "").split("=");
     return [k, v ?? "true"];
-  })
+  }),
 );
 const LIMIT = Number(args.limit ?? 25);
 const FORCE = args.force === "true" || args.force === "1";
@@ -132,8 +132,8 @@ const AiJsonSchema = z.object({
 type AiOutput = z.infer<typeof AiJsonSchema>;
 
 const DifficultyJsonSchema = z.object({
-  power_level: z.number().min(1).max(10),
-  power_level_explanation: z.string().min(10).max(190),
+  bracket: z.number().min(1).max(10),
+  bracket_explanation: z.string().min(10).max(190),
   complexity: z.enum(["Low", "Medium", "High"]),
   complexity_explanation: z.string().min(10).max(190),
   pilot_skill: z.enum(["Beginner", "Intermediate", "Advanced"]),
@@ -171,7 +171,7 @@ async function fetchDeckPage(offset = 0): Promise<DeckRow[]> {
           uuid, name, mana_value, mana_cost, type, text
         )
       )
-    `
+    `,
     )
     .eq("type", "Commander Deck")
     .is("user_id", null)
@@ -194,20 +194,13 @@ async function fetchDeckById(deckId: string): Promise<DeckRow[]> {
     .from("decks")
     .select(
       `
-      id,
-      name,
-      ai_generated_at,
-      commander:cards!decks_commander_uuid_fkey(
-        uuid, name, mana_value, mana_cost, type, text
-      ),
-      deck_cards(
-        count,
-        board_section,
-        card:cards!deck_cards_card_uuid_fkey(
-          uuid, name, mana_value, mana_cost, type, text
-        )
-      )
-    `
+            id, name, user_id,
+            commander:cards!decks_commander_uuid_fkey(uuid,name,mana_value,mana_cost,type,text,power,toughness),
+            deck_cards(
+              count, board_section,
+              card:cards!deck_cards_card_uuid_fkey(uuid,name,mana_value,mana_cost,type,text,power,toughness)
+            )
+    `,
     )
     .eq("id", deckId)
     .eq("deck_cards.board_section", "mainboard")
@@ -218,7 +211,7 @@ async function fetchDeckById(deckId: string): Promise<DeckRow[]> {
 }
 // This is for fetching cards and mapping them to an array of CardMinis for the full card list AI suggestion
 export async function fetchMainboardCardMinis(
-  deckId: string
+  deckId: string,
 ): Promise<CardMini[]> {
   const { data, error } = await supabase
     .from("decks")
@@ -231,7 +224,7 @@ export async function fetchMainboardCardMinis(
           name, mana_value, type, text
         )
       )
-    `
+    `,
     )
     .eq("id", deckId)
     .eq("deck_cards.board_section", "mainboard")
@@ -280,7 +273,7 @@ async function fetchBatchNeedingDifficulty(): Promise<DeckRow[]> {
           uuid, name, mana_value, mana_cost, type, text
         )
       )
-    `
+    `,
     )
     .eq("type", "Commander Deck")
     .is("user_id", null)
@@ -290,12 +283,12 @@ async function fetchBatchNeedingDifficulty(): Promise<DeckRow[]> {
       [
         "ai_spec_version.is.null",
         `ai_spec_version.neq.${ai_spec}`,
-        "ai_power_level_explanation.is.null",
+        "ai_bracket_explanation.is.null",
         "ai_complexity_explanation.is.null",
         "ai_pilot_skill_explanation.is.null",
         "ai_interaction_explanation.is.null",
         "ai_upkeep_explanation.is.null",
-      ].join(",")
+      ].join(","),
     )
     .order("id", { ascending: true })
     .limit(LIMIT);
@@ -438,7 +431,7 @@ function pruneFeatures(f: Features) {
     // Keyword presence is fine; the model sees a compact map
     keyword_histogram: f.keyword_histogram,
     stack_complexity_markers: Array.from(
-      new Set(f.stack_complexity_markers || [])
+      new Set(f.stack_complexity_markers || []),
     ).slice(0, 8),
     // Signals for overview grounding; difficulty uses "examples" instead
     signals: (f.signals || [])
@@ -459,7 +452,7 @@ function pruneFeatures(f: Features) {
 // ────────── OVERVIEW PROMPT (kept lean; forbidden families removed) ──────────
 function buildPrompt(
   prunedFeatures: ReturnType<typeof pruneFeatures>,
-  cards: CardMini[]
+  cards: CardMini[],
 ): string {
   return `Return ONLY minified JSON:
 {"tagline":string,"tags":string[],"strengths":string[],"weaknesses":string[],"confidence":0..1}
@@ -474,7 +467,7 @@ ${JSON.stringify(prunedFeatures)}`;
 // ────────── OVERVIEW AI CALL ──────────
 async function getAiAssessment(
   pruned: ReturnType<typeof pruneFeatures>,
-  cards: CardMini[]
+  cards: CardMini[],
 ) {
   const completion = await openai.chat.completions.create({
     model: MODEL,
@@ -490,7 +483,7 @@ async function getAiAssessment(
 
   if (LOG_TOKENS && completion.usage) {
     console.log(
-      `[tokens overview] prompt=${completion.usage.prompt_tokens} out=${completion.usage.completion_tokens} total=${completion.usage.total_tokens}`
+      `[tokens overview] prompt=${completion.usage.prompt_tokens} out=${completion.usage.completion_tokens} total=${completion.usage.total_tokens}`,
     );
   }
 
@@ -570,7 +563,7 @@ function cap(n: number | undefined, max: number) {
 }
 
 function difficultyCoreFromPruned(
-  pf: ReturnType<typeof pruneFeatures>
+  pf: ReturnType<typeof pruneFeatures>,
 ): DifficultyCore {
   const counts = pf.counts || {};
   const interaction = pf.interaction || {};
@@ -627,12 +620,12 @@ function difficultyCoreFromPruned(
 
 // ────────── DIFFICULTY PROMPT (concise rules; new field names) ──────────
 function buildDifficultyPrompt(
-  prunedFeatures: ReturnType<typeof pruneFeatures>
+  prunedFeatures: ReturnType<typeof pruneFeatures>,
 ): string {
   const INPUT = JSON.stringify(difficultyCoreFromPruned(prunedFeatures));
 
   return `Return ONLY minified JSON with EXACT keys:
-{"power_level":1..10,"power_level_explanation":string(<=170),
+{"bracket":1..10,"bracket_explanation":string(<=170),
 "complexity":"Low"|"Medium"|"High","complexity_explanation":string(<=170),
 "pilot_skill":"Beginner"|"Intermediate"|"Advanced","pilot_skill_explanation":string(<=170),
 "interaction_intensity":"Low"|"Medium"|"High","interaction_explanation":string(<=170),
@@ -649,12 +642,12 @@ F=${INPUT}`;
 // Same as above but tailored to the full card list.
 function buildDifficultyPromptFromList(
   cards: CardMini[],
-  rawFeatures: any
+  rawFeatures: any,
 ): string {
   const INPUT = JSON.stringify(cards);
   const features = JSON.stringify(rawFeatures);
   return `Return ONLY minified JSON with EXACT keys:
-{"power_level":1..10,"power_level_explanation":string(<=170),
+{"bracket":1..10,"bracket_explanation":string(<=170),
 "complexity":"Low"|"Medium"|"High","complexity_explanation":string(<=170),
 "pilot_skill":"Beginner"|"Intermediate"|"Advanced","pilot_skill_explanation":string(<=170),
 "interaction_intensity":"Low"|"Medium"|"High","interaction_explanation":string(<=170),
@@ -681,8 +674,8 @@ function normalizePilotSkill(v: any): "Beginner" | "Intermediate" | "Advanced" {
 }
 function sanitizeDifficulty(obj: any): DifficultyOutput {
   const out = {
-    power_level: Math.min(10, Math.max(1, Number(obj.power_level) || 5)),
-    power_level_explanation: clampStr(obj.power_level_explanation, 160),
+    bracket: Math.min(10, Math.max(1, Number(obj.bracket) || 5)),
+    bracket_explanation: clampStr(obj.bracket_explanation, 160),
     complexity: ["Low", "Medium", "High"].includes(obj.complexity)
       ? obj.complexity
       : "Medium",
@@ -690,7 +683,7 @@ function sanitizeDifficulty(obj: any): DifficultyOutput {
     pilot_skill: normalizePilotSkill(obj.pilot_skill),
     pilot_skill_explanation: clampStr(obj.pilot_skill_explanation, 160),
     interaction_intensity: ["Low", "Medium", "High"].includes(
-      obj.interaction_intensity
+      obj.interaction_intensity,
     )
       ? obj.interaction_intensity
       : "Medium",
@@ -756,7 +749,7 @@ async function getDifficultyAssessment(cards: CardMini[], rawFeatures) {
   if ((completion as any).usage) {
     const u = (completion as any).usage;
     console.log(
-      `[tokens difficulty] prompt=${u.prompt_tokens} out=${u.completion_tokens} total=${u.total_tokens}`
+      `[tokens difficulty] prompt=${u.prompt_tokens} out=${u.completion_tokens} total=${u.total_tokens}`,
     );
   }
 
@@ -769,12 +762,12 @@ async function updateDeckDifficulty(id: string, d: DifficultyOutput) {
   const { error } = await supabase
     .from("decks")
     .update({
-      ai_power_level: String(d.power_level),
+      ai_bracket: String(d.bracket),
       ai_complexity: d.complexity,
       ai_pilot_skill: d.pilot_skill,
       ai_interaction: d.interaction_intensity,
       ai_upkeep: d.upkeep,
-      ai_power_level_explanation: d.power_level_explanation,
+      ai_bracket_explanation: d.bracket_explanation,
       ai_complexity_explanation: d.complexity_explanation,
       ai_pilot_skill_explanation: d.pilot_skill_explanation,
       ai_interaction_explanation: d.interaction_explanation,
@@ -795,7 +788,7 @@ function nowMs() {
 (async () => {
   try {
     console.log(
-      `Backfill task="${TASK}" limit=${LIMIT} force=${FORCE} model=${MODEL} concurrency=${AI_CONCURRENCY}`
+      `Backfill task="${TASK}" limit=${LIMIT} force=${FORCE} model=${MODEL} concurrency=${AI_CONCURRENCY}`,
     );
 
     const limit = pLimit(AI_CONCURRENCY);
@@ -806,15 +799,15 @@ function nowMs() {
       const decks = DECK_ID
         ? await fetchDeckById(DECK_ID)
         : TASK === "difficulty" && !FORCE
-        ? await fetchBatchNeedingDifficulty()
-        : await fetchDeckPage(offset);
+          ? await fetchBatchNeedingDifficulty()
+          : await fetchDeckPage(offset);
       if (decks.length === 0) break;
 
       const page = Math.floor(offset / LIMIT) + 1;
       console.log(`Page ${page}: fetched ${decks.length}, processing…`);
 
       const candidates = decks.filter(
-        (d) => d.commander && d.deck_cards?.length > 0
+        (d) => d.commander && d.deck_cards?.length > 0,
       );
 
       const results = await Promise.allSettled(
@@ -825,7 +818,7 @@ function nowMs() {
             try {
               if (!deck.commander || deck.deck_cards.length === 0) {
                 console.warn(
-                  `Skipping ${deck.id} (${deck.name}): missing commander or cards`
+                  `Skipping ${deck.id} (${deck.name}): missing commander or cards`,
                 );
                 return;
               }
@@ -844,13 +837,13 @@ function nowMs() {
                 const f3 = nowMs();
 
                 console.log(
-                  `✓ [difficulty] ${deck.name}: P${diff.power_level}/${
+                  `✓ [difficulty] ${deck.name}: P${diff.bracket}/${
                     diff.complexity
                   }/${diff.pilot_skill}/I${diff.interaction_intensity}/U${
                     diff.upkeep
                   } — total ${f3 - t0}ms (features ${f1 - f0}ms, openai ${
                     f2 - f1
-                  }ms, db ${f3 - f2}ms)`
+                  }ms, db ${f3 - f2}ms)`,
                 );
               } else {
                 const ai = await getAiAssessment(features, cards);
@@ -865,7 +858,7 @@ function nowMs() {
                     f3 - t0
                   }ms (features ${f1 - f0}ms, openai ${f2 - f1}ms, db ${
                     f3 - f2
-                  }ms)`
+                  }ms)`,
                 );
               }
 
@@ -873,11 +866,11 @@ function nowMs() {
             } catch (e) {
               console.error(
                 `✗ Failed for ${deck.id} (${deck.name}):`,
-                e instanceof Error ? e.message : e
+                e instanceof Error ? e.message : e,
               );
             }
-          })
-        )
+          }),
+        ),
       );
 
       const failed = results.filter((r) => r.status === "rejected").length;

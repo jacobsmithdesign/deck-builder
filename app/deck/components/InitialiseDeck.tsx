@@ -43,15 +43,15 @@ export type DeckRow = {
   ai_confidence?: number | null;
   ai_spec_version?: string | null;
 
-  // difficulty axes (note: ai_power_level may be TEXT in DB; coerce later)
-  ai_power_level?: string | null;
+  // difficulty axes (note: ai_bracket may be TEXT in DB; coerce later)
+  ai_bracket?: string | null;
   ai_complexity?: "Low" | "Medium" | "High" | null;
   ai_pilot_skill?: "Beginner" | "Intermediate" | "Advanced" | null;
   ai_interaction?: "Low" | "Medium" | "High" | null;
   ai_upkeep?: "Low" | "Medium" | "High" | null;
 
   // explanations
-  ai_power_level_explanation?: string | null;
+  ai_bracket_explanation?: string | null;
   ai_complexity_explanation?: string | null;
   ai_pilot_skill_explanation?: string | null;
   ai_interaction_explanation?: string | null;
@@ -91,8 +91,8 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
       ),
 
       deck_ai_difficulty (
-        power_level,
-        power_level_explanation,
+        bracket,
+        bracket_explanation,
         complexity,
         complexity_explanation,
         pilot_skill,
@@ -118,7 +118,7 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
         description,
         updated_at
       )
-        `
+        `,
       )
       .eq("id", deck.id)
       .eq("deck_cards.board_section", "mainboard")
@@ -184,14 +184,13 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
                   ai_weaknesses: sw?.weaknesses ?? null,
                   ai_generated_at, // make sure AiOverview expects string | null
 
-                  ai_power_level: diff?.power_level ?? null,
+                  ai_bracket: diff?.bracket ?? null,
                   ai_complexity: diff?.complexity ?? null,
                   ai_pilot_skill: diff?.pilot_skill ?? null,
                   ai_interaction: diff?.interaction_intensity ?? null,
                   ai_upkeep: null,
 
-                  ai_power_level_explanation:
-                    diff?.power_level_explanation ?? null,
+                  ai_bracket_explanation: diff?.bracket_explanation ?? null,
                   ai_complexity_explanation:
                     diff?.complexity_explanation ?? null,
                   ai_pilot_skill_explanation:
@@ -200,11 +199,11 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
                     diff?.interaction_explanation ?? null,
                   ai_upkeep_explanation: null,
                 }
-              : null
+              : null,
           );
 
           return null;
-        })
+        }),
       );
     } catch (error) {
       console.error("Error fetching compressed deck data: ", error);

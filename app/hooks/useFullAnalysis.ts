@@ -16,8 +16,8 @@ export type SwResult = {
 export type PillarsResult = { pillars: Record<string, string> };
 
 export type DifficultyResult = {
-  power_level: number;
-  power_level_explanation: string;
+  bracket: number;
+  bracket_explanation: string;
   complexity: string;
   complexity_explanation: string;
   pilot_skill: string;
@@ -59,7 +59,7 @@ export function useFullAnalysis(opts?: {
     setResult(null);
 
     const es = new EventSource(
-      `${endpoint}?deckId=${encodeURIComponent(deckId)}`
+      `${endpoint}?deckId=${encodeURIComponent(deckId)}`,
     );
     esRef.current = es;
 
@@ -98,9 +98,8 @@ export function useFullAnalysis(opts?: {
         };
         const difficultyClean = {
           deckId: d.deckId as string,
-          power_level: d.difficulty.power_level as number,
-          power_level_explanation: d.difficulty
-            .power_level_explanation as string,
+          bracket: d.difficulty.bracket as number,
+          bracket_explanation: d.difficulty.bracket_explanation as string,
           complexity: d.difficulty.complexity as string,
           complexity_explanation: d.difficulty.complexity_explanation as string,
           pilot_skill: d.difficulty.pilot_skill as string,

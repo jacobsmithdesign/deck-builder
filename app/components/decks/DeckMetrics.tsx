@@ -4,17 +4,12 @@ import { AiFillInteraction } from "react-icons/ai";
 import { IoExtensionPuzzle } from "react-icons/io5";
 
 // Power Level: numeric 1–10
-export const powerLevelColors: Record<number, string> = {
+export const bracketColors: Record<number, string> = {
   1: "bg-green-200 outline outline-green-300",
-  2: "bg-green-200 outline outline-green-300",
-  3: "bg-green-200 outline outline-green-300",
-  4: "bg-yellow-200 outline outline-yellow-300",
-  5: "bg-yellow-200 outline outline-yellow-300",
-  6: "bg-orange-200 outline outline-orange-300",
-  7: "bg-orange-200 outline outline-orange-300",
-  8: "bg-red-200 outline outline-red-300",
-  9: "bg-red-200 outline outline-red-300",
-  10: "bg-red-300 outline outline-red-300",
+  2: "bg-yellow-200 outline outline-yellow-300",
+  3: "bg-amber-200 outline outline-amber-300",
+  4: "bg-orange-200 outline outline-orange-300",
+  5: "bg-red-200 outline outline-red-300",
 };
 
 // Complexity
@@ -40,10 +35,10 @@ export const interactionColors: Record<string, string> = {
 
 const metricConfig = [
   {
-    key: "ai_power_level",
-    colorMap: powerLevelColors,
+    key: "bracket",
+    colorMap: bracketColors,
     icon: BsFillLightningChargeFill,
-    label: (deck: any) => deck?.ai_power_level,
+    label: (deck: any) => deck?.bracket,
   },
   {
     key: "ai_pilot_skill",

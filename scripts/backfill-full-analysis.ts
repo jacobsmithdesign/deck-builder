@@ -4,6 +4,7 @@ import OpenAI from "openai";
 import dotenv from "dotenv";
 import pLimit from "p-limit";
 import { createClient } from "@supabase/supabase-js";
+import { compressLands } from "@/lib/ai/landCompression";
 
 // If you can reuse your existing helpers, import them.
 // Otherwise copy the functions into this script or a shared package.
@@ -19,7 +20,7 @@ const AI_CONCURRENCY = Number(process.env.AI_CONCURRENCY ?? 3);
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE || !OPENAI_API_KEY) {
   console.error(
-    "Missing env vars. Required: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, OPENAI_API_KEY"
+    "Missing env vars. Required: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, OPENAI_API_KEY",
   );
   process.exit(1);
 }
@@ -29,7 +30,7 @@ const args = Object.fromEntries(
   process.argv.slice(2).map((a) => {
     const [k, v] = a.replace(/^--/, "").split("=");
     return [k, v ?? "true"];
-  })
+  }),
 );
 /**
  * --limit=50            max rows per page (default 30)
@@ -58,6 +59,8 @@ type CardRow = {
   text: string | null;
   identifiers?: any;
   color_identity?: string[] | null;
+  power: number | null;
+  toughness: number | null;
 };
 type DeckRow = {
   id: string;
@@ -79,21 +82,17 @@ async function fetchDeckPage(offset = 0): Promise<DeckRow[]> {
     .from("decks")
     .select(
       `
-      id, name, user_id, type,
-      commander:cards!decks_commander_uuid_fkey(
-        uuid, name, mana_value, mana_cost, type, text, identifiers, color_identity
-      ),
+      id, name, user_id,
+      commander:cards!decks_commander_uuid_fkey(uuid,name,mana_value,mana_cost,type,text,power,toughness),
       deck_cards(
         count, board_section,
-        card:cards!deck_cards_card_uuid_fkey(
-          uuid, name, mana_value, mana_cost, type, text, identifiers, color_identity
-        )
+        card:cards!deck_cards_card_uuid_fkey(uuid,name,mana_value,mana_cost,type,text,power,toughness)
       ),
       deck_archetype_overview(deck_id),
       deck_ai_difficulty(deck_id),
       deck_ai_strengths_weaknesses(deck_id),
       deck_ai_pillars(deck_id)
-    `
+    `,
     )
     .eq("type", DECK_TYPE) // official precons
     .is("user_id", null) // your “official WotC” criterion
@@ -130,7 +129,7 @@ function isSignalLand(card: {
 
   if (
     /nykthos|field of the dead|urza|bojuka bog|gaea|sanctum|cabal coffers|reliquary tower/.test(
-      name
+      name,
     )
   ) {
     return true;
@@ -150,22 +149,22 @@ function buildPrompt(cards: any[], commander: any) {
               archetype: {
                 "axes": { "<slug-1>": 0, ... },
                 "explanation_md": { "<slug-1>": <markdown string>, ... }, 
-                "description": <text> (1-2 sentences)
+                "description": <text> (2-4 sentences)
               },
               sw: {
-                "strengths": { "name" (1-2 words): <markdown string> (3-5 sentences), ... },
-                "weaknesses": { "name" (1-2 words): <markdown string> (3-5 sentences), ... },
+                "strengths": { "name" (1-2 words): <markdown string> (3-6 sentences), ... },
+                "weaknesses": { "name" (1-2 words): <markdown string> (3-6 sentences), ... },
 
               },
               difficulty: {
-                "power_level": <number> (1-10),
-                "power_level_explanation": <string>(<=170),
                 "complexity":"Low"|"Medium"|"High",
                 "complexity_explanation":string(<=170),
                 "pilot_skill":"Beginner"|"Intermediate"|"Advanced",
                 "pilot_skill_explanation":string(<=170),
                 "interaction_intensity":"Low"|"Medium"|"High",
-                "interaction_explanation":string(<=170),              
+                "interaction_explanation":string(<=170),   
+                "bracket":<number> (1-5),         
+                "bracket_explanation": <string>(<=170),  
               },
               pillars: { "<slug-1>": <markdown string> (2-4 sentences), ... }
 
@@ -175,16 +174,29 @@ function buildPrompt(cards: any[], commander: any) {
             archetypes: 4–7 short lowercase slugs that capture the deck’s playstyle and card frequency. Choose from archetype vocabulary. If an archetype that does not exist in the vocabular could be derived from the commander or the cards always include it. 
             axes: ranked 0–100, keys ⊆ archetypes, reflecting the strength of each chosen archetype in this deck.
 
-            explanation_md: maximum 120 words in Markdown, purely extractive. Explain the reasoning behind the archetype's rank and its impact on the deck's playstyle. You may use some example cards from the card list justify the archetypes and their relative weighting. 
+            explanation_md: maximum 150 words in Markdown, purely extractive. Explain the reasoning behind the archetype's rank and its impact on the deck's playstyle. You may use some example cards from the card list justify the archetypes and their relative weighting. 
 
             strengths/weaknesses: 2–4 items, 1–3 words.
+            
+            Power bracket distribution:  
+            Bracket 1 - 2: ~50% of decks
+            Bracket 3: 30%
+            bracket 4-5: 20%
+            
+            You MUST be accurate about bracket assessment. 
+            Bracket is NOT relative to the population.
+            Bracket is absolute and must be justified by deck capabilities.
+
+            Use these hard ceilings:
+
+            If goldfish win ≥ T9 AND interaction < 8 AND tutors ≤ 1 → bracket ≤ 2
+            If goldfish win T7–8 OR interaction 8–11 → bracket ≤ 3
+            If consistent win attempts by T6 OR interaction ≥ 12 → bracket ≥ 4 possible
+            Bracket 5 requires fast mana + compact win lines + redundancy
+
 
             DECK INFO:
-            Commander: ${JSON.stringify({
-              name: commander?.name ?? null,
-              type: commander?.type ?? null,
-              text: commander?.text ?? null,
-            })}
+            Commander: ${commander}
             Cards: ${CARDS}
 `.trim();
 }
@@ -215,14 +227,13 @@ async function runAnalysis(deck: DeckRow) {
       {
         role: "system",
         content:
-          "You are an expert MTG Commander deck analyst. Your job is to read a deck of any bracket to extract its core identity. You must identify its archetypes, strengths and weaknesses, accurately assess its difficulty for most players, and identify its main pillars. ONLY USE CARDS IN DECK INFO. Do not invent cards, categories, or details that are not directly supported. Return exactly one JSON object.",
+          "YYou are an expert MTG Commander deck analyst. You must analyse cards from a deck to accurately determine it's bracket, strengths, weaknesses, archetype, and difficulty. Return only JSON in the provided format.",
       },
       { role: "user", content: prompt },
     ],
   });
   const json = JSON.parse(completion.choices[0]?.message?.content ?? "{}");
 
-  console.log(json.counts);
   // very light guard
   if (!json || !json.archetype || !json.difficulty) {
     throw new Error("Model output missing required fields");
@@ -237,8 +248,8 @@ async function upsertAll(deckId: string, json: any) {
   {
     const { error } = await supabase.from("deck_ai_difficulty").upsert({
       deck_id: deckId,
-      power_level: json.difficulty.power_level,
-      power_level_explanation: json.difficulty.power_level_explanation,
+      bracket: json.difficulty.bracket,
+      bracket_explanation: json.difficulty.bracket_explanation,
       complexity: json.difficulty.complexity,
       complexity_explanation: json.difficulty.complexity_explanation,
       pilot_skill: json.difficulty.pilot_skill,
@@ -291,7 +302,7 @@ function nowMs() {
 
 (async () => {
   console.log(
-    `Backfilling full analysis… type="${DECK_TYPE}" limit=${LIMIT} force=${FORCE} model=${MODEL} concurrency=${AI_CONCURRENCY}`
+    `Backfilling full analysis… type="${DECK_TYPE}" limit=${LIMIT} force=${FORCE} model=${MODEL} concurrency=${AI_CONCURRENCY}`,
   );
 
   const limit = pLimit(AI_CONCURRENCY);
@@ -318,7 +329,7 @@ function nowMs() {
         });
 
     console.log(
-      `Page ${pageNum}: fetched ${decks.length} — will process ${toProcess.length}`
+      `Page ${pageNum}: fetched ${decks.length} — will process ${toProcess.length}`,
     );
 
     const results = await Promise.allSettled(
@@ -328,7 +339,7 @@ function nowMs() {
           try {
             if (!deck.commander || (deck.deck_cards?.length ?? 0) === 0) {
               console.warn(
-                `Skipping ${deck.id} (${deck.name}): no commander or cards`
+                `Skipping ${deck.id} (${deck.name}): no commander or cards`,
               );
               return;
             }
@@ -340,8 +351,8 @@ function nowMs() {
           } catch (e: any) {
             // console.error(`✗ ${deck.id} (${deck.name}): ${e?.message || e}`);
           }
-        })
-      )
+        }),
+      ),
     );
 
     const failed = results.filter((r) => r.status === "rejected").length;
