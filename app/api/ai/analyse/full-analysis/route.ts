@@ -176,62 +176,14 @@ export async function GET(req: NextRequest) {
         write("progress", { step: "calling OpenAI", progress: 65 });
         const prompt = (() => {
           const CARDS = JSON.stringify(cards);
+          console.log(CARDS);
           const LANDFEATURES = JSON.stringify(rawLandFeatures);
           const TAG_VOCAB =
             '["token swarm","treasure","aristocrats","graveyard","reanimator","stax","voltron","spellslinger","blink","+1/+1 counters","lifegain","control","combo","camp","landfall","mill","extra Turns","vehicles","dragons","elves","artifacts","enchantress","aura","discard","steal/copy","flicker","proliferate","burn","big mana"]';
 
           return `
           Return ONLY minified JSON with EXACT keys:
-            {
-              archetype: {
-                "axes": { "<slug-1>": 0, ... },
-                "explanation_md": { "<slug-1>": <markdown string>, ... }, 
-                "description": <text> (2-4 sentences)
-              },
-              sw: {
-                "strengths": { "name" (1-2 words): <markdown string> (3-6 sentences), ... },
-                "weaknesses": { "name" (1-2 words): <markdown string> (3-6 sentences), ... },
-
-              },
-              difficulty: {
-                "complexity":"Low"|"Medium"|"High",
-                "complexity_explanation":string(<=170),
-                "pilot_skill":"Beginner"|"Intermediate"|"Advanced",
-                "pilot_skill_explanation":string(<=170),
-                "interaction_intensity":"Low"|"Medium"|"High",
-                "interaction_explanation":string(<=170),   
-                "bracket":<number> (1-5),         
-                "bracket_explanation": <string>(<=170),  
-              },
-              pillars: { "<slug-1>": <markdown string> (2-4 sentences), ... }
-
-            Archetype vocabulary=${TAG_VOCAB}
-
-            RULES:
-            archetypes: 4–7 short lowercase slugs that capture the deck’s playstyle and card frequency. Choose from archetype vocabulary. If an archetype that does not exist in the vocabular could be derived from the commander or the cards always include it. 
-            axes: ranked 0–100, keys ⊆ archetypes, reflecting the strength of each chosen archetype in this deck.
-
-            explanation_md: maximum 150 words in Markdown, purely extractive. Explain the reasoning behind the archetype's rank and its impact on the deck's playstyle. You may use some example cards from the card list justify the archetypes and their relative weighting. 
-
-            strengths/weaknesses: 2–4 items, 1–3 words.
-            
-            Power bracket distribution:  
-            Bracket 1 - 2: ~50% of decks
-            Bracket 3: 30%
-            bracket 4-5: 20%
-            
-            You MUST be accurate about bracket assessment. 
-            Bracket is NOT relative to the population.
-            Bracket is absolute and must be justified by deck capabilities.
-
-            Use these hard ceilings:
-
-            If goldfish win ≥ T9 AND interaction < 8 AND tutors ≤ 1 → bracket ≤ 2
-            If goldfish win T7–8 OR interaction 8–11 → bracket ≤ 3
-            If consistent win attempts by T6 OR interaction ≥ 12 → bracket ≥ 4 possible
-            Bracket 5 requires fast mana + compact win lines + redundancy
-
-
+            {archetype: {"axes": { "<slug-1>": <number>(0-100), ... },"explanation_md": { "<slug-1>": <markdown string>, ... }, "description": <text> (2-4 sentences)},sw: {"strengths": { "name" (1-2 words): <markdown string> (3-6 sentences), ... },"weaknesses": { "name" (1-2 words): <markdown string> (3-6 sentences), ... },},difficulty: {"complexity":"Low"|"Medium"|"High","complexity_explanation":string(<=170),"pilot_skill":"Beginner"|"Intermediate"|"Advanced","pilot_skill_explanation":string(<=170),"interaction_intensity":"Low"|"Medium"|"High","interaction_explanation":string(<=170),"power_level":<number> (1-10),"power_level_explanation": <string>(<=170),},pillars: { "<slug-1>": <markdown string> (2-4 sentences), ... }. Max 4 strengths. Max 4 weaknesses. You MUST be accurate about power level assessment. Consider the actual win conditions available and how likely they are to achieve them in a 100 card deck with cards (e.g. tutors) that help its win condition.
             DECK INFO:
             Commander: ${commander}
             Land feature extraction: ${LANDFEATURES}
@@ -246,7 +198,7 @@ export async function GET(req: NextRequest) {
             {
               role: "system",
               content:
-                "You are an expert MTG Commander deck analyst. You must analyse cards from a deck to accurately determine it's bracket, strengths, weaknesses, archetype, and difficulty. Return only JSON in the provided format.",
+                "You are an expert MTG Commander deck analyst. You must analyse cards from a deck to accurately determine it's power level, strengths, weaknesses, archetype, and difficulty. Return only JSON in the provided format.",
             },
             { role: "user", content: prompt },
           ],
@@ -267,7 +219,7 @@ export async function GET(req: NextRequest) {
         if (!json || !json.archetype || !json.difficulty) {
           throw new Error("Model output missing required fields");
         }
-        console.log("Full analysis model output:", json);
+        // console.log("Full analysis model output:", json);
         write("progress", { step: "saving", progress: 92 });
         // 1) Add deck difficulty
         await supabase.from("deck_ai_difficulty").upsert({
@@ -278,10 +230,16 @@ export async function GET(req: NextRequest) {
           pilot_skill_explanation: json.difficulty.pilot_skill_explanation,
           interaction_intensity: json.difficulty.interaction_intensity,
           interaction_explanation: json.difficulty.interaction_explanation,
-          bracket: json.difficulty.bracket,
-          bracket_explanation: json.difficulty.bracket_explanation,
+          // Removing bracket cause it sucks at it
+          // bracket: json.difficulty.bracket,
+          // bracket_explanation: json.difficulty.bracket_explanation,
+
+          // Adding back in power level
+          power_level: json.difficulty.power_level,
+          power_level_explaination: json.difficulty.power_level_explaination,
           updated_at: new Date().toISOString(),
         });
+        console.log(json.difficulty);
         // 2) Add strengths and weaknesses
         await supabase.from("deck_ai_strengths_weaknesses").upsert({
           deck_id: deckId,

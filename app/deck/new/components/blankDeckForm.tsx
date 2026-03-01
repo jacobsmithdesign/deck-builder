@@ -2,13 +2,14 @@ import { CardTitle } from "@/app/components/ui/card";
 import { CommanderCard } from "@/app/context/CommanderContext";
 import { parseDeckText } from "@/app/hooks/parseDeckText";
 import { saveNewDeckClient } from "@/lib/api/decks/client/saveNewDeckClient";
-import { searchCommander } from "@/lib/db/searchCommander";
+import { searchCommander, searchCommanderMini } from "@/lib/db/searchCommander";
 import { Checkbox, Field } from "@headlessui/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { RxCheck, RxCross1, RxCross2 } from "react-icons/rx";
 import { Button } from "../../components/primitives/button";
 import { BsMenuButton } from "react-icons/bs";
+import SearchBox from "../../components/table/SearchBox";
 
 // This interface represents the structure of a card in the database deck_cards table
 interface dbCardInterface {
@@ -22,7 +23,7 @@ type CardLine = {
   uuid?: string;
   type?: string;
 };
-export default function ImportDeckForm({ onCancel }: { onCancel: () => void }) {
+export default function BlankDeckForm({ onCancel }: { onCancel: () => void }) {
   const [description, setDescription] = useState("");
   const [isPublic, setIsPublic] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -39,30 +40,6 @@ export default function ImportDeckForm({ onCancel }: { onCancel: () => void }) {
 
   // The function to handle importing the deck text which parses the text,
   // displays the Legendary Creatures as commander options, and stores the full card list
-  const handleDeckImport = async () => {
-    const result = await parseDeckText(deckText);
-    if (result) {
-      setImportSuccess(true);
-      const commanderList: CardLine[] = [];
-      const cards: dbCardInterface[] = [];
-      for (const card of result) {
-        // If its legendary add to list of possible commanders
-        if (/Legendary\b(?:\s+[^\s]+)*\s+Creature\b/i.test(card.type))
-          commanderList.push(card);
-        // Otherwise add to full card list
-        cards.push({
-          card_uuid: card.uuid,
-          count: card.count,
-          board_section: "mainboard",
-        });
-      }
-      // Set the states for other functions to use
-      setCommanderOptions(commanderList);
-      setCardList(cards);
-    } else {
-      setImportSuccess(false);
-    }
-  };
 
   const validDeck = name && commander;
 
@@ -97,12 +74,18 @@ export default function ImportDeckForm({ onCancel }: { onCancel: () => void }) {
 
   return (
     <div className="2 mt-8 text-left gap-2 flex flex-col">
-      <div className="flex gap-4 justify-between">
-        <CardTitle>Import a card list</CardTitle>
+      <div className="flex gap-4 justify-between items-center">
+        <CardTitle>New Commander deck</CardTitle>
+
         <Button variant="cancel" title="Cancel" onClick={onCancel}>
           <RxCross2 />
         </Button>
       </div>
+
+      <SearchBox
+        searchFunction={searchCommanderMini}
+        placeholder="Find a commander"
+      />
       <h2>Deck Name</h2>
       <input
         type="text"
@@ -110,14 +93,12 @@ export default function ImportDeckForm({ onCancel }: { onCancel: () => void }) {
         onChange={(e) => setName(e.target.value)}
         className="w-96 p-1 text-base bg-dark/10 rounded-sm mb-1 border border-dark/10"
       />
-
       <h2>Deck Description (optional)</h2>
       <textarea
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         className="w-full p-2 bg-dark/10 rounded-l-md rounded-t-md mb-1 max-h-48 min-h-10 border border-dark/10"
       />
-
       <Field className="flex items-center gap-2 group cursor-pointer">
         <Checkbox
           checked={isPublic}
@@ -128,61 +109,14 @@ export default function ImportDeckForm({ onCancel }: { onCancel: () => void }) {
         </Checkbox>
         <p>Make this deck public</p>
       </Field>
-      <CardTitle className="mt-6">Import cards</CardTitle>
-      {!importSuccess ? (
-        <div className="flex gap-2">
-          <textarea
-            className="mt-4 w-72 h-48 p-2 rounded-xl bg-dark/10"
-            onChange={(e) => setDeckText(e.target.value)}
-            placeholder={`E.g. \n4x Llanowar Elves\n2x Shivan Dragon\n3x Counterspell`}
-          />
-          <Button
-            type="submit"
-            variant="secondaryBlue"
-            title="Import"
-            className="mt-4 h-8 px-6 w-fit rounded-xl"
-            size="lg"
-            onClick={() => handleDeckImport()}
-          />
-        </div>
-      ) : (
-        <div className="flex gap-2 flex-col mt-8 items-center">
-          <div className="flex gap-2">
-            <h2>Deck Imported Successfully!</h2>
-          </div>
-          <p className="p-1 rounded-lg px-2 text-buttonGreen mb-4">
-            Unique cards found: {cardList?.length || 0}
-          </p>
-          <div className="p-2 bg-dark/10 rounded-lg outline outline-dark/20">
-            <p>Choose your commander</p>
-            <div className="flex flex-col w-64">
-              {commanderOptions?.map((option) => (
-                <Button
-                  key={option.name}
-                  variant={
-                    option.name === commander?.name
-                      ? "darkFrostedActive"
-                      : "darkFrosted"
-                  }
-                  className="mt-2 justify-start text-base"
-                  size="sm"
-                  onClick={() => handleSelectCommander(option.uuid)}
-                >
-                  {option.name}
-                </Button>
-              ))}
-            </div>
-          </div>
-          <Button
-            variant="secondaryBlue"
-            size="lg"
-            className="mt-4 h-8 px-4 w-fit rounded-lg"
-            onClick={() => handleSaveClick()}
-          >
-            Create
-          </Button>
-        </div>
-      )}
+      <Button
+        variant="secondaryBlue"
+        size="lg"
+        className="mt-4 h-8 px-4 w-fit rounded-lg"
+        onClick={() => handleSaveClick()}
+      >
+        Create
+      </Button>
     </div>
   );
 }

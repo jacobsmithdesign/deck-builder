@@ -21,6 +21,10 @@ const buttonVariants = cva(
 
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        delete:
+          "bg-red-400/30 text-red-800 md:hover:bg-red-400/40 border-red-500/0 md:hover:border-red-500/40 border text-sm p-1 px-2 active:scale-95 disabled:opacity-50",
+        cancel:
+          "bg-dark/10 text-dark md:hover:text-red-800 md:hover:bg-red-400/40 border-dark/20 md:hover:border-red-500/40 border text-sm p-1 px-2 active:scale-95 disabled:opacity-50",
         frosted:
           "border shadow-inner h-7 rounded-sm px-2 backdrop-blur-sm cursor-pointer transition-all duration-150 text-dark/60 bg-light/40 md:hover:bg-light/80 border-light/60 md:hover:outline-light shadow-light/40",
         darkFrosted:
@@ -34,10 +38,10 @@ const buttonVariants = cva(
           "cursor-not-allowed bg-dark/20 text-dark/30 outline outline-dark/25 rounded-full",
       },
       size: {
-        default: "h-6 px-2 py-1 md:text-sm text-xs",
-        sm: "h-8 px-3 text-xs",
+        default: "h-7 px-2 py-1 md:text-sm text-xs rounded-md flex gap-2",
+        sm: "h-5 px-1.5 text-xs rounded-sm",
         cardGroup: "h-9 pl-6 md:hover:pl-7",
-        lg: "h-10 px-8",
+        lg: "h-10 px-4 w-fit rounded-lg",
         icon: "h-9 w-9",
       },
     },
@@ -45,11 +49,12 @@ const buttonVariants = cva(
       variant: "default",
       size: "default",
     },
-  }
+  },
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
 }
@@ -57,7 +62,7 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     { className, children, title, variant, size, asChild = false, ...props },
-    ref
+    ref,
   ) => {
     const Comp = asChild ? Slot : "button";
     return (
@@ -70,7 +75,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {title}
       </Comp>
     );
-  }
+  },
 );
 Button.displayName = "Button";
 

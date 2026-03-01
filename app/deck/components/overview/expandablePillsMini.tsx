@@ -8,7 +8,7 @@ import { IoExtensionPuzzle } from "react-icons/io5";
 import { AnimatePresence, motion } from "framer-motion";
 
 // Power Level: numeric 1–10
-export const bracketColors: Record<number, string> = {
+export const power_levelColors: Record<number, string> = {
   1: "bg-green-200 outline outline-green-300",
   2: "bg-yellow-200 outline outline-yellow-300",
   3: "bg-amber-200 outline outline-amber-300",
@@ -35,7 +35,7 @@ export const interactionColors: Record<string, string> = {
 };
 
 type MetricKey =
-  | "bracket"
+  | "power_level"
   | "pilot_skill"
   | "interaction_intensity"
   | "complexity";
@@ -49,8 +49,8 @@ type MetricDef = {
 };
 
 type Difficulty = {
-  bracket?: number;
-  bracket_explanation?: string;
+  power_level?: number;
+  power_level_explanation?: string;
   complexity?: "Low" | "Medium" | "High";
   complexity_explanation?: string;
   interaction_intensity?: "Low" | "Medium" | "High";
@@ -60,11 +60,15 @@ type Difficulty = {
 };
 const metricConfig: MetricDef[] = [
   {
-    key: "bracket",
-    colorMap: bracketColors,
+    key: "power_level",
+    colorMap: power_levelColors,
     icon: BsFillLightningChargeFill,
-    get: (ai) => ai?.bracket,
-    descKeys: ["bracket_explanation", "bracket_desc", "bracket_text"],
+    get: (ai) => ai?.power_level,
+    descKeys: [
+      "power_level_explanation",
+      "power_level_desc",
+      "power_level_text",
+    ],
   },
   {
     key: "pilot_skill",
@@ -116,10 +120,10 @@ export function ExpandablePillsMini({
         const value = def.get(difficulty);
 
         let colorClass = "bg-light/50 outline outline-dark/10";
-        if (def.key === "bracket" && typeof value === "number") {
+        if (def.key === "power_level" && typeof value === "number") {
           const n = Math.max(1, Math.min(10, value));
           colorClass =
-            (bracketColors as Record<number, string>)[n] ?? colorClass;
+            (power_levelColors as Record<number, string>)[n] ?? colorClass;
         } else if (typeof value === "string") {
           colorClass =
             (def.colorMap as Record<string, string>)[value] ?? colorClass;

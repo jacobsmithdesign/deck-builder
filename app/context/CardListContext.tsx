@@ -53,13 +53,14 @@ export type AiOverview = {
   ai_confidence: number | null;
   ai_spec_version: string | null;
 
-  ai_bracket: number | null;
+  ai_power_level: number | null;
   ai_complexity: string | null;
   ai_pilot_skill: string | null;
   ai_interaction: string | null; // maps from interaction_intensity
   ai_upkeep: string | null; // (no source in new schema → null)
 
-  ai_bracket_explanation: string | null;
+  // ai_bracket_explanation: string | null;
+  ai_power_level_explanation: string | null;
   ai_complexity_explanation: string | null;
   ai_pilot_skill_explanation: string | null;
   ai_interaction_explanation: string | null;
@@ -90,8 +91,8 @@ export type Pillars = {
 
 export type Difficulty = {
   deckId: string;
-  bracket: number;
-  bracket_explanation: string;
+  power_level: number;
+  power_level_explanation: string;
   complexity: string;
   complexity_explanation: string;
   pilot_skill: string;

@@ -1,7 +1,8 @@
 import { CardListProvider } from "@/app/context/CardListContext";
 import { CommanderProvider } from "@/app/context/CommanderContext";
 import { CompactViewProvider } from "@/app/context/compactViewContext";
-import NewDeckForm from "./components/newDeckForm";
+import NewDeckForm from "./components/deckCreationPage";
+import DeckCreationPage from "./components/deckCreationPage";
 
 export default async function NewDeckPage() {
   return (
@@ -9,7 +10,7 @@ export default async function NewDeckPage() {
       <CommanderProvider>
         <CompactViewProvider>
           <div className="w-full h-lvh bg-light">
-            <NewDeckForm />
+            <DeckCreationPage />
           </div>
         </CompactViewProvider>
       </CommanderProvider>

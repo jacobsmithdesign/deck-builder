@@ -9,6 +9,7 @@ import { Button } from "@/app/deck/components/primitives/button";
 import EditControls from "./EditControls";
 import AddToCollectionButton from "../card/AddToCollectionButton";
 import SearchBox from "./SearchBox";
+import { searchCardForDeck } from "@/lib/db/searchCardForDeck";
 
 export const CardTable = () => {
   const { deck, userOwnsDeck } = useCardList();
@@ -57,7 +58,9 @@ export const CardTable = () => {
         )}
 
         {!userOwnsDeck && !showBoard && <AddToCollectionButton />}
-        {userOwnsDeck && showBoard && <SearchBox />}
+        {userOwnsDeck && showBoard && (
+          <SearchBox searchFunction={searchCardForDeck} />
+        )}
       </BoardHeader>
       {/* The board holding all cards */}
       <AnimatePresence>

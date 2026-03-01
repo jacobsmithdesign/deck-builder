@@ -12,10 +12,19 @@ import {
   selectCardDataFromId,
 } from "@/lib/db/searchCardForDeck";
 
-export default function SearchBox() {
-  const { setEditMode } = useEditMode();
+/**
+ * A search box component that takes a search function and returns its results in an array.
+ * Function must return an array of objects containing at least a uuid and card name
+ * @param searchFunction A custom function that should take a string input and return an array of card results
+ */
+export default function SearchBox({
+  searchFunction,
+  placeholder,
+}: {
+  searchFunction: (searchTerm?: string) => Promise<CardResult[]>;
+  placeholder: string;
+}) {
   const { addCard } = useCardList();
-
   const [searchTerm, setSearchTerm] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<CardResult[]>();
   const [isSearching, setIsSearching] = useState(false);
@@ -34,7 +43,7 @@ export default function SearchBox() {
     (async () => {
       try {
         setIsSearching(true);
-        const results = await searchCardForDeck(searchTerm);
+        const results = await searchFunction(searchTerm);
         setSearchResults(results);
         setShowResults(true);
       } catch (error) {
@@ -80,24 +89,19 @@ export default function SearchBox() {
   // Function for selecting a search result and adding it to the deck
   const handleSelectResult = async (uuid: string) => {
     setSearchTerm("");
-    setEditMode(true);
     const card = await selectCardDataFromId(uuid);
     addCard(card);
     closeSearchResults();
   };
 
   return (
-    <div className="pointer-events-none z-50">
+    <div className="pointer-events-none relative z-10">
       <motion.div
         ref={modalRef}
-        initial={{ opacity: 0, scale: 0.9, y: -4 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.9, y: -4 }}
-        transition={{ type: "spring", stiffness: 250, damping: 30 }}
-        className="pointer-events-auto w-72 rounded-xl absolute -translate-x-36 top-0.5 p-0.5"
+        className="pointer-events-auto w-72 rounded-xl  top-0.5 p-0.5"
       >
         {/* Header / input row */}
-        <div className="relative flex items-center ">
+        <div className="flex items-center ">
           <span className="absolute left-1.5 flex items-center justify-center">
             {isSearching ? (
               <AiOutlineLoading className="w-4 h-4 animate-spin text-dark/60" />
@@ -106,7 +110,7 @@ export default function SearchBox() {
             )}
           </span>
           <input
-            placeholder="Search for new cards"
+            placeholder={placeholder}
             value={searchTerm ?? ""}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-7 pr-2 py-1.5 rounded-lg w-full bg-dark/5 shadow-inner resize-none h-6.5 text-base text-dark placeholder:text-dark/40 outline-none "
@@ -132,16 +136,16 @@ export default function SearchBox() {
                 transition: { type: "linear", duration: 0.2 },
               }}
               transition={{ type: "linear", duration: 0.2 }}
-              className="rounded-lg overflow-hidden bg-gradient-to-t from-light/20 to-light/40 backdrop-blur-sm border border-light/30 shadow-inner shadow-light/60 "
+              className="rounded-lg overflow-hidden bg-gradient-to-t from-light/20 to-light/40 backdrop-blur-sm border border-light/30 shadow-inner shadow-light/60 absolute w-full"
             >
               <CustomScrollArea
                 className={`${
-                  searchResults.length < 11 ? "h-fit" : "h-72 pr-3"
+                  searchResults.length < 11 ? "h-fit" : "h-72 pr-1"
                 } flex flex-col px-1`}
                 trackClassName={`${
                   searchResults.length < 11
                     ? "mr-0 my-0"
-                    : "bg-dark/20 rounded-xs outline outline-dark/20 w-2 mr-2 my-2 rounded-br-sm"
+                    : "bg-dark/20 rounded-xs outline outline-dark/20 w-2 mr-1 my-1 rounded-r-sm"
                 }`}
                 thumbClassName="bg-light/60 rounded-xs "
                 hideCustomScrollbar={searchResults.length < 11}

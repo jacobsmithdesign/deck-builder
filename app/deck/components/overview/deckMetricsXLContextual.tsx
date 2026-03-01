@@ -9,7 +9,7 @@ import { useCardList } from "@/app/context/CardListContext";
 import { ExpandablePills } from "./expandablePillContextual";
 
 // Power Level: numeric 1–10
-export const bracketColors: Record<number, string> = {
+export const power_levelColors: Record<number, string> = {
   1: "bg-green-200 outline outline-green-300",
   2: "bg-yellow-200 outline outline-yellow-300",
   3: "bg-amber-200 outline outline-amber-300",
@@ -36,7 +36,7 @@ export const interactionColors: Record<string, string> = {
 };
 
 type MetricKey =
-  | "bracket"
+  | "power_level"
   | "pilot_skill"
   | "interaction_intensity"
   | "complexity";
@@ -51,11 +51,11 @@ type MetricDef = {
 
 const metricConfig: MetricDef[] = [
   {
-    key: "bracket",
-    colorMap: bracketColors,
+    key: "power_level",
+    colorMap: power_levelColors,
     icon: BsFillLightningChargeFill,
-    get: (d) => d?.bracket,
-    descKeys: ["bracket_explanation"],
+    get: (d) => d?.power_level,
+    descKeys: ["power_level_explanation"],
   },
   {
     key: "pilot_skill",
@@ -102,9 +102,10 @@ export function DeckMetricsXL({ className = "" }: { className?: string }) {
 
   // decide colour
   let currentColor = "bg-light/50";
-  if (current.key === "bracket" && typeof currentValue === "number") {
+  if (current.key === "power_level" && typeof currentValue === "number") {
     const n = Math.max(1, Math.min(10, currentValue));
-    currentColor = (bracketColors as Record<number, string>)[n] ?? currentColor;
+    currentColor =
+      (power_levelColors as Record<number, string>)[n] ?? currentColor;
   } else if (typeof currentValue === "string") {
     currentColor =
       (current.colorMap as Record<string, string>)[currentValue] ??

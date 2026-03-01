@@ -34,13 +34,12 @@ function toCardResult(card: any, deckId: string): CardResult {
 }
 
 /**
- * Searches for commander-eligible cards from the database by name.
- * @param searchTerm User input for commander name
- * @param id id for commander
- * @returns Array of commander card objects (uuid, name)
+ * Searches for cards from the database by name.
+ * @param searchTerm User input for card name
+ * @returns Array of cards
  */
 export async function searchCardForDeck(
-  searchTerm: string
+  searchTerm: string,
 ): Promise<CardResult[]> {
   const q = (searchTerm ?? "").trim();
   if (!q) return [];
@@ -54,7 +53,6 @@ export async function searchCardForDeck(
     return [];
   }
 
-  // If RLS is blocking, data will be [] here.
   return (data ?? []).map((row: any) => ({
     uuid: row.uuid,
     name: row.name,
@@ -77,7 +75,7 @@ export async function selectCardDataFromId(id: string): Promise<CardRecord> {
     identifiers, 
     color_identity,
     types
-    `
+    `,
     )
     .eq("uuid", id)
     .single();
@@ -105,7 +103,7 @@ export async function selectCardDataFromId(id: string): Promise<CardRecord> {
     imageBackUrl: scryfallBackId
       ? `https://cards.scryfall.io/normal/front/${scryfallBackId.slice(
           0,
-          2
+          2,
         )}/${scryfallBackId}.jpg`
       : null,
     isDoubleFaced: !!scryfallBackId,

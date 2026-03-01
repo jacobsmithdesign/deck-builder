@@ -8,7 +8,7 @@ import { useCardList } from "@/app/context/CardListContext";
 import { AnimatePresence, motion } from "framer-motion";
 
 // Power Level: numeric 1–10
-export const bracketColors: Record<number, string> = {
+export const power_levelColors: Record<number, string> = {
   1: "bg-green-200 outline outline-green-300 md:group-hover:bg-light text-green-800/70",
   2: "bg-green-200 outline outline-green-300 md:group-hover:bg-light text-green-800/70",
   3: "bg-green-200 outline outline-green-300 md:group-hover:bg-light text-green-800/70",
@@ -41,7 +41,7 @@ export const interactionColors: Record<string, string> = {
 
 type MetricDef = {
   index: number;
-  key: "ai_bracket" | "ai_pilot_skill" | "ai_interaction" | "ai_complexity";
+  key: "ai_power_level" | "ai_pilot_skill" | "ai_interaction" | "ai_complexity";
   icon: React.ComponentType<{ className?: string }>;
   colorMap: Record<number, string> | Record<string, string>;
   get: (ai: any) => number | string | null | undefined;
@@ -50,10 +50,10 @@ type MetricDef = {
 const metricConfig: MetricDef[] = [
   {
     index: 0,
-    key: "ai_bracket",
-    colorMap: bracketColors,
+    key: "ai_power_level",
+    colorMap: power_levelColors,
     icon: BsFillLightningChargeFill,
-    get: (ai) => ai?.bracket, // number 1–10
+    get: (ai) => ai?.power_level, // number 1–10
   },
   {
     index: 1,
@@ -97,10 +97,10 @@ export function DeckMetricsMini({
             return null;
 
           let colorClass = "bg-light/50 outline outline-dark/10";
-          if (key === "ai_bracket" && typeof value === "number") {
+          if (key === "ai_power_level" && typeof value === "number") {
             const n = Math.max(1, Math.min(10, value));
             colorClass =
-              (bracketColors as Record<number, string>)[n] ?? colorClass;
+              (power_levelColors as Record<number, string>)[n] ?? colorClass;
           } else if (typeof value === "string") {
             colorClass =
               (colorMap as Record<string, string>)[value] ?? colorClass;

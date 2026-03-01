@@ -31,8 +31,10 @@ const DIFFICULTY_FN = {
       type: "object",
       additionalProperties: false,
       properties: {
-        bracket: { type: "integer", minimum: 1, maximum: 10 },
-        bracket_explanation: { type: "string", maxLength: 160 },
+        // bracket: { type: "integer", minimum: 1, maximum: 5 },
+        // bracket_explanation: { type: "string", maxLength: 160 },
+        power_level: { type: "integer", minimum: 1, maximum: 10 },
+        power_level_explanation: { type: "string", maxLength: 160 },
         complexity: { type: "string", enum: ["Low", "Medium", "High"] },
         complexity_explanation: { type: "string", maxLength: 160 },
         pilot_skill: {
@@ -50,8 +52,10 @@ const DIFFICULTY_FN = {
         confidence: { type: "number", minimum: 0, maximum: 1 },
       },
       required: [
-        "bracket",
-        "bracket_explanation",
+        // "bracket",
+        // "bracket_explanation",
+        "power_level",
+        "power_level_explanation",
         "complexity",
         "complexity_explanation",
         "pilot_skill",
@@ -132,8 +136,8 @@ const AiJsonSchema = z.object({
 type AiOutput = z.infer<typeof AiJsonSchema>;
 
 const DifficultyJsonSchema = z.object({
-  bracket: z.number().min(1).max(10),
-  bracket_explanation: z.string().min(10).max(190),
+  power_level: z.number().min(1).max(10),
+  power_level_explanation: z.string().min(10).max(190),
   complexity: z.enum(["Low", "Medium", "High"]),
   complexity_explanation: z.string().min(10).max(190),
   pilot_skill: z.enum(["Beginner", "Intermediate", "Advanced"]),
@@ -283,7 +287,7 @@ async function fetchBatchNeedingDifficulty(): Promise<DeckRow[]> {
       [
         "ai_spec_version.is.null",
         `ai_spec_version.neq.${ai_spec}`,
-        "ai_bracket_explanation.is.null",
+        "ai_power_level_explanation.is.null",
         "ai_complexity_explanation.is.null",
         "ai_pilot_skill_explanation.is.null",
         "ai_interaction_explanation.is.null",
@@ -647,7 +651,7 @@ function buildDifficultyPromptFromList(
   const INPUT = JSON.stringify(cards);
   const features = JSON.stringify(rawFeatures);
   return `Return ONLY minified JSON with EXACT keys:
-{"bracket":1..10,"bracket_explanation":string(<=170),
+{"power_level":1..10,"power_level_explanation":string(<=170),
 "complexity":"Low"|"Medium"|"High","complexity_explanation":string(<=170),
 "pilot_skill":"Beginner"|"Intermediate"|"Advanced","pilot_skill_explanation":string(<=170),
 "interaction_intensity":"Low"|"Medium"|"High","interaction_explanation":string(<=170),
@@ -674,8 +678,8 @@ function normalizePilotSkill(v: any): "Beginner" | "Intermediate" | "Advanced" {
 }
 function sanitizeDifficulty(obj: any): DifficultyOutput {
   const out = {
-    bracket: Math.min(10, Math.max(1, Number(obj.bracket) || 5)),
-    bracket_explanation: clampStr(obj.bracket_explanation, 160),
+    power_level: Math.min(10, Math.max(1, Number(obj.power_level) || 5)),
+    power_level_explanation: clampStr(obj.power_level_explanation, 160),
     complexity: ["Low", "Medium", "High"].includes(obj.complexity)
       ? obj.complexity
       : "Medium",
@@ -762,12 +766,12 @@ async function updateDeckDifficulty(id: string, d: DifficultyOutput) {
   const { error } = await supabase
     .from("decks")
     .update({
-      ai_bracket: String(d.bracket),
+      ai_power_level: String(d.power_level),
       ai_complexity: d.complexity,
       ai_pilot_skill: d.pilot_skill,
       ai_interaction: d.interaction_intensity,
       ai_upkeep: d.upkeep,
-      ai_bracket_explanation: d.bracket_explanation,
+      ai_power_level_explanation: d.power_level_explanation,
       ai_complexity_explanation: d.complexity_explanation,
       ai_pilot_skill_explanation: d.pilot_skill_explanation,
       ai_interaction_explanation: d.interaction_explanation,
@@ -837,7 +841,7 @@ function nowMs() {
                 const f3 = nowMs();
 
                 console.log(
-                  `✓ [difficulty] ${deck.name}: P${diff.bracket}/${
+                  `✓ [difficulty] ${deck.name}: P${diff.power_level}/${
                     diff.complexity
                   }/${diff.pilot_skill}/I${diff.interaction_intensity}/U${
                     diff.upkeep

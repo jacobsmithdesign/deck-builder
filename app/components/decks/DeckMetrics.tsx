@@ -4,7 +4,7 @@ import { AiFillInteraction } from "react-icons/ai";
 import { IoExtensionPuzzle } from "react-icons/io5";
 
 // Power Level: numeric 1–10
-export const bracketColors: Record<number, string> = {
+export const power_levelColors: Record<number, string> = {
   1: "bg-green-200 outline outline-green-300",
   2: "bg-yellow-200 outline outline-yellow-300",
   3: "bg-amber-200 outline outline-amber-300",
@@ -35,10 +35,10 @@ export const interactionColors: Record<string, string> = {
 
 const metricConfig = [
   {
-    key: "bracket",
-    colorMap: bracketColors,
+    key: "power_level",
+    colorMap: power_levelColors,
     icon: BsFillLightningChargeFill,
-    label: (deck: any) => deck?.bracket,
+    label: (deck: any) => deck?.power_level,
   },
   {
     key: "ai_pilot_skill",

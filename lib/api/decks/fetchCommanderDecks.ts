@@ -36,8 +36,8 @@ export async function fetchCommanderDecks(page = 0, pageSize = 30) {
       deck_ai_strengths_weaknesses (strengths, weaknesses),
       
       deck_ai_difficulty (
-        bracket,
-        bracket_explanation,
+        power_level,
+        power_level_explanation,
         complexity,
         complexity_explanation,
         pilot_skill,

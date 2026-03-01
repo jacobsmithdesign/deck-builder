@@ -1,5 +1,6 @@
 import { CommanderCard } from "@/app/context/CommanderContext";
 import { supabase } from "@/lib/supabase/client";
+import { CardResult } from "./searchCardForDeck";
 
 function toCommanderCard(card: any): CommanderCard {
   return {
@@ -25,11 +26,11 @@ function toCommanderCard(card: any): CommanderCard {
  * Searches for commander-eligible cards from the database by name.
  * @param searchTerm User input for commander name
  * @param id id for commander
- * @returns Array of commander card objects (uuid, name)
+ * @returns Array of commander card objects
  */
 export async function searchCommander(
   searchTerm?: string,
-  id?: string
+  id?: string,
 ): Promise<CommanderCard[]> {
   const q = (searchTerm ?? "").trim();
 
@@ -38,7 +39,7 @@ export async function searchCommander(
     const { data, error } = await supabase
       .from("cards")
       .select(
-        "uuid, name, type, mana_cost, mana_value, converted_mana_cost, text, identifiers, color_identity"
+        "uuid, name, type, mana_cost, mana_value, converted_mana_cost, text, identifiers, color_identity",
       )
       .eq("uuid", id.trim())
       .maybeSingle();
@@ -63,6 +64,34 @@ export async function searchCommander(
   }
 
   return (data ?? []).map(toCommanderCard);
+}
+
+/**
+ * Searches for commander-eligible cards from the database by name.
+ * @param searchTerm User input for commander name
+ * @returns Array of commander card objects in minified form {uuid, name}
+ */
+export async function searchCommanderMini(
+  searchTerm?: string,
+): Promise<CardResult[]> {
+  const q = (searchTerm ?? "").trim();
+
+  // name search via RPC
+  if (!q) return [];
+  const { data, error } = await supabase.rpc("search_commanders", {
+    q,
+    lim: 20,
+  });
+
+  if (error) {
+    console.error("search_commanders error:", error.message);
+    return [];
+  }
+
+  return (data ?? []).map((row: any) => ({
+    uuid: row.uuid,
+    name: row.name,
+  }));
 }
 
 /**
