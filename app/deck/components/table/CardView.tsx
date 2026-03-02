@@ -46,7 +46,7 @@ const groupByCardType = (cards: any[] = []) => {
     .filter((group) => group.cards && group.cards.length > 0);
 };
 
-export const MainBoard = () => {
+export const CardView = () => {
   const { editMode } = useEditMode();
   const { cards, changesMadeState } = useCardList();
   const [visibleGroups, setVisibleGroups] = useState<Set<string>>(new Set());
@@ -93,12 +93,8 @@ export const MainBoard = () => {
 
   // Respond to compact view's showBoard
   useEffect(() => {
-    if (showBoard) {
-      showAllGroups(allTypes);
-    } else {
-      hideAllGroups(); // <-- actually call the function
-    }
-  }, [showBoard, allTypes]);
+    showAllGroups(allTypes);
+  }, [allTypes]);
 
   // Card info modal handlers
   const handleInspectCard = (id: string) => {
@@ -121,10 +117,10 @@ export const MainBoard = () => {
     <AnimatePresence>
       <BoardContent
         style={{ background: bgColor }}
-        className="hide-scrollbar transition-all duration-700 justify-center items-center relative rounded-t-none outline outline-dark/20 h-full "
+        className="hide-scrollbar transition-all duration-700 justify-center items-center relative rounded-t-none outline outline-dark/20"
       >
         {/* New card modal */}
-        <div className="z-50 w-full h-full pointer-events-none">
+        <div className="z-50 h-full w-full pointer-events-none">
           <NewCardModal
             closeModal={toggleNewCardModal}
             showModal={openNewCardModal}
@@ -143,76 +139,69 @@ export const MainBoard = () => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
-          className="w-full h-full overflow-y-scroll hide-scrollbar absolute bg-light/50"
+          className="w-full h-full bg-light/50"
         >
-          <CustomScrollArea
-            className="h-full w-full"
-            trackClassName="bg-dark/20 rounded-xs outline outline-dark/20 w-2 mr-1 my-1 rounded-br-sm"
-            thumbClassName="bg-light/60 rounded-xs"
-            autoHide={false}
-          >
-            {groupedCardsArray.map((group, index) => (
-              <Group key={group.type}>
-                <GroupHeader
-                  className={`${index !== 0 ? "" : "border-t-0"} py-2`}
-                >
-                  <GroupTitle
-                    type={group.type}
-                    visibleGroups={visibleGroups}
-                    toggleGroupVisibility={toggleGroupVisibility}
-                  />
-                </GroupHeader>
+          {groupedCardsArray.map((group, index) => (
+            <Group key={group.type}>
+              <GroupHeader
+                className={`${index !== 0 ? "" : "border-t-0"} py-2`}
+              >
+                <GroupTitle
+                  type={group.type}
+                  visibleGroups={visibleGroups}
+                  toggleGroupVisibility={toggleGroupVisibility}
+                />
+              </GroupHeader>
 
-                <AnimatePresence>
-                  {visibleGroups.has(group.type) && (
-                    <motion.div
-                      key={`group-${group.type}`}
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-clip flex px-2"
-                    >
-                      <GroupItems className="mt-2">
-                        {group.cards.map((card, index) => (
-                          <motion.div
-                            key={card.id} // <-- stable key per card
-                            initial={{ opacity: 0, scale: 0.85 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{
-                              opacity: 0,
-                              scale: 0.95,
-                              transition: {
-                                delay: 0,
-                                duration: 0.15,
-                                ease: "easeOut",
-                              },
-                            }}
-                            transition={{
-                              type: "spring",
-                              stiffness: 250,
-                              damping: 12,
-                              bounce: 0.1,
-                              delay: 0.03 * index,
-                              duration: 0.2,
-                            }}
-                          >
-                            <DeckPerspectiveCard
-                              key={card.id}
-                              id={card.id}
-                              image={card.imageFrontUrl}
-                              label={card.name}
-                              isEditMode={editMode}
-                              card={card}
-                            />
-                          </motion.div>
-                        ))}
-                      </GroupItems>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </Group>
-            ))}
-          </CustomScrollArea>
+              <AnimatePresence>
+                {visibleGroups.has(group.type) && (
+                  <motion.div
+                    key={`group-${group.type}`}
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-clip flex px-2"
+                  >
+                    <GroupItems className="mt-2">
+                      {group.cards.map((card, index) => (
+                        <motion.div
+                          key={card.id} // <-- stable key per card
+                          initial={{ opacity: 0, scale: 0.85 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{
+                            opacity: 0,
+                            scale: 0.95,
+                            transition: {
+                              delay: 0,
+                              duration: 0.15,
+                              ease: "easeOut",
+                            },
+                          }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 250,
+                            damping: 12,
+                            bounce: 0.1,
+                            delay: 0.03 * index,
+                            duration: 0.2,
+                          }}
+                        >
+                          <DeckPerspectiveCard
+                            key={card.id}
+                            id={card.id}
+                            image={card.imageFrontUrl}
+                            label={card.name}
+                            isEditMode={editMode}
+                            card={card}
+                          />
+                        </motion.div>
+                      ))}
+                    </GroupItems>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </Group>
+          ))}
         </motion.div>
       </BoardContent>
     </AnimatePresence>

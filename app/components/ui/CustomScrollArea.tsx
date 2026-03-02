@@ -64,12 +64,12 @@ export default function CustomScrollArea({
     let tHeight = Math.max(
       thumbMinSize,
       (clientHeight / Math.max(scrollHeight, 1)) *
-        (clientHeight - trackPadding * 2)
+        (clientHeight - trackPadding * 2),
     );
     // Prevent NaN/Infinity for small content
     tHeight = Math.min(
       tHeight,
-      Math.max(clientHeight - trackPadding * 2, thumbMinSize)
+      Math.max(clientHeight - trackPadding * 2, thumbMinSize),
     );
 
     const maxThumbTop = Math.max(clientHeight - trackPadding * 2 - tHeight, 0);
@@ -104,11 +104,11 @@ export default function CustomScrollArea({
     const clickY = e.clientY - track.top - trackPadding;
     const maxThumbTop = Math.max(
       el.clientHeight - trackPadding * 2 - thumbHeight,
-      0
+      0,
     );
     const targetThumbTop = Math.min(
       Math.max(clickY - thumbHeight / 2, 0),
-      maxThumbTop
+      maxThumbTop,
     );
 
     const maxScrollTop = Math.max(el.scrollHeight - el.clientHeight, 1);
@@ -137,7 +137,7 @@ export default function CustomScrollArea({
 
       const maxThumbTop = Math.max(
         el.clientHeight - trackPadding * 2 - thumbHeight,
-        0
+        0,
       );
       const maxScrollTop = Math.max(el.scrollHeight - el.clientHeight, 1);
       const ratio = maxScrollTop / Math.max(maxThumbTop, 1);
@@ -186,7 +186,7 @@ export default function CustomScrollArea({
       top: 0,
       bottom: 0,
     }),
-    [thickness]
+    [thickness],
   );
 
   const thumbStyles = useMemo<React.CSSProperties>(
@@ -194,7 +194,7 @@ export default function CustomScrollArea({
       height: thumbHeight,
       transform: `translateY(${thumbTop}px)`,
     }),
-    [thumbHeight, thumbTop, thickness]
+    [thumbHeight, thumbTop, thickness],
   );
 
   // Visibility (auto hide when not hovering/scrolling)
@@ -206,7 +206,7 @@ export default function CustomScrollArea({
       <div
         ref={containerRef}
         className={`${
-          hideNativeScrollbar ? "hide-scrollbar " : ""
+          hideNativeScrollbar ? "hide-scrollbar" : ""
         }  h-full w-full overflow-y-auto overflow-hidden outline-none ${
           hideCustomScrollbar ? "pr-0" : "pr-3"
         }`}

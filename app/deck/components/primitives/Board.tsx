@@ -15,8 +15,8 @@ const Board = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "w-full h-full bg-dark/10 rounded-xl bg-board text-board-foreground flex flex-col",
-      className
+      " bg-dark/10 rounded-xl bg-board text-board-foreground flex flex-col",
+      className,
     )}
     {...props}
   />
@@ -31,7 +31,7 @@ const BoardHeader = React.forwardRef<
     ref={ref}
     className={cn(
       "w-full h-8 flex gap-1 items-center p-1 rounded-b-none rounded-lg ",
-      className
+      className,
     )}
     {...props}
   />
@@ -46,7 +46,7 @@ const BoardTitle = React.forwardRef<
     ref={ref}
     className={cn(
       "font-semibold leading-none tracking-tight lg:text-2xl md:text-base sm:text-sm text-xs",
-      className
+      className,
     )}
     {...props}
   />
@@ -59,10 +59,7 @@ const BoardContent = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn(
-      "w-full h-full rounded-lg flex flex-col overflow-y-scroll",
-      className
-    )}
+    className={cn("w-full h-full rounded-lg flex flex-col", className)}
     {...props}
   />
 ));
@@ -83,7 +80,7 @@ Group.displayName = "Group";
 const GroupTitle = React.forwardRef<HTMLDivElement, GroupTitleProps>(
   (
     { className, type, visibleGroups, toggleGroupVisibility, ...props },
-    ref
+    ref,
   ) => {
     const isVisible = visibleGroups.has(type);
 
@@ -95,14 +92,14 @@ const GroupTitle = React.forwardRef<HTMLDivElement, GroupTitleProps>(
         }}
         className={cn(
           "flex w-full items-center justify-between cursor-pointer transition-colors duration-150 md:hover:bg-dark/15 bg-dark/5 mx-2 py-0 px-2 rounded-md group",
-          className
+          className,
         )}
       >
         <div
           ref={ref}
           className={cn(
             "lg:text-base md:text-base sm:text-sm font-bold",
-            className
+            className,
           )}
           {...props}
         >
@@ -113,7 +110,7 @@ const GroupTitle = React.forwardRef<HTMLDivElement, GroupTitleProps>(
         </div>
       </button>
     );
-  }
+  },
 );
 
 GroupTitle.displayName = "GroupTitle";
@@ -126,7 +123,7 @@ const GroupHeader = React.forwardRef<
     ref={ref}
     className={cn(
       "flex items-center py-3 border-t border-darksecondary/15 justify-between",
-      className
+      className,
     )}
     {...props}
   />

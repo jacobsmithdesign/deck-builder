@@ -15,6 +15,9 @@ import { useUser } from "@/app/context/userContext";
 import AddToCollectionButton from "../card/AddToCollectionButton";
 import { useIsDeckSaved } from "@/app/hooks/useIsDeckSaved";
 import { EditModeProvider } from "@/app/context/editModeContext";
+import SidePanel from "../../navigation/SidePanel";
+import { CardView } from "./CardView";
+import CustomScrollArea from "@/app/components/ui/CustomScrollArea";
 
 // This is the main section of the deck page that contains the
 // CardTable and Details view underneath the commander overview.
@@ -37,44 +40,27 @@ export default function AnimatedDeckView() {
   }, [profile, deck]);
 
   return (
-    <div className="bg-light ">
-      <div
-        style={{ background: bgColor }}
-        className="h-lvh items-center text-dark pt-12 overflow-y-scroll hide-scrollbar flex flex-col justify-between relative"
-      >
-        <CommanderOverview />
-        <div className="w-full h-full flex flex-col relative">
-          <AnimatePresence>
-            <motion.div
-              animate={{
-                height: showBoard ? "100%" : 32,
-              }}
-              transition={{
-                type: "tween",
-                duration: 0.5,
-                damping: 25,
-                stiffness: 270,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              className={`w-full ${
-                !showBoard && "mb-1 "
-              } pt-1 absolute px-1 z-20 flex`}
-            >
-              <div className={`w-full transition-all`}>
-                <EditModeProvider>
-                  <CardTable />
-                </EditModeProvider>
+    <EditModeProvider>
+      <AnimatePresence>
+        <div className="bg-light">
+          <div
+            style={{ background: bgColor }}
+            className="h-dvh items-center text-dark pt-12 flex flex-col"
+          >
+            <CommanderOverview />
+            <div className="w-full h-full flex overflow-y-hidden relative pr-1 mb-1 rounded-b-xl">
+              <SidePanel />
+              <CustomScrollArea className="h-full w-full overflow-y-scroll hide-scrollbar z-10">
+                <CardTable />
+                <Details />
+              </CustomScrollArea>
+              <div className="w-full h-full px-1 absolute">
+                <div className="bg-light/60 w-full h-full rounded-b-xl " />
               </div>
-            </motion.div>
-            <motion.div className="z-10 h-full">
-              <Details />
-            </motion.div>
-          </AnimatePresence>
-          <div className="w-full h-full px-1 pb-1 absolute">
-            <div className="bg-light/65 w-full h-full rounded-b-xl p-1"></div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </AnimatePresence>
+    </EditModeProvider>
   );
 }

@@ -100,12 +100,9 @@ export default function SearchBox({
 
   return (
     <div className="pointer-events-none relative z-10 w-64">
-      <motion.div
-        ref={modalRef}
-        className="pointer-events-auto rounded-xl top-0.5 p-0.5"
-      >
+      <motion.div ref={modalRef} className="pointer-events-auto  top-0.5 p-0.5">
         {/* Header / input row */}
-        <div className="flex items-center w-64">
+        <div className="flex items-center w-64 rounded-lg bg-light">
           <span className="absolute left-1.5 flex items-center justify-center">
             {isSearching ? (
               <AiOutlineLoading className="w-4 h-4 animate-spin text-dark/60" />
@@ -125,7 +122,7 @@ export default function SearchBox({
               if ((searchTerm?.length ?? 0) >= 2 && !searchResults)
                 handleSearch();
             }}
-            className="pl-7 pr-2 py-1.5 rounded-lg w-full bg-dark/5 shadow-inner resize-none h-6.5 text-base text-dark placeholder:text-dark/40 outline-none "
+            className="pl-7 pr-2 py-1.5 rounded-lg w-full bg-dark/5 shadow-inner resize-none h-6.5 text-base text-dark placeholder:text-dark/60 outline-none"
           />
         </div>
 
