@@ -15,22 +15,26 @@ import {
 /**
  * A search box component that takes a search function and returns its results in an array.
  * Function must return an array of objects containing at least a uuid and card name
- * @param searchFunction A custom function that should take a string input and return an array of card results
+ * @param searchFunction A custom asynchronous function that should take a string input and return an array of card results
+ * @param selectFunction A custom asynchronous function that returns on item selection.
  */
 export default function SearchBox({
   searchFunction,
+  selectFunction,
   placeholder,
 }: {
   searchFunction: (searchTerm?: string) => Promise<CardResult[]>;
+  selectFunction: (uuid?: string) => Promise<void>;
   placeholder: string;
 }) {
-  const { addCard } = useCardList();
   const [searchTerm, setSearchTerm] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<CardResult[]>();
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState<boolean>(true);
 
   const modalRef = useRef<HTMLDivElement>(null);
+
+  const searchBarRef = useRef<HTMLInputElement>(null);
 
   // Function for searching and handling isSearching and showResults states
   const handleSearch = () => {
@@ -67,41 +71,41 @@ export default function SearchBox({
 
   // Close the results window when focus is lost
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        modalRef.current &&
-        !modalRef.current.contains(event.target as Node)
-      ) {
+    const onMouseDown = (event: MouseEvent) => {
+      const target = event.target as Node;
+
+      const clickedInSearch = searchBarRef.current?.contains(target) ?? false;
+
+      const clickedInResults = modalRef.current?.contains(target) ?? false;
+
+      if (clickedInSearch || clickedInResults) {
+        setShowResults(true);
+      } else {
         setShowResults(false);
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", onMouseDown);
+    return () => document.removeEventListener("mousedown", onMouseDown);
   }, []);
 
   // Function for closing the search box
-  const closeSearchResults = () => {
+
+  const handleSelect = (uuid: string) => {
+    selectFunction(uuid);
+    setSearchTerm("");
     setSearchResults(null);
     setShowResults(false);
   };
 
-  // Function for selecting a search result and adding it to the deck
-  const handleSelectResult = async (uuid: string) => {
-    setSearchTerm("");
-    const card = await selectCardDataFromId(uuid);
-    addCard(card);
-    closeSearchResults();
-  };
-
   return (
-    <div className="pointer-events-none relative z-10">
+    <div className="pointer-events-none relative z-10 w-64">
       <motion.div
         ref={modalRef}
-        className="pointer-events-auto w-72 rounded-xl  top-0.5 p-0.5"
+        className="pointer-events-auto rounded-xl top-0.5 p-0.5"
       >
         {/* Header / input row */}
-        <div className="flex items-center ">
+        <div className="flex items-center w-64">
           <span className="absolute left-1.5 flex items-center justify-center">
             {isSearching ? (
               <AiOutlineLoading className="w-4 h-4 animate-spin text-dark/60" />
@@ -110,9 +114,17 @@ export default function SearchBox({
             )}
           </span>
           <input
+            ref={searchBarRef}
             placeholder={placeholder}
             value={searchTerm ?? ""}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onFocus={() => {
+              // if we already have results, just show them
+              if (searchResults) setShowResults(true);
+              // if we don't, but we have a term, re-run the search
+              if ((searchTerm?.length ?? 0) >= 2 && !searchResults)
+                handleSearch();
+            }}
             className="pl-7 pr-2 py-1.5 rounded-lg w-full bg-dark/5 shadow-inner resize-none h-6.5 text-base text-dark placeholder:text-dark/40 outline-none "
           />
         </div>
@@ -188,7 +200,7 @@ export default function SearchBox({
                         className={`${index === 0 && "rounded-t-md"} ${
                           index === searchResults.length - 1 && "rounded-b-md"
                         } relative group  text-base w-full h-6 items-center flex text-dark md:hover:text-light border gap-2 px-2 transition-colors duration-150 bg-light/70 border-dark/20 md:hover:bg-green-600/80 shadow-inner md:hover:shadow-light/0 shadow-light/30 cursor-pointer overflow-clip`}
-                        onClick={() => handleSelectResult(card.uuid)}
+                        onClick={() => handleSelect(card.uuid)}
                       >
                         <p className="md:group-hover:opacity-100 opacity-0 transition-all duration-250 ease-out md:group-hover:translate-x-0 -translate-x-2 text-sm absolute ">
                           Add

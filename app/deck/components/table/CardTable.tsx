@@ -8,16 +8,24 @@ import { RxArrowLeft } from "react-icons/rx";
 import { Button } from "@/app/deck/components/primitives/button";
 import EditControls from "./EditControls";
 import AddToCollectionButton from "../card/AddToCollectionButton";
-import SearchBox from "./SearchBox";
-import { searchCardForDeck } from "@/lib/db/searchCardForDeck";
+import SearchBox from "../primitives/SearchBox";
+import {
+  searchCardForDeck,
+  selectCardDataFromId,
+} from "@/lib/db/searchCardForDeck";
 
 export const CardTable = () => {
-  const { deck, userOwnsDeck } = useCardList();
+  const { deck, userOwnsDeck, addCard } = useCardList();
   const { showBoard, toggleShowBoard } = useCompactView();
 
   if (!deck) {
     return <div className="text-center text-lg">Loading deck...</div>;
   }
+  // Function for selecting a search result and adding it to the deck
+  const addSelectedCard = async (uuid: string) => {
+    const card = await selectCardDataFromId(uuid);
+    addCard(card);
+  };
 
   return (
     // This is the entire deck preview board, starting with the header containing edit/ save/ minimise buttons etc.
@@ -59,7 +67,11 @@ export const CardTable = () => {
 
         {!userOwnsDeck && !showBoard && <AddToCollectionButton />}
         {userOwnsDeck && showBoard && (
-          <SearchBox searchFunction={searchCardForDeck} />
+          <SearchBox
+            searchFunction={searchCardForDeck}
+            selectFunction={addSelectedCard}
+            placeholder="Search for new card"
+          />
         )}
       </BoardHeader>
       {/* The board holding all cards */}

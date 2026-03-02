@@ -23,26 +23,34 @@ const ConfirmDelete: React.FC<ConfirmDeleteProps> = ({
       {/* Remove button */}
       {deleteClicked && (
         <>
-          <motion.div
+          <motion.button
             key="confirmRemove"
             initial={{
               opacity: 0,
               z: 10,
               scale: 0.8,
+              backdropFilter: "blur(0px)",
             }}
             animate={{
               opacity: 1,
               z: 20,
               scale: 1,
+              backdropFilter: "blur(2.5px)",
             }}
             exit={{
+              transition: {
+                type: "linear",
+                duration: 0.1,
+              },
               opacity: 0,
               z: 0,
               scale: 0.8,
+              backdropFilter: "blur(0px)",
             }}
-            whileHover={{ z: 50 }}
+            whileHover={{ z: 50, backdropFilter: "blur(3.5px)" }}
             whileTap={{
-              z: 20,
+              z: 12,
+              backdropFilter: "blur(1.5px)",
             }}
             transition={{
               type: "spring",
@@ -52,7 +60,7 @@ const ConfirmDelete: React.FC<ConfirmDeleteProps> = ({
               duration: 0.15,
               delay: 0,
             }}
-            className="cursor-pointer z-10 rounded-lg text-red-600 md:hover:text-light p-1 items-center justify-start flex h-6 px-2 w-36 transition-colors duration-150 absolute left-0 ml-5 gap-2 bg-light/40 md:hover:bg-red-600/70 group border border-light/30 shadow-inner shadow-light/60 md:hover:shadow-light/20"
+            className="cursor-pointer z-10 rounded-lg text-red-600 md:hover:text-light p-1 items-center justify-start flex h-6 px-2 w-36 transition-colors duration-150 absolute gap-2 bg-gradient-to-t from-light/70 to-light/45 md:hover:from-light/15 md:hover:to-light/0 md:hover:bg-red-600/70 group border border-light/30 shadow-inner shadow-light/60 md:hover:shadow-light/20"
             onClick={() => {
               setEditMode(true);
               if (card) removeCard(card);
@@ -61,7 +69,7 @@ const ConfirmDelete: React.FC<ConfirmDeleteProps> = ({
           >
             <IoTrashOutline className="h-4 w-4 mb-2 text-red-600 md:group-hover:text-light mt-1.5 transition-colors duration-150" />
             <p>Delete</p>
-          </motion.div>
+          </motion.button>
           {/* Cancel remove button */}
           <motion.div
             key="cancelRemove"
@@ -69,20 +77,28 @@ const ConfirmDelete: React.FC<ConfirmDeleteProps> = ({
               opacity: 0,
               z: 10,
               scale: 0.8,
+              backdropFilter: "blur(0px)",
             }}
             animate={{
               opacity: 1,
               z: 20,
               scale: 1,
+              backdropFilter: "blur(2.5px)",
             }}
             exit={{
+              transition: {
+                type: "linear",
+                duration: 0.1,
+              },
               opacity: 0,
               z: 0,
               scale: 0.8,
+              backdropFilter: "blur(0px)",
             }}
             whileHover={{ z: 50 }}
             whileTap={{
-              z: 20,
+              z: 12,
+              backdropFilter: "blur(1.5px)",
             }}
             transition={{
               type: "spring",
@@ -91,10 +107,10 @@ const ConfirmDelete: React.FC<ConfirmDeleteProps> = ({
               bounce: 3,
               duration: 0.15,
             }}
-            className="absolute w-36 cursor-pointer z-0 rounded-lg bg-light/30 text-dark justify-start flex items-center gap-2 p-1 h-6 px-2 transition-colors duration-150 pt-1.5 mt-13 md:hover:text-light md:hover:bg-dark border border-light/30 group md:hover:drop-shadow-2xl shadow-inner shadow-light/60 md:hover:shadow-light/10"
+            className="absolute w-36 cursor-pointer z-0 rounded-lg bg-gradient-to-t from-light/70 to-light/45 md:hover:from-light/80 md:hover:to-light/55 shadow-inner shadow-light/40 text-dark justify-start flex items-center gap-2 p-1 h-6 px-2 transition-colors duration-150 pt-1.5 mt-13 border border-light/30 group md:hover:shadow-light/60"
             onClick={() => setDeleteClicked(false)}
           >
-            <RxCross1 className="h-4 w-4 mb-2 text-dark md:group-hover:text-light transition-colors duration-150 mt-1.5" />
+            <RxCross1 className="h-4 w-4 mb-2 text-dark transition-colors duration-150 mt-1.5" />
             <p>Cancel</p>
           </motion.div>
 
@@ -111,6 +127,10 @@ const ConfirmDelete: React.FC<ConfirmDeleteProps> = ({
               scale: 1,
             }}
             exit={{
+              transition: {
+                type: "linear",
+                duration: 0.1,
+              },
               opacity: 0,
               z: 0,
               scale: 0.8,
@@ -122,42 +142,11 @@ const ConfirmDelete: React.FC<ConfirmDeleteProps> = ({
               bounce: 3,
               duration: 0.15,
             }}
-            className="absolute w-37 mx-auto rounded-full -translate-y-7 text-base text-center"
+            className="absolute px-2 mx-auto rounded-full -translate-y-7 text-base text-center
+            bg-gradient-to-t from-light/60 to-light/45 shadow-inner shadow-light/40 backdrop-blur-xs"
           >
             <p>Confirm</p>
           </motion.div>
-
-          {/* Background plate for Confirm Delete popup */}
-          <motion.div
-            key="popup"
-            initial={{
-              opacity: 0,
-              z: 0,
-              scale: 0.95,
-              backdropFilter: "blur(0px)",
-            }}
-            animate={{
-              opacity: 1,
-              z: 10,
-              scale: 1,
-              backdropFilter: "blur(4px)",
-            }}
-            exit={{
-              opacity: 0,
-              z: 0,
-              scale: 0.95,
-              backdropFilter: "blur(0px)",
-              transition: { type: "linear" },
-            }}
-            transition={{
-              type: "spring",
-              stiffness: 450,
-              damping: 20,
-              bounce: 1,
-              duration: 0.005,
-            }}
-            className={`will-change-[transform,opacity] absolute z-10 drop-shadow-xl  rounded-xl bg-gradient-to-t from-light/10 to-light/60 shadow-inner shadow-light/40 text-dark p-2 flex flex-col items-between text-center md:text-base text-xs h-22 w-39`}
-          ></motion.div>
         </>
       )}
     </AnimatePresence>

@@ -12,7 +12,7 @@ import {
   GroupTitle,
 } from "@/app/deck/components/primitives/Board"; // adjust path if needed
 
-import PerspectiveCard from "@/app/deck/components/card/perspectiveCardUI/PerspectiveCard";
+import PerspectiveCard from "@/app/deck/components/card/perspectiveCardUI/DeckPerspectiveCard";
 import CustomScrollArea from "@/app/components/ui/CustomScrollArea";
 
 // --- Type Ordering ---

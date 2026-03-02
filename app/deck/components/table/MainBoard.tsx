@@ -1,6 +1,14 @@
 "use client";
 
+import CustomScrollArea from "@/app/components/ui/CustomScrollArea";
+import { useCardList } from "@/app/context/CardListContext";
+import { useCompactView } from "@/app/context/compactViewContext";
+import { useEditMode } from "@/app/context/editModeContext";
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
+import NewCardModal from "../card/NewCardModal";
+import UnsavedChanges from "../card/UnsavedChanges";
+import DeckPerspectiveCard from "../card/perspectiveCardUI/DeckPerspectiveCard";
 import {
   BoardContent,
   Group,
@@ -8,14 +16,6 @@ import {
   GroupItems,
   GroupTitle,
 } from "../primitives/Board";
-import PerspectiveCard from "../card/perspectiveCardUI/PerspectiveCard";
-import { motion, AnimatePresence } from "framer-motion";
-import { useCardList } from "@/app/context/CardListContext";
-import { useCompactView } from "@/app/context/compactViewContext";
-import NewCardModal from "../card/NewCardModal";
-import CustomScrollArea from "@/app/components/ui/CustomScrollArea";
-import { useEditMode } from "@/app/context/editModeContext";
-import UnsavedChanges from "../card/UnsavedChanges";
 
 const typeOrder = [
   "Land",
@@ -196,7 +196,7 @@ export const MainBoard = () => {
                               duration: 0.2,
                             }}
                           >
-                            <PerspectiveCard
+                            <DeckPerspectiveCard
                               key={card.id}
                               id={card.id}
                               image={card.imageFrontUrl}
