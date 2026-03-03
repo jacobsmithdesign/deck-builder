@@ -10,9 +10,12 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground hover:bg-primary/90 hover:drop-shadow-sm bg-light/0 md:hover:bg-light/70 dropshadow-md border border-light/0 md:hover:border-light/60",
+          "bg-light text-primary-foreground hover:bg-primary/90 hover:drop-shadow-sm bg-light/80 md:hover:bg-light/70 dropshadow-md border border-light/0 md:hover:border-light/60",
+        frosted:
+          "bg-gradient-to-t from-light/65 to-light/40 backdrop-blur-sm p-1 border border-light/40 shadow-inner shadow-light/60",
+        primary: "bg-dark/90 text-light hover:bg-dark/80",
         secondary:
-          "bg-primary text-primary-foreground hover:bg-primary/90 bg-buttonLight hover:bg-buttonHover",
+          "bg-dark/10 text-primary-foreground hover:bg-primary/90 hover:bg-dark/20",
         save: "bg-green-200/40 text-green-400 md:hover:bg-green-300/40 md:hover:text-green-600 transition-colors duration-150",
         cardGroup:
           "w-full rounded-xl bg-light/0 md:hover:bg-light md:hover:shadow-md shadow-darksecondary/5 ease-in-out duration-150 text-dark text-sm md:text-base font-bold ",
@@ -34,11 +37,12 @@ const buttonVariants = cva(
       variant: "default",
       size: "default",
     },
-  }
+  },
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
 }
@@ -63,8 +67,8 @@ const AnimatedButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
             opacity: 0,
             scale: 0.0,
           }}
-          whileTap={{ scale: 0.93 }}
-          whileHover={{ scale: 1.07 }}
+          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.05 }}
           transition={{ type: "spring", damping: 17, stiffness: 450 }}
         >
           <Comp
@@ -77,7 +81,7 @@ const AnimatedButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
         </motion.div>
       </AnimatePresence>
     );
-  }
+  },
 );
 AnimatedButton.displayName = "Button";
 

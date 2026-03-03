@@ -8,6 +8,8 @@ import Link from "next/link";
 import { RxArrowTopRight, RxCheck } from "react-icons/rx";
 import { Button } from "@/app/deck/components/primitives/button";
 import { useUser } from "@/app/context/userContext";
+import { FrostedElement } from "../primitives/FrostedPill";
+import { AnimatedButton } from "../primitives/AnimatedButton";
 export default function AddToCollectionButton() {
   const { showBoard } = useCompactView();
   const { userLoggedIn } = useUser();
@@ -46,7 +48,7 @@ export default function AddToCollectionButton() {
   }, []);
 
   return (
-    <AnimatePresence>
+    <div>
       {!checkingSaved && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -56,40 +58,41 @@ export default function AddToCollectionButton() {
         >
           {/* Add to collection button */}
           {!deckSaved ? (
-            <button
-              className={`cursor-pointer bg-light/60 h-7 rounded-md backdrop-blur-md md:hover:bg-light/80 border border-dark/20 text-sm md:text-base px-2 md:hover:drop-shadow-sm transition-all duration-150 md:hover:border-light`}
+            <AnimatedButton
+              variant="frosted"
+              className="h-fit rounded-full text-lg px-3"
               onClick={toggleOpenModal}
-            >
-              + Add to collection
-            </button>
+              title="+ Add to your collection"
+            ></AnimatedButton>
           ) : (
             <Link
               href={`/deck/${userCopyDeckId}`}
-              className={`flex items-center h-7 rounded-md px-2 backdrop-blur-sm cursor-pointer transition-all duration-150 bg-green-300/60 text-green-700 md:hover:bg-green-200/50
-              group md:hover:pr-8 border border-green-500/70`}
+              className={`flex items-center h-7 px-3 backdrop-blur-sm cursor-pointer transition-all duration-150 bg-green-300/60 text-green-700 md:hover:bg-green-200/50
+              group md:hover:pr-8 border border-green-500/70 rounded-full`}
             >
-              <RxCheck className="mr-1 w-4 md:group-hover:w-0 transition-all" />
+              <RxCheck className="mr-2 w-4 md:group-hover:w-0 transition-all" />
               In your collection
               <RxArrowTopRight className="w-0 md:group-hover:w-4 right-0 absolute mr-2 transition-all" />
             </Link>
           )}
 
           {showModal && (
-            <div
-              className={`absolute z-20 ${
-                showBoard ? "mt-1 -translate-x-14" : "mt-1"
-              } transition-all duration-150 `}
-            >
-              {}
-              <AddToCollectionModal
-                closeModal={toggleCloseModal}
-                onDeckCreated={handleDeckSaved}
-                saveDeck={handleDeckSaved}
-              />
-            </div>
+            <AnimatePresence>
+              <div
+                className={`absolute z-20 ${
+                  showBoard ? "mt-1 -translate-x-14" : "mt-1"
+                } transition-all duration-150 `}
+              >
+                <AddToCollectionModal
+                  closeModal={toggleCloseModal}
+                  onDeckCreated={handleDeckSaved}
+                  saveDeck={handleDeckSaved}
+                />
+              </div>
+            </AnimatePresence>
           )}
         </motion.div>
       )}
-    </AnimatePresence>
+    </div>
   );
 }

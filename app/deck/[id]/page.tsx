@@ -5,6 +5,7 @@ import { CommanderProvider } from "@/app/context/CommanderContext";
 import { CompactViewProvider } from "@/app/context/compactViewContext";
 import { getDeckById } from "@/lib/api/decks/getDeckById";
 import AnimatedDeckView from "../components/table/AnimatedDeckView";
+import { EditModeProvider } from "@/app/context/editModeContext";
 
 export default async function DeckPage({
   params,
@@ -29,7 +30,9 @@ export default async function DeckPage({
       <CommanderProvider>
         <InitialiseDeck deck={deck.deck} />
         <CompactViewProvider>
-          <AnimatedDeckView />
+          <EditModeProvider>
+            <AnimatedDeckView />
+          </EditModeProvider>
         </CompactViewProvider>
       </CommanderProvider>
     </CardListProvider>

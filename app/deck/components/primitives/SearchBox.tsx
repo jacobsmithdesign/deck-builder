@@ -5,12 +5,13 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import CustomScrollArea from "@/app/components/ui/CustomScrollArea";
 import { useCardList } from "@/app/context/CardListContext";
-import { useEditMode } from "@/app/context/editModeContext";
+import { EditModeProvider, useEditMode } from "@/app/context/editModeContext";
 import {
   CardResult,
   searchCardForDeck,
   selectCardDataFromId,
 } from "@/lib/db/searchCardForDeck";
+import { cn } from "@/lib/utils";
 
 /**
  * A search box component that takes a search function and returns its results in an array.
@@ -22,10 +23,12 @@ export default function SearchBox({
   searchFunction,
   selectFunction,
   placeholder,
+  padding,
 }: {
   searchFunction: (searchTerm?: string) => Promise<CardResult[]>;
   selectFunction: (uuid?: string) => Promise<void>;
   placeholder: string;
+  padding?: number;
 }) {
   const [searchTerm, setSearchTerm] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<CardResult[]>();
@@ -99,124 +102,130 @@ export default function SearchBox({
   };
 
   return (
-    <div className="pointer-events-none relative z-10 w-64">
-      <motion.div ref={modalRef} className="pointer-events-auto  top-0.5 p-0.5">
-        {/* Header / input row */}
-        <div className="flex items-center w-64 rounded-lg bg-light">
-          <span className="absolute left-1.5 flex items-center justify-center">
-            {isSearching ? (
-              <AiOutlineLoading className="w-4 h-4 animate-spin text-dark/60" />
-            ) : (
-              <RxMagnifyingGlass className="w-4 h-4 text-dark/60" />
-            )}
-          </span>
-          <input
-            ref={searchBarRef}
-            placeholder={placeholder}
-            value={searchTerm ?? ""}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onFocus={() => {
-              // if we already have results, just show them
-              if (searchResults) setShowResults(true);
-              // if we don't, but we have a term, re-run the search
-              if ((searchTerm?.length ?? 0) >= 2 && !searchResults)
-                handleSearch();
-            }}
-            className="pl-7 pr-2 py-1.5 rounded-lg w-full bg-dark/5 shadow-inner resize-none h-6.5 text-base text-dark placeholder:text-dark/60 outline-none"
-          />
-        </div>
+    <EditModeProvider>
+      <div className="pointer-events-none relative z-10 w-64 ">
+        <motion.div
+          ref={modalRef}
+          className="pointer-events-auto top-0.5 p-0.5 w-62"
+        >
+          {/* Header / input row */}
+          <div className="flex items-center rounded-full w-full ml-1.5 outline outline-dark/10">
+            <span className="absolute left-3 flex items-center justify-center">
+              {isSearching ? (
+                <AiOutlineLoading className="w-4 h-4 animate-spin text-dark/60" />
+              ) : (
+                <RxMagnifyingGlass className="w-4 h-4 text-dark/60" />
+              )}
+            </span>
+            <input
+              ref={searchBarRef}
+              placeholder={placeholder}
+              value={searchTerm ?? ""}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onFocus={() => {
+                // if we already have results, just show them
+                if (searchResults) setShowResults(true);
+                // if we don't, but we have a term, re-run the search
+                if ((searchTerm?.length ?? 0) >= 2 && !searchResults)
+                  handleSearch();
+              }}
+              className="pl-7 pr-2 py-1.5 rounded-full w-full bg-light/65 focus:bg-light shadow-inner resize-none h-6.5 text-base text-dark placeholder:text-dark/60 outline-none"
+            />
+          </div>
 
-        {/* Results list */}
-        <AnimatePresence>
-          {searchResults && showResults && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, height: 0, marginTop: 0 }}
-              animate={{
-                opacity: 1,
-                scale: 1,
-                height: "auto",
-                marginTop: 6,
-              }}
-              exit={{
-                opacity: 0,
-                scale: 0.95,
-                height: 0,
-                marginTop: 0,
-                transition: { type: "linear", duration: 0.2 },
-              }}
-              transition={{ type: "linear", duration: 0.2 }}
-              className="rounded-lg overflow-hidden bg-gradient-to-t from-light/20 to-light/40 backdrop-blur-sm border border-light/30 shadow-inner shadow-light/60 absolute w-full"
-            >
-              <CustomScrollArea
-                className={`${
-                  searchResults.length < 11 ? "h-fit" : "h-72 pr-1"
-                } flex flex-col px-1`}
-                trackClassName={`${
-                  searchResults.length < 11
-                    ? "mr-0 my-0"
-                    : "bg-dark/20 rounded-xs outline outline-dark/20 w-2 mr-1 my-1 rounded-r-sm"
-                }`}
-                thumbClassName="bg-light/60 rounded-xs "
-                hideCustomScrollbar={searchResults.length < 11}
-                autoHide={false}
+          {/* Results list */}
+          <AnimatePresence>
+            {searchResults && showResults && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, height: 0, marginTop: 0 }}
+                animate={{
+                  opacity: 1,
+                  scale: 1,
+                  height: "auto",
+                  marginTop: padding ? padding : 6,
+                }}
+                exit={{
+                  opacity: 0,
+                  scale: 0.95,
+                  height: 0,
+                  marginTop: 0,
+                  transition: { type: "linear", duration: 0.2 },
+                }}
+                transition={{ type: "linear", duration: 0.2 }}
+                className="rounded-lg overflow-hidden bg-gradient-to-t from-light/60 to-light/30 backdrop-blur-sm border border-light/30 shadow-inner shadow-light/60 absolute w-full"
               >
-                <div className="flex flex-col py-1">
-                  <AnimatePresence>
-                    {[...searchResults].map((card, index) => (
-                      <motion.button
-                        key={card.uuid}
-                        type="button"
-                        initial={{
-                          opacity: 0,
-                          scale: 0.8,
-                          height: 0,
-                          marginBottom: 0,
-                        }}
-                        animate={{
-                          opacity: 1,
-                          scale: 1,
-                          height: 28,
-                          transition: { delay: index * 0.03 },
-                        }}
-                        exit={{
-                          opacity: 0,
-                          scale: 0.85,
-                          height: 0,
-                          marginBottom: 0,
-                          transition: {
+                <CustomScrollArea
+                  className={cn(
+                    searchResults.length < 11 ? "h-fit" : "h-72 pr-1",
+                    " flex flex-col px-1",
+                  )}
+                  trackClassName={cn(
+                    searchResults.length < 11
+                      ? "mr-0 my-0"
+                      : "bg-dark/20 rounded-xs outline outline-dark/20 w-2 mr-1 my-1 rounded-r-sm",
+                  )}
+                  thumbClassName="bg-light/60 rounded-xs "
+                  hideCustomScrollbar={searchResults.length < 11}
+                  autoHide={false}
+                >
+                  <div className="flex flex-col py-1">
+                    <AnimatePresence>
+                      {[...searchResults].map((card, index) => (
+                        <motion.button
+                          key={card.uuid}
+                          type="button"
+                          initial={{
+                            opacity: 0,
+                            scale: 0.8,
+                            height: 0,
+                            marginBottom: 0,
+                          }}
+                          animate={{
+                            opacity: 1,
+                            scale: 1,
+                            height: 28,
+                            transition: { delay: index * 0.03 },
+                          }}
+                          exit={{
+                            opacity: 0,
+                            scale: 0.85,
+                            height: 0,
+                            marginBottom: 0,
+                            transition: {
+                              type: "linear",
+                              delay: 0,
+                              duration: 0.2,
+                            },
+                          }}
+                          transition={{
                             type: "linear",
                             delay: 0,
                             duration: 0.2,
-                          },
-                        }}
-                        transition={{
-                          type: "linear",
-                          delay: 0,
-                          duration: 0.2,
-                        }}
-                        className={`${index === 0 && "rounded-t-md"} ${
-                          index === searchResults.length - 1 && "rounded-b-md"
-                        } relative group  text-base w-full h-6 items-center flex text-dark md:hover:text-light border gap-2 px-2 transition-colors duration-150 bg-light/70 border-dark/20 md:hover:bg-green-600/80 shadow-inner md:hover:shadow-light/0 shadow-light/30 cursor-pointer overflow-clip`}
-                        onClick={() => handleSelect(card.uuid)}
-                      >
-                        <p className="md:group-hover:opacity-100 opacity-0 transition-all duration-250 ease-out md:group-hover:translate-x-0 -translate-x-2 text-sm absolute ">
-                          Add
-                        </p>
-                        <span className="md:group-hover:ml-8 transition-all duration-250 ease-out text-ellipsis whitespace-nowrap overflow-hidden block mr-2 text-sm">
-                          {card.name}
-                        </span>
-                      </motion.button>
-                    ))}
-                    {searchResults.length === 0 && (
-                      <p className="text-left pl-1">No results found</p>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </CustomScrollArea>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-    </div>
+                          }}
+                          className={`${index === 0 && "rounded-t-md"} ${
+                            index === searchResults.length - 1 && "rounded-b-md"
+                          } relative group  text-base w-full h-6 items-center flex text-dark md:hover:text-light border gap-2 px-2 transition-colors duration-150 bg-light/70 border-dark/20 md:hover:bg-green-600/80 shadow-inner md:hover:shadow-light/0 shadow-light/30 cursor-pointer overflow-clip`}
+                          onClick={() => handleSelect(card.uuid)}
+                        >
+                          <p className="md:group-hover:opacity-100 opacity-0 transition-all duration-250 ease-out md:group-hover:translate-x-0 -translate-x-2 text-sm absolute ">
+                            Add
+                          </p>
+                          <span className="md:group-hover:ml-8 transition-all duration-250 ease-out text-ellipsis whitespace-nowrap overflow-hidden block mr-2 text-sm">
+                            {card.name}
+                          </span>
+                        </motion.button>
+                      ))}
+                      {searchResults.length === 0 && (
+                        <p className="text-left pl-1">No results found</p>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </CustomScrollArea>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      </div>
+    </EditModeProvider>
   );
 }

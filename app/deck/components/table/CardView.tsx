@@ -118,7 +118,7 @@ export const CardView = () => {
       <AnimatePresence>
         <BoardContent
           style={{ background: bgColor }}
-          className="hide-scrollbar transition-all duration-700 justify-center items-center relative rounded-t-none outline outline-dark/20"
+          className="hide-scrollbar transition-all duration-700 justify-center items-center relative rounded-t-none  rounded-xl"
         >
           {/* New card modal */}
           <div className="z-50 h-full w-full pointer-events-none">
@@ -135,7 +135,7 @@ export const CardView = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="w-full h-full bg-light/50"
+            className="w-full h-full bg-light/50 rounded-xl"
           >
             {groupedCardsArray.map((group, index) => (
               <Group key={group.type}>

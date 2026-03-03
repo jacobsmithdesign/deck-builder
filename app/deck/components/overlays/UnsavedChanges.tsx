@@ -34,27 +34,82 @@ export default function UnsavedChanges() {
     <div className="flex gap-1 items-center ">
       <AnimatePresence>
         {changesMadeState && changesMadeState.length > 0 && editMode && (
-          <div className="flex flex-col gap-1 items-end ">
+          <div className="flex flex-col gap-1 items-start ">
+            <div className="flex gap-1 pointer-events-auto">
+              {/* Save button */}
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{
+                  scale: 1,
+                  transition: { delay: 0.15 },
+                }}
+                exit={{ scale: 0, transition: { delay: 0.15 } }}
+                transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                className=""
+              >
+                <Button
+                  variant="default"
+                  title={step || error || "Save"}
+                  disabled={saving}
+                  className={`px-2 rounded-full h-6 w-fit bg-green-200/60 backdrop-blur-sm shadow-inner shadow-light/30 gap-2 border-current/30 text-green-600`}
+                  onClick={() => start(deck.id, newCards)}
+                >
+                  {saving ? (
+                    <div className="animate-spin">
+                      <AiOutlineLoading3Quarters className="h-4" />
+                    </div>
+                  ) : (
+                    <BsFillSaveFill className="h-4" />
+                  )}
+                </Button>
+              </motion.div>
+              {/* Cancel button */}
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{
+                  scale: 1,
+                  transition: { delay: 0.2 },
+                }}
+                exit={{ scale: 0, transition: { delay: 0.1 } }}
+                transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                className=""
+              >
+                <Button
+                  variant="default"
+                  title={"Cancel"}
+                  className={`px-2 rounded-full h-6 w-fit bg-red-200/60 backdrop-blur-sm shadow-inner shadow-light/30 gap-2 border-current/30 text-red-600`}
+                  onClick={() => {
+                    resetCards();
+                    reset();
+                  }}
+                >
+                  <RxCross1 />
+                </Button>
+              </motion.div>
+            </div>
+            {/* Expandable window of changes */}
             <motion.div
               initial={{ opacity: 0, scale: 0.8, height: 0 }}
               animate={{
                 opacity: 1,
                 scale: 1,
                 height: hideChanges ? 34 : changesMadeState.length * 28 + 34,
+                transition: { delay: 0.25 },
               }}
               exit={{
                 opacity: 0,
                 scale: 0.8,
                 height: 0,
-                transition: { delay: 0.1 },
+                transition: { delay: 0 },
               }}
               transition={{
                 type: "spring",
                 stiffness: 250,
                 damping: 25,
               }}
-              className="flex flex-col text-left rounded-xl bg-gradient-to-t from-light/20 to-light/60 backdrop-blur-sm border border-light/30 shadow-inner shadow-light/80 gap-1 max-h-58 overflow-y-scroll hide-scrollbar w-70 p-1 pointer-events-auto"
+              className="flex flex-col text-left rounded-xl bg-gradient-to-t from-light/20 to-light/60 backdrop-blur-sm border border-light/30 shadow-inner shadow-light/80 gap-1 max-h-58 overflow-y-scroll hide-scrollbar w-70 p-1 pointer-events-auto mt-2"
             >
+              {/* Heading button to open/ close the window */}
               <button
                 className="absolute z-10 bg-light/40 md:hover:bg-light/60 outline outline-light/50 rounded-lg px-1.5 w-67.5 flex justify-between items-center cursor-pointer"
                 onClick={() => {
@@ -64,6 +119,7 @@ export default function UnsavedChanges() {
                 <p className=" ">Unsaved changes</p>
                 {hideChanges ? <RxPlus /> : <RxMinus />}
               </button>
+              {/* List of items */}
               <CustomScrollArea
                 className={`h-full w-full mr-2 gap-1 pt-7 transition-all duration-250 ${
                   hideChanges ? "opacity-0" : ""
@@ -137,58 +193,6 @@ export default function UnsavedChanges() {
                 )}
               </CustomScrollArea>
             </motion.div>
-            <div className="flex gap-1 pointer-events-auto">
-              {/* Save button */}
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{
-                  scale: 1,
-                  transition: { delay: 0.2 },
-                }}
-                exit={{ scale: 0 }}
-                transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                className=""
-              >
-                <Button
-                  variant="default"
-                  title={step || error || "Save"}
-                  disabled={saving}
-                  className={`px-2 rounded-full h-6 w-fit bg-green-200/60 backdrop-blur-sm shadow-inner shadow-light/30 gap-2 border-current/30 text-green-600`}
-                  onClick={() => start(deck.id, newCards)}
-                >
-                  {saving ? (
-                    <div className="animate-spin">
-                      <AiOutlineLoading3Quarters className="h-4" />
-                    </div>
-                  ) : (
-                    <BsFillSaveFill className="h-4" />
-                  )}
-                </Button>
-              </motion.div>
-              {/* Cancel button */}
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{
-                  scale: 1,
-                  transition: { delay: 0.15 },
-                }}
-                exit={{ scale: 0, transition: { delay: 0.05 } }}
-                transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                className=""
-              >
-                <Button
-                  variant="default"
-                  title={"Cancel"}
-                  className={`px-2 rounded-full h-6 w-fit bg-red-200/60 backdrop-blur-sm shadow-inner shadow-light/30 gap-2 border-current/30 text-red-600`}
-                  onClick={() => {
-                    resetCards();
-                    reset();
-                  }}
-                >
-                  <RxCross1 />
-                </Button>
-              </motion.div>
-            </div>
           </div>
         )}
       </AnimatePresence>

@@ -60,7 +60,7 @@ const ConfirmDelete: React.FC<ConfirmDeleteProps> = ({
               duration: 0.15,
               delay: 0,
             }}
-            className="cursor-pointer z-10 rounded-lg text-red-600 md:hover:text-light p-1 items-center justify-start flex h-6 px-2 w-36 transition-colors duration-150 absolute gap-2 bg-gradient-to-t from-light/70 to-light/45 md:hover:from-light/15 md:hover:to-light/0 md:hover:bg-red-600/70 group border border-light/30 shadow-inner shadow-light/60 md:hover:shadow-light/20"
+            className="cursor-pointer z-10 rounded-lg text-red-600 md:hover:text-light p-1 items-center justify-start flex h-6 px-2 w-36 transition-colors duration-150 absolute gap-2 md:hover:from-light/15 md:hover:to-light/0 md:hover:bg-red-600/70 group bg-gradient-to-t from-light/70 to-light/45 border border-light/30 shadow-inner shadow-light/60 md:hover:shadow-light/20"
             onClick={() => {
               setEditMode(true);
               if (card) removeCard(card);
