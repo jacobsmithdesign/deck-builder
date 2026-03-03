@@ -7,7 +7,7 @@ import { useCompactView } from "../../../context/compactViewContext";
 import { RxArrowLeft } from "react-icons/rx";
 import { Button } from "@/app/deck/components/primitives/button";
 import EditControls from "./EditControls";
-import AddToCollectionButton from "../card/AddToCollectionButton";
+import AddToCollectionButton from "../primitives/AddToCollectionButton";
 import SearchBox from "../primitives/SearchBox";
 import {
   searchCardForDeck,

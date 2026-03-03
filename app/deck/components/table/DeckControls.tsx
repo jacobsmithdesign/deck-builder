@@ -1,7 +1,7 @@
 import { useCompactView } from "@/app/context/compactViewContext";
 import SearchBox from "../primitives/SearchBox";
 import UnsavedChanges from "../overlays/UnsavedChanges";
-import AddToCollectionButton from "../card/AddToCollectionButton";
+import AddToCollectionButton from "../primitives/AddToCollectionButton";
 import { useUserOwnsDeck } from "@/app/hooks/useUserOwnsDeck";
 import { useEffect, useState } from "react";
 import { useUser } from "@/app/context/userContext";
@@ -36,11 +36,11 @@ export default function DeckControls() {
   return (
     <div className="absolute z-10 flex w-full pr-4 pt-2 h-10 pl-1">
       <RaindropContainer
-        className="w-full h-10 rounded-full drop-shadow-xl backdrop-blur"
-        innerClassName="rounded-full"
+        className="w-full h-10 rounded-full drop-shadow-xl outline outline-light/30 border-t "
+        innerClassName="rounded-full -translate-y-1 -translate-x-1"
         bgColor={bgColor ? bgColor : "light"}
       ></RaindropContainer>
-      {useUserOwnsDeck ? (
+      {userOwnsDeck ? (
         <div className="absolute flex h-10 w-full justify-center items-center">
           <SearchBox
             searchFunction={searchCardForDeck}
@@ -53,7 +53,7 @@ export default function DeckControls() {
           </div>
         </div>
       ) : (
-        <div className="absolute w-fit z-10 pt-1.5 pl-2 justify-center items-center">
+        <div className="absolute w-fit z-10 pt-[5px] pl-1.5 justify-center items-center">
           <AddToCollectionButton />
         </div>
       )}

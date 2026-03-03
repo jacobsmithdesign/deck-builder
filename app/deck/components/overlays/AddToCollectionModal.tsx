@@ -9,6 +9,7 @@ import { useCompactView } from "@/app/context/compactViewContext";
 import { addToCollectionClient } from "@/lib/api/decks/client/addToCollectionClient";
 import { FrostedElement } from "../primitives/FrostedPill";
 import { AnimatePresence, motion } from "framer-motion";
+import { RaindropContainer } from "../primitives/RaindropContainer";
 
 export default function AddToCollectionModal({
   closeModal,
@@ -25,6 +26,7 @@ export default function AddToCollectionModal({
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState<string>(deck?.name || "");
   const modalRef = useRef<HTMLDivElement>(null);
+  const { bgColor } = useCompactView();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -65,18 +67,21 @@ export default function AddToCollectionModal({
       animate={{ scale: 1, backdropFilter: "blur(8px)" }}
       exit={{ scale: 0, backdropFilter: "blur(0px)" }}
       transition={{ type: "spring", stiffness: 350, damping: 30 }}
-      className="rounded-xl"
+      className="rounded-xl w-92"
     >
-      <FrostedElement
+      <RaindropContainer
+        bgColor={bgColor}
+        childClassName="flex flex-col gap-2 w-full p-2"
+        innerClassName="opacity-30"
         ref={modalRef}
-        className={`overflow-clip hide-scrollbar bg-light/60 justify-between flex flex-col p-2 text-left rounded-xl mt-1 gap-2`}
+        className={`overflow-clip hide-scrollbar justify-between flex flex-col p-0 text-left rounded-xl mt-1 gap-2 w-92 backdrop-blur-sm border-t border-light/40 from-light/90 to-light/40 shadow-light`}
       >
         <input
           type="text"
           placeholder="Deck Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-86 px-2 py-1 text-base bg-dark/10 rounded-md"
+          className="px-2 py-1 text-base bg-light/50 outline-dark/30  focus:bg-light outline rounded-lg w-full"
         />
         <textarea
           placeholder="Optional description..."
@@ -110,7 +115,7 @@ export default function AddToCollectionModal({
             {loading ? "Saving..." : "Save Deck"}
           </AnimatedButton>
         </div>
-      </FrostedElement>
+      </RaindropContainer>
     </motion.div>
   );
 }

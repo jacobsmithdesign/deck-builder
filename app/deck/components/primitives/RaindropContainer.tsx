@@ -3,14 +3,18 @@ import React from "react";
 export interface ContainerProps extends React.AllHTMLAttributes<HTMLDivElement> {
   bgColor?: string;
   innerClassName?: string;
+  childClassName?: string;
 }
 
 const RaindropContainer = React.forwardRef<HTMLDivElement, ContainerProps>(
-  ({ className, innerClassName, children, bgColor, ...props }, ref) => (
+  (
+    { className, innerClassName, children, bgColor, childClassName, ...props },
+    ref,
+  ) => (
     <div
       ref={ref}
       className={cn(
-        " bg-gradient-to-t from-light/65 to-light/40 backdrop-blur-sm p-1 border-light/40 shadow-inner shadow-light/60",
+        "relative overflow-hidden bg-gradient-to-t from-light/75 to-light/40 backdrop-blur-sm p-1 shadow-inner shadow-light/80",
         className,
       )}
       {...props}
@@ -18,11 +22,11 @@ const RaindropContainer = React.forwardRef<HTMLDivElement, ContainerProps>(
       <div
         style={{ background: bgColor }}
         className={cn(
-          "absolute w-full h-full opacity-30 -translate-y-1 -translate-x-1 z-0 border-b border-light",
+          "absolute w-full h-full opacity-35 z-0 border-light outline-light",
           innerClassName,
         )}
       />
-      {children}
+      <div className={cn("z-20 relative", childClassName)}>{children}</div>
     </div>
   ),
 );

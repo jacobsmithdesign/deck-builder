@@ -10,6 +10,8 @@ import {
 import { DeckMetricsMini } from "./deckMetricsMini";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { RaindropContainer } from "../primitives/RaindropContainer";
+import { useCompactView } from "@/app/context/compactViewContext";
 interface SpellTypeCountsProps {
   spellCounts: { type: string; count: number }[];
   compactView: boolean;
@@ -35,27 +37,32 @@ export function SpellTypeCounts({
     const found = spellCounts.find((t) => t.type === spellType);
     return { type: spellType, count: found ? found.count : 0 };
   });
+  const { bgColor } = useCompactView();
 
   return (
-    <CardContent
-      className={`grid text-dark p-1 overflow-clip transition-all duration-250 bg-darksecondary/15 gap-1 ${
-        compactView
-          ? "grid-cols-2 rounded h-16"
-          : "grid-cols-2 rounded-2xl h-full"
-      }`}
+    <RaindropContainer
+      innerClassName="rounded-2xl top-0 left-0 pointer-events-none border-light/30"
+      childClassName="grid grid-cols-2 gap-1"
+      bgColor={bgColor}
+      className={` text-dark transition-all duration-250 rounded-3xl p-2`}
     >
       {displayCounts.map((type, index) => (
         <Link href={`#${type.type}`}>
-          <Spell
-            key={index}
+          <RaindropContainer
+            bgColor={bgColor}
             className={cn(
-              "transition-all duration-250 w-full rounded-lg",
-              compactView ? "h-4" : "h-7",
-              index === 0 && "rounded-tl-xl",
-              index === 1 && "rounded-tr-xl",
-              index === displayCounts.length - 2 && "rounded-bl-xl",
-              index === displayCounts.length - 1 && "rounded-br-xl",
+              "transition-all duration-250 w-full rounded-lg flex overflow-hidden group from-light/60",
+
+              index === 0 && "rounded-tl-2xl",
+              index === 1 && "rounded-tr-2xl",
+              index === displayCounts.length - 2 && "rounded-bl-2xl",
+              index === displayCounts.length - 1 && "rounded-br-2xl",
             )}
+            innerClassName={cn(
+              "transition-all duration-250 w-full flex -translate-y-1 -translate-x-1 opacity-20 md:group-hover:opacity-0",
+            )}
+            childClassName="flex w-full justify-between px-1"
+            key={index}
           >
             <SpellType
               className={`${
@@ -75,9 +82,9 @@ export function SpellTypeCounts({
             >
               {type.count}
             </SpellCount>
-          </Spell>
+          </RaindropContainer>
         </Link>
       ))}
-    </CardContent>
+    </RaindropContainer>
   );
 }

@@ -12,7 +12,7 @@ import Details from "../details/details";
 import AddToCollectionModal from "../overlays/AddToCollectionModal";
 import { useCardList } from "@/app/context/CardListContext";
 import { useUser } from "@/app/context/userContext";
-import AddToCollectionButton from "../card/AddToCollectionButton";
+import AddToCollectionButton from "../primitives/AddToCollectionButton";
 import { useIsDeckSaved } from "@/app/hooks/useIsDeckSaved";
 import { EditModeProvider, useEditMode } from "@/app/context/editModeContext";
 import SidePanel from "../../navigation/SidePanel";

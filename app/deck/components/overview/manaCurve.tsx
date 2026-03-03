@@ -3,6 +3,8 @@
 import type { DeckFeatureVector } from "@/lib/ai/features";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { RaindropContainer } from "../primitives/RaindropContainer";
+import { useCompactView } from "@/app/context/compactViewContext";
 
 type Color = "W" | "U" | "B" | "R" | "G" | "A";
 const COLOR_ORDER: Color[] = ["W", "U", "B", "R", "G", "A"];
@@ -10,30 +12,30 @@ const COST_BUCKETS = ["0-1", "2", "3", "4", "5", "6+"] as const;
 const MODES: Array<"pool" | "curve" | "cost"> = ["pool", "curve", "cost"];
 
 const fillClasses: Record<Color, string> = {
-  W: "bg-manaWhite/60",
-  U: "bg-manaBlue/70",
-  B: "bg-manaBlack/40",
-  R: "bg-manaRed/60",
-  G: "bg-manaGreen/60",
-  A: "bg-manaAny/60",
+  W: "bg-manaWhite/80",
+  U: "bg-manaBlue/80",
+  B: "bg-manaBlack/60",
+  R: "bg-manaRed/80",
+  G: "bg-manaGreen/80",
+  A: "bg-manaAny/80",
 };
 
 const trackCurve: Record<Color, string> = {
-  W: "bg-manaWhiteBg/50",
-  U: "bg-manaBlueBg/50",
-  B: "bg-manaBlackBg/50",
-  R: "bg-manaRedBg/50",
-  G: "bg-manaGreenBg/50",
-  A: "bg-manaAnyBg/50",
+  W: "bg-manaWhiteBg/30",
+  U: "bg-manaBlueBg/30",
+  B: "bg-manaBlackBg/30",
+  R: "bg-manaRedBg/30",
+  G: "bg-manaGreenBg/30",
+  A: "bg-manaAnyBg/30",
 };
 
 const trackPool: Record<Color, string> = {
-  W: "bg-manaWhiteBg/50",
-  U: "bg-manaBlueBg/50",
-  B: "bg-manaBlackBg/50",
-  R: "bg-manaRedBg/50",
-  G: "bg-manaGreenBg/50",
-  A: "bg-manaAnyBg/50",
+  W: "bg-manaWhiteBg/30",
+  U: "bg-manaBlueBg/30",
+  B: "bg-manaBlackBg/30",
+  R: "bg-manaRedBg/30",
+  G: "bg-manaGreenBg/30",
+  A: "bg-manaAnyBg/30",
 };
 
 export function ManaCurve({
@@ -53,6 +55,7 @@ export function ManaCurve({
   normalize?: "max" | "sum";
   className?: string;
 }) {
+  const { bgColor } = useCompactView();
   const [mode, setMode] = useState<"pool" | "curve" | "cost">(defaultMode);
   const theTitle =
     title ??
@@ -75,10 +78,11 @@ export function ManaCurve({
     }
   }, [toggle]);
   return (
-    <div
-      className={`relative flex flex-col gap-2 w-full bg-darksecondary/15 p-2 transition-all duration-250 cursor-default ${
-        compactView ? "h-16 rounded" : "h-full rounded-2xl"
-      } ${className}`}
+    <RaindropContainer
+      bgColor={bgColor}
+      childClassName="h-22"
+      innerClassName="-translate-y-2 -translate-x-2"
+      className={`relative flex flex-col gap-2 w-full bg-darksecondary/15 p-2 transition-all duration-250 cursor-default min-h-33 rounded-3xl shadow-light overflow-hidden`}
     >
       {toggle && (
         <button
@@ -88,8 +92,8 @@ export function ManaCurve({
       )}
       <h3
         className={`${
-          compactView ? "text-xs" : "text-lg"
-        } transition-all duration-250 h-4 -translate-y-1`}
+          compactView ? "text-xs" : "text-md"
+        } transition-all text-center duration-250 h-6 -translate-y-1 outline outline-light/0 bg-light/20 rounded-full w-fit mx-auto mt-1  px-2`}
       >
         {theTitle}
       </h3>
@@ -128,11 +132,11 @@ export function ManaCurve({
               }
               track={mode === "pool" ? trackPool : trackCurve}
               normalize={normalize}
-            />{" "}
+            />
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </RaindropContainer>
   );
 }
 
@@ -146,6 +150,7 @@ function ColorBars({
   track: Record<Color, string>;
   normalize?: "max" | "sum";
 }) {
+  const { bgColor } = useCompactView();
   const vals = COLOR_ORDER.map((c) => data?.[c] ?? 0);
   const denom =
     normalize === "sum"
@@ -165,21 +170,27 @@ function ColorBars({
             key={c}
             className="flex flex-col items-center gap-1 w-full h-full"
           >
-            <div
-              className={`relative w-full h-full rounded-xl ${track[c]} overflow-hidden flex items-end justify-center`}
+            <RaindropContainer
+              bgColor={bgColor}
+              innerClassName="opacity-30"
+              childClassName={`rounded-2xl w-full h-full flex items-end justify-center overflow-hidden p-0 ${track[c]} border-t border-light/20`}
+              className={`relative w-full h-full rounded-2xl overflow-hidden p-0`}
             >
-              <div
-                className={`${fillClasses[c]} w-full transition-all duration-700 ease-out`}
+              <RaindropContainer
+                bgColor={bgColor}
+                childClassName={` h-full w-full transition-all duration-700 ease-out`}
+                className={`w-full p-0 ${fillClasses[c]} from-light/60 to-light/30 outline outline-light/40`}
+                innerClassName=""
                 style={{ height: `${pct}%` }}
                 aria-label={`${c} ${v} (${Math.round(pct)}%)`}
               />
               <span className="absolute top-1 text-md tabular-nums text-dark/80">
                 {Number.isInteger(v) ? v : v.toFixed(1)}
               </span>
-            </div>
-            <div className="text-md leading-none text-dark/80 font-bold absolute bottom-4">
-              {c}
-            </div>
+              <div className="text-md leading-none text-dark/80 font-bold absolute bottom-3">
+                {c}
+              </div>
+            </RaindropContainer>
           </div>
         );
       })}
@@ -197,6 +208,7 @@ function CostBars({
 }) {
   const values = COST_BUCKETS.map((b) => Number((curve as any)?.[b] ?? 0));
   const max = Math.max(...values, 1);
+  const { bgColor } = useCompactView();
 
   return (
     <div className="flex flex-row gap-2 w-full h-full items-end">
@@ -208,19 +220,26 @@ function CostBars({
             key={b}
             className="flex flex-col items-center justify-end gap-1 w-full h-full"
           >
-            <div className="relative w-full h-full rounded-xl bg-dark/10 overflow-hidden flex items-end justify-center">
-              <div
-                className="w-full bg-dark/25 transition-all duration-700 ease-out"
+            <RaindropContainer
+              bgColor={bgColor}
+              className="p-0 w-full h-full rounded-2xl justify-center bg-dark/20"
+              childClassName="w-full h-full flex items-end justify-center p-0"
+            >
+              <RaindropContainer
+                bgColor={bgColor}
+                childClassName="w-full bg-dark/25 transition-all duration-700 ease-out"
+                className="w-full bg-dark/75 from-light/60 outline outline-light/20"
+                innerClassName="-translate-y-1 -translate-x-1"
                 style={{ height: `${pct}%` }}
                 aria-label={`${b} MV: ${v} (${Math.round(pct)}%)`}
               />
-              <span className="absolute top-0 text-md tabular-nums text-dark/60">
+              <span className="absolute top-2 text-md tabular-nums text-dark/60">
                 {v}
-              </span>
-            </div>
-            <div className="text-md leading-none text-dark/80 font-bold absolute bottom-2">
-              {b}
-            </div>
+              </span>{" "}
+              <div className="text-md leading-none text-dark/80 font-bold absolute bottom-3">
+                {b}
+              </div>
+            </RaindropContainer>
           </div>
         );
       })}

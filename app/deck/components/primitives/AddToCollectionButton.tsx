@@ -8,8 +8,8 @@ import Link from "next/link";
 import { RxArrowTopRight, RxCheck } from "react-icons/rx";
 import { Button } from "@/app/deck/components/primitives/button";
 import { useUser } from "@/app/context/userContext";
-import { FrostedElement } from "../primitives/FrostedPill";
-import { AnimatedButton } from "../primitives/AnimatedButton";
+import { FrostedElement } from "./FrostedPill";
+import { AnimatedButton } from "./AnimatedButton";
 export default function AddToCollectionButton() {
   const { showBoard } = useCompactView();
   const { userLoggedIn } = useUser();
@@ -81,7 +81,7 @@ export default function AddToCollectionButton() {
               <div
                 className={`absolute z-20 ${
                   showBoard ? "mt-1 -translate-x-14" : "mt-1"
-                } transition-all duration-150 `}
+                } transition-all duration-150 w-full`}
               >
                 <AddToCollectionModal
                   closeModal={toggleCloseModal}
