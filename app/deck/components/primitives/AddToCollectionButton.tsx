@@ -60,7 +60,7 @@ export default function AddToCollectionButton() {
           {!deckSaved ? (
             <AnimatedButton
               variant="frosted"
-              className="h-fit rounded-full text-lg px-3"
+              className="h-7 rounded-full text-lg px-3"
               onClick={toggleOpenModal}
               title="+ Add to your collection"
             ></AnimatedButton>

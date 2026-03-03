@@ -74,20 +74,20 @@ export default function AddToCollectionModal({
         childClassName="flex flex-col gap-2 w-full p-2"
         innerClassName="opacity-30"
         ref={modalRef}
-        className={`overflow-clip hide-scrollbar justify-between flex flex-col p-0 text-left rounded-xl mt-1 gap-2 w-92 backdrop-blur-sm border-t border-light/40 from-light/90 to-light/40 shadow-light`}
+        className={`overflow-clip hide-scrollbar justify-between flex flex-col p-0 text-left rounded-xl mt-1 gap-2 w-92 backdrop-blur-sm border-t bg-light/50 border-light/40 from-light/90 to-light/40 shadow-light`}
       >
         <input
           type="text"
           placeholder="Deck Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="px-2 py-1 text-base bg-light/50 outline-dark/30  focus:bg-light outline rounded-lg w-full"
+          className="px-2 py-1 text-base bg-light/50 outline-dark/20  focus:bg-light outline rounded-lg w-full"
         />
         <textarea
           placeholder="Optional description..."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="w-full px-2 py-1 bg-dark/10 rounded-l-lg rounded-t-lg max-h-48 min-h-10 "
+          className="w-full px-2 py-1 bg-light/50 outline-dark/20 focus:bg-light outline rounded-l-lg rounded-t-lg max-h-48 min-h-10 "
         />
         <Field className="flex items-center gap-2 group cursor-pointer">
           <Checkbox

@@ -144,7 +144,7 @@ export default function SidePanel() {
             </Button>
           </Link>
         </div> */}
-        <div className="overflow-y-scroll h-full w-full flex flex-col hide-scrollbar gap-1">
+        <div className="overflow-y-scroll w-full flex flex-col hide-scrollbar gap-1">
           <motion.div
             initial={{
               opacity: 0,
@@ -166,7 +166,7 @@ export default function SidePanel() {
               transition: { delay: 0.05 },
             }}
             transition={{ duration: 0.2 }}
-            className="min-h-32"
+            className="h-33"
           >
             <ManaCurve
               deckFeatures={deckFeatures}
@@ -195,7 +195,7 @@ export default function SidePanel() {
               transition: { delay: 0.05 },
             }}
             transition={{ duration: 0.2 }}
-            className="min-h-32"
+            className="min-h-33"
           >
             <ManaCurve
               deckFeatures={deckFeatures}
@@ -224,7 +224,7 @@ export default function SidePanel() {
               transition: { delay: 0.05 },
             }}
             transition={{ duration: 0.2 }}
-            className="min-h-32"
+            className="min-h-33"
           >
             <ManaCurve
               deckFeatures={deckFeatures}

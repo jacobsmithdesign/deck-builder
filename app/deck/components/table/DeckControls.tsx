@@ -53,7 +53,7 @@ export default function DeckControls() {
           </div>
         </div>
       ) : (
-        <div className="absolute w-fit z-10 pt-[5px] pl-1.5 justify-center items-center">
+        <div className="absolute w-fit z-10 pt-[6px] pl-1.5 justify-center items-center">
           <AddToCollectionButton />
         </div>
       )}

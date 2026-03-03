@@ -12,30 +12,30 @@ const COST_BUCKETS = ["0-1", "2", "3", "4", "5", "6+"] as const;
 const MODES: Array<"pool" | "curve" | "cost"> = ["pool", "curve", "cost"];
 
 const fillClasses: Record<Color, string> = {
-  W: "bg-manaWhite/80",
-  U: "bg-manaBlue/80",
+  W: "bg-manaWhite",
+  U: "bg-manaBlue",
   B: "bg-manaBlack/60",
-  R: "bg-manaRed/80",
-  G: "bg-manaGreen/80",
-  A: "bg-manaAny/80",
+  R: "bg-manaRed",
+  G: "bg-manaGreen",
+  A: "bg-manaAny",
 };
 
 const trackCurve: Record<Color, string> = {
-  W: "bg-manaWhiteBg/30",
-  U: "bg-manaBlueBg/30",
-  B: "bg-manaBlackBg/30",
-  R: "bg-manaRedBg/30",
-  G: "bg-manaGreenBg/30",
-  A: "bg-manaAnyBg/30",
+  W: "bg-manaWhiteBg/0",
+  U: "bg-manaBlueBg/10",
+  B: "bg-manaBlackBg/10",
+  R: "bg-manaRedBg/10",
+  G: "bg-manaGreenBg/10",
+  A: "bg-manaAnyBg/10",
 };
 
 const trackPool: Record<Color, string> = {
-  W: "bg-manaWhiteBg/30",
-  U: "bg-manaBlueBg/30",
-  B: "bg-manaBlackBg/30",
-  R: "bg-manaRedBg/30",
-  G: "bg-manaGreenBg/30",
-  A: "bg-manaAnyBg/30",
+  W: "bg-manaWhiteBg/10",
+  U: "bg-manaBlueBg/10",
+  B: "bg-manaBlackBg/10",
+  R: "bg-manaRedBg/10",
+  G: "bg-manaGreenBg/10",
+  A: "bg-manaAnyBg/10",
 };
 
 export function ManaCurve({
@@ -172,14 +172,14 @@ function ColorBars({
           >
             <RaindropContainer
               bgColor={bgColor}
-              innerClassName="opacity-30"
+              innerClassName="opacity-50 bg-dark/20"
               childClassName={`rounded-2xl w-full h-full flex items-end justify-center overflow-hidden p-0 ${track[c]} border-t border-light/20`}
-              className={`relative w-full h-full rounded-2xl overflow-hidden p-0`}
+              className={`relative w-full h-full rounded-2xl overflow-hidden p-0 from-light/80 shadow-light`}
             >
               <RaindropContainer
                 bgColor={bgColor}
                 childClassName={` h-full w-full transition-all duration-700 ease-out`}
-                className={`w-full p-0 ${fillClasses[c]} from-light/60 to-light/30 outline outline-light/40`}
+                className={`w-full p-0 ${fillClasses[c]} from-light/50 to-light/10 outline outline-light/40`}
                 innerClassName=""
                 style={{ height: `${pct}%` }}
                 aria-label={`${c} ${v} (${Math.round(pct)}%)`}
