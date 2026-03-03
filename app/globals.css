@@ -41,8 +41,8 @@
   );
 
   --drop-shadow-3xl: 0 35px 35px rgba(0, 0, 0, 0.25);
-  --drop-shadow-4xl: 0 0px 5px rgba(0, 0, 0, 0.25),
-    0 45px 65px rgba(0, 0, 0, 0.15);
+  --drop-shadow-4xl:
+    0 0px 5px rgba(0, 0, 0, 0.25), 0 45px 65px rgba(0, 0, 0, 0.15);
   --drop-shadow-lg: -3px 3px 4px rgba(0, 0, 0, 0.1);
 
   --color-light: #fcfaf2;
@@ -66,12 +66,18 @@
   --color-buttonGreenBorder: #70cf75;
   --color-buttonPurple: #8e48ae;
   --color-buttonPurpleBorder: #8f69a2;
-  --color-manaAny: #c9bdbc;
-  --color-manaWhite: #fff8da;
-  --color-manaBlue: #c5e2ff;
-  --color-manaBlack: #cbbfbe;
-  --color-manaRed: #eda49b;
-  --color-manaGreen: #abd6b9;
+  --color-manaAny: #a29788;
+  --color-manaWhite: #f6f4f0;
+  --color-manaBlue: #1967aa;
+  --color-manaBlack: #17110d;
+  --color-manaRed: #d2212d;
+  --color-manaGreen: #00753e;
+  --color-manaAnyBg: #d0ccc8;
+  --color-manaWhiteBg: #d9c59e;
+  --color-manaBlueBg: #b0cbe6;
+  --color-manaBlackBg: #a59c9a;
+  --color-manaRedBg: #ea9d81;
+  --color-manaGreenBg: #bcd8c3;
 
   @keyframes spin {
     to {

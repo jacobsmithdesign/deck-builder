@@ -10,8 +10,8 @@ const Spell = React.forwardRef<
     ref={ref}
     onMouseEnter={() => {}}
     className={cn(
-      "flex justify-between items-center px-2 cursor-pointer hover:bg-zinc-500/20 transition-all duration-100 ease-out text-dark/70",
-      className
+      "flex justify-between items-center px-2 cursor-pointer hover:bg-light/60 bg-light/10 transition-all duration-100 ease-out text-dark/70",
+      className,
     )}
     {...props}
   />
@@ -42,7 +42,7 @@ const Strength = React.forwardRef<
     ref={ref}
     className={cn(
       "flex justify-between items-center px-4 bg-green-500/20 md:pt-0 py-1 rounded-lg text-center lg:text-lg md:text-base text-sm text-green-900",
-      className
+      className,
     )}
     {...props}
   />
@@ -56,7 +56,7 @@ const Weakeness = React.forwardRef<
     ref={ref}
     className={cn(
       "justify-between items-center px-4 bg-red-600/25 md:pt-0 py-1 rounded-lg text-center lg:text-lg md:text-base text-sm text-red-900",
-      className
+      className,
     )}
     {...props}
   />

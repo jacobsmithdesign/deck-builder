@@ -14,6 +14,7 @@ import {
   selectCardDataFromId,
 } from "@/lib/db/searchCardForDeck";
 import { CardView } from "./CardView";
+import UnsavedChanges from "../overlays/UnsavedChanges";
 
 export const CardTable = () => {
   const { deck, userOwnsDeck, addCard } = useCardList();
@@ -35,16 +36,6 @@ export const CardTable = () => {
     <Board
       className={`pb-1 w-full h-fit transition-all duration-200 relative z-0 hide-scrollbar rounded-none ease-in-out px-1 text-center mt-0`}
     >
-      <div className="sticky top-0 z-20 h-10 items-center flex justify-between">
-        {!userOwnsDeck && <AddToCollectionButton />}
-        {userOwnsDeck && (
-          <SearchBox
-            searchFunction={searchCardForDeck}
-            selectFunction={addSelectedCard}
-            placeholder="Search for new card"
-          />
-        )}
-      </div>
       {/* The board holding all cards */}
       <CardView />
     </Board>

@@ -13,6 +13,8 @@ const buttonVariants = cva(
           "bg-primary text-primary-foreground hover:bg-primary/90 hover:drop-shadow-sm bg-light/0 md:hover:bg-light/70 dropshadow-md border border-light/0 md:hover:border-light/60",
         secondary:
           "bg-primary text-primary-foreground hover:bg-primary/90 bg-buttonLight hover:bg-buttonHover",
+        navigation:
+          "text-primary-foreground hover:bg-dark/20 bg-darksecondary/5",
         save: "bg-green-200/40 text-green-400 md:hover:bg-green-300/40 md:hover:text-green-600 transition-colors duration-150",
         secondaryBlue:
           "rounded-xl text-light hover:text-light/80 hover:bg-buttonBlue/80 bg-buttonBlue  hover:shadow-lg ease-in-out duration-100",

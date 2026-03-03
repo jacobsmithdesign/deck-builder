@@ -8,6 +8,8 @@ import {
   SpellType,
 } from "@/app/components/ui/overviewButtons";
 import { DeckMetricsMini } from "./deckMetricsMini";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 interface SpellTypeCountsProps {
   spellCounts: { type: string; count: number }[];
   compactView: boolean;
@@ -36,38 +38,45 @@ export function SpellTypeCounts({
 
   return (
     <CardContent
-      className={`grid text-dark p-0 overflow-clip outline outline-dark/20 transition-all duration-250 bg-light/60  ${
+      className={`grid text-dark p-1 overflow-clip transition-all duration-250 bg-darksecondary/15 gap-1 ${
         compactView
           ? "grid-cols-2 rounded h-16"
-          : "grid-cols-2 rounded-md h-full"
+          : "grid-cols-2 rounded-2xl h-full"
       }`}
     >
       {displayCounts.map((type, index) => (
-        <Spell
-          key={index}
-          className={`${
-            compactView ? "h-4" : "h-6"
-          } transition-all duration-250`}
-        >
-          <SpellType
-            className={`${
-              compactView ? "text-sm font-normal" : "font-normal"
-            } transition-all duration-250 ${
-              type.count === 0 ? "text-dark/40" : ""
-            }`}
+        <Link href={`#${type.type}`}>
+          <Spell
+            key={index}
+            className={cn(
+              "transition-all duration-250 w-full rounded-lg",
+              compactView ? "h-4" : "h-7",
+              index === 0 && "rounded-tl-xl",
+              index === 1 && "rounded-tr-xl",
+              index === displayCounts.length - 2 && "rounded-bl-xl",
+              index === displayCounts.length - 1 && "rounded-br-xl",
+            )}
           >
-            {type.type}
-          </SpellType>
-          <SpellCount
-            className={`${
-              compactView ? "text-sm" : ""
-            } transition-all duration-250 ${
-              type.count === 0 ? "text-dark/40" : ""
-            }`}
-          >
-            {type.count}
-          </SpellCount>
-        </Spell>
+            <SpellType
+              className={`${
+                compactView ? "text-sm font-normal" : "font-normal"
+              } transition-all duration-250 ${
+                type.count === 0 ? "text-dark/30" : "text-dark/80"
+              }`}
+            >
+              {type.type}
+            </SpellType>
+            <SpellCount
+              className={`${
+                compactView ? "text-sm" : ""
+              } transition-all duration-250 ${
+                type.count === 0 ? "text-dark/30" : "text-dark/80"
+              }`}
+            >
+              {type.count}
+            </SpellCount>
+          </Spell>
+        </Link>
       ))}
     </CardContent>
   );

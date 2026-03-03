@@ -10,30 +10,30 @@ const COST_BUCKETS = ["0-1", "2", "3", "4", "5", "6+"] as const;
 const MODES: Array<"pool" | "curve" | "cost"> = ["pool", "curve", "cost"];
 
 const fillClasses: Record<Color, string> = {
-  W: "bg-yellow-200",
-  U: "bg-sky-300",
-  B: "bg-neutral-500",
-  R: "bg-red-400",
-  G: "bg-emerald-300",
-  A: "bg-stone-300",
+  W: "bg-manaWhite/60",
+  U: "bg-manaBlue/70",
+  B: "bg-manaBlack/40",
+  R: "bg-manaRed/60",
+  G: "bg-manaGreen/60",
+  A: "bg-manaAny/60",
 };
 
 const trackCurve: Record<Color, string> = {
-  W: "bg-yellow-100/50 outline outline-yellow-200/60",
-  U: "bg-sky-200/50 outline outline-sky-300/60",
-  B: "bg-neutral-300/50 outline outline-neutral-400/60",
-  R: "bg-red-200/50 outline outline-red-300/60",
-  G: "bg-emerald-200/50 outline outline-emerald-300/60",
-  A: "bg-stone-200/50 outline outline-stone-300/60",
+  W: "bg-manaWhiteBg/50",
+  U: "bg-manaBlueBg/50",
+  B: "bg-manaBlackBg/50",
+  R: "bg-manaRedBg/50",
+  G: "bg-manaGreenBg/50",
+  A: "bg-manaAnyBg/50",
 };
 
 const trackPool: Record<Color, string> = {
-  W: "bg-yellow-100/50 outline outline-yellow-200/60",
-  U: "bg-sky-200/50 outline outline-sky-300/60",
-  B: "bg-neutral-300/50 outline outline-neutral-400/60",
-  R: "bg-red-200/50 outline outline-red-300/60",
-  G: "bg-emerald-200/50 outline outline-emerald-300/60",
-  A: "bg-stone-200/50 outline outline-stone-300/60",
+  W: "bg-manaWhiteBg/50",
+  U: "bg-manaBlueBg/50",
+  B: "bg-manaBlackBg/50",
+  R: "bg-manaRedBg/50",
+  G: "bg-manaGreenBg/50",
+  A: "bg-manaAnyBg/50",
 };
 
 export function ManaCurve({
@@ -57,10 +57,10 @@ export function ManaCurve({
   const theTitle =
     title ??
     (mode === "pool"
-      ? "Mana Pool"
+      ? "Available Mana"
       : mode === "curve"
-      ? "Colored Mana Curve"
-      : "Mana Cost Curve");
+        ? "Colored Spell Cost"
+        : "Total Cost");
   const handleClick = () => {
     setMode((prev) => {
       const currentIndex = MODES.indexOf(prev);
@@ -76,8 +76,8 @@ export function ManaCurve({
   }, [toggle]);
   return (
     <div
-      className={`relative flex flex-col gap-1 w-full bg-light/60 p-1 outline outline-dark/20 transition-all duration-250 cursor-default ${
-        compactView ? "h-16 rounded" : "h-full rounded-md"
+      className={`relative flex flex-col gap-2 w-full bg-darksecondary/15 p-2 transition-all duration-250 cursor-default ${
+        compactView ? "h-16 rounded" : "h-full rounded-2xl"
       } ${className}`}
     >
       {toggle && (
@@ -88,8 +88,8 @@ export function ManaCurve({
       )}
       <h3
         className={`${
-          compactView ? "text-xs" : "text-sm"
-        } border-b border-dark/20 transition-all duration-250`}
+          compactView ? "text-xs" : "text-lg"
+        } transition-all duration-250 h-4 -translate-y-1`}
       >
         {theTitle}
       </h3>
@@ -151,12 +151,12 @@ function ColorBars({
     normalize === "sum"
       ? Math.max(
           vals.reduce((a, b) => a + b, 0),
-          1
+          1,
         )
       : Math.max(...vals, 1);
 
   return (
-    <div className="flex flex-row gap-1 w-full h-full items-end">
+    <div className="flex flex-row gap-2 w-full h-full items-end">
       {COLOR_ORDER.map((c) => {
         const v = data?.[c] ?? 0;
         const pct = Math.max(0, Math.min(100, (v / denom) * 100));
@@ -166,18 +166,18 @@ function ColorBars({
             className="flex flex-col items-center gap-1 w-full h-full"
           >
             <div
-              className={`relative w-full h-full rounded ${track[c]} overflow-hidden flex items-end justify-center`}
+              className={`relative w-full h-full rounded-xl ${track[c]} overflow-hidden flex items-end justify-center`}
             >
               <div
                 className={`${fillClasses[c]} w-full transition-all duration-700 ease-out`}
                 style={{ height: `${pct}%` }}
                 aria-label={`${c} ${v} (${Math.round(pct)}%)`}
               />
-              <span className="absolute top-0 text-[10px] tabular-nums text-dark/60">
+              <span className="absolute top-1 text-md tabular-nums text-dark/80">
                 {Number.isInteger(v) ? v : v.toFixed(1)}
               </span>
             </div>
-            <div className="text-[10px] leading-none text-dark/80 font-bold absolute bottom-2">
+            <div className="text-md leading-none text-dark/80 font-bold absolute bottom-4">
               {c}
             </div>
           </div>
@@ -199,7 +199,7 @@ function CostBars({
   const max = Math.max(...values, 1);
 
   return (
-    <div className="flex flex-row gap-1 w-full h-full items-end">
+    <div className="flex flex-row gap-2 w-full h-full items-end">
       {COST_BUCKETS.map((b, i) => {
         const v = values[i];
         const pct = Math.max(0, Math.min(100, (v / max) * 100));
@@ -208,17 +208,17 @@ function CostBars({
             key={b}
             className="flex flex-col items-center justify-end gap-1 w-full h-full"
           >
-            <div className="relative w-full h-full rounded bg-dark/10 overflow-hidden flex items-end justify-center">
+            <div className="relative w-full h-full rounded-xl bg-dark/10 overflow-hidden flex items-end justify-center">
               <div
                 className="w-full bg-dark/25 transition-all duration-700 ease-out"
                 style={{ height: `${pct}%` }}
                 aria-label={`${b} MV: ${v} (${Math.round(pct)}%)`}
               />
-              <span className="absolute top-0 text-[10px] tabular-nums text-dark/60">
+              <span className="absolute top-0 text-md tabular-nums text-dark/60">
                 {v}
               </span>
             </div>
-            <div className="text-[10px] leading-none text-dark/80 font-bold absolute bottom-2">
+            <div className="text-md leading-none text-dark/80 font-bold absolute bottom-2">
               {b}
             </div>
           </div>
