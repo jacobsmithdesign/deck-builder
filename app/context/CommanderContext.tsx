@@ -5,7 +5,7 @@ import { Commander } from "@/lib/schemas";
 import { DeckRecord, CardRecord } from "@/lib/schemas";
 
 export type CommanderCard = {
-  id: string;
+  uuid: string;
   name: string;
   type: string;
   mana_cost: string | null;
@@ -18,6 +18,7 @@ export type CommanderCard = {
   artwork: string | null;
   isDoubleFaced?: boolean;
   identifiers?: Record<string, any>;
+  count: 1;
 };
 
 export type CommanderDeckDetails = {
@@ -37,15 +38,15 @@ type CommanderContextProps = {
   // other fields...
 };
 const CommanderContext = createContext<CommanderContextProps | undefined>(
-  undefined
+  undefined,
 );
 
 export function CommanderProvider({ children }: { children: ReactNode }) {
   const [deckDetails, setDeckDetails] = useState<CommanderDeckDetails | null>(
-    null
+    null,
   );
   const [commanderCard, setCommanderCard] = useState<CommanderCard | null>(
-    null
+    null,
   );
 
   return (

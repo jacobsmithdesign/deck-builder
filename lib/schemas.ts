@@ -110,9 +110,7 @@ export const CardSchema = z.object({
   artist_ids: z.array(z.string()).nullable(),
   edhrec_rank: z.number().int().nullable(),
   edhrec_saltiness: z.number().nullable(),
-  identifiers: z
-    .object({ scryfallId: z.string(), scryfallCardBackId: z.string() })
-    .nullable(), // jsonb
+  identifiers: z.record(z.string(), z.string()).nullable(), // jsonb
   purchase_urls: z.object().nullable(), // jsonb
   type: z.string().nullable(),
   text: z.string(),

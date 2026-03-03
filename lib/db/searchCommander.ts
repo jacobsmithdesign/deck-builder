@@ -4,7 +4,7 @@ import { CardResult } from "./searchCardForDeck";
 
 function toCommanderCard(card: any): CommanderCard {
   return {
-    id: card.uuid,
+    uuid: card.uuid,
     name: card.name,
     type: card.type,
     mana_cost: card.mana_cost,
@@ -19,6 +19,7 @@ function toCommanderCard(card: any): CommanderCard {
       ? `https://cards.scryfall.io/art_crop/front/${card.identifiers.scryfallId[0]}/${card.identifiers.scryfallId[1]}/${card.identifiers.scryfallId}.jpg`
       : null,
     isDoubleFaced: !!card.identifiers?.scryfallCardBackId,
+    count: 1,
   };
 }
 
