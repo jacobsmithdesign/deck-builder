@@ -1,11 +1,12 @@
 import { cn } from "@/lib/utils";
 import React from "react";
-export interface ContainerProps extends React.HTMLAttributes<HTMLDivElement> {
-  bgColor: string;
+export interface ContainerProps extends React.AllHTMLAttributes<HTMLDivElement> {
+  bgColor?: string;
+  innerClassName?: string;
 }
 
 const RaindropContainer = React.forwardRef<HTMLDivElement, ContainerProps>(
-  ({ className, bgColor, ...props }, ref) => (
+  ({ className, innerClassName, children, bgColor, ...props }, ref) => (
     <div
       ref={ref}
       className={cn(
@@ -17,10 +18,11 @@ const RaindropContainer = React.forwardRef<HTMLDivElement, ContainerProps>(
       <div
         style={{ background: bgColor }}
         className={cn(
-          "absolute w-full h-full opacity-30 -translate-y-1 -translate-x-1 z-0 border-t-2 border-light/40",
-          className,
+          "absolute w-full h-full opacity-30 -translate-y-1 -translate-x-1 z-0 border-b border-light",
+          innerClassName,
         )}
       />
+      {children}
     </div>
   ),
 );

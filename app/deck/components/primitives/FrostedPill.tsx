@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import React from "react";
 export interface ContainerProps extends React.HTMLAttributes<HTMLDivElement> {
-  bgColor: string;
+  bgColor?: string;
 }
 
 const FrostedElement = React.forwardRef<HTMLDivElement, ContainerProps>(

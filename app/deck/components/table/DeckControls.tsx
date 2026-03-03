@@ -11,6 +11,7 @@ import {
   selectCardDataFromId,
 } from "@/lib/db/searchCardForDeck";
 import { useEditMode } from "@/app/context/editModeContext";
+import { RaindropContainer } from "../primitives/RaindropContainer";
 
 export default function DeckControls() {
   const { deck, addCard } = useCardList();
@@ -34,15 +35,11 @@ export default function DeckControls() {
   console.log("colour", bgColor);
   return (
     <div className="absolute z-10 flex w-full pr-4 pt-2 h-10 pl-1">
-      <div
-        className="w-full h-10 bg-gradient-to-t from-light/60 to-lightsecondary/20 p-1 shadow-inner shadow-light/65 rounded-full drop-shadow-xl z-10"
-        color={bgColor ? bgColor : "light"}
-      >
-        <div
-          style={{ background: bgColor }}
-          className="absolute w-full h-full opacity-30 -translate-y-1 -translate-x-1 rounded-full z-0 border-t-2 border-light/40"
-        />
-      </div>
+      <RaindropContainer
+        className="w-full h-10 rounded-full drop-shadow-xl backdrop-blur"
+        innerClassName="rounded-full"
+        bgColor={bgColor ? bgColor : "light"}
+      ></RaindropContainer>
       {useUserOwnsDeck ? (
         <div className="absolute flex h-10 w-full justify-center items-center">
           <SearchBox
