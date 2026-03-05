@@ -278,119 +278,124 @@ export const DeckListView = () => {
             >
               {columns.map((column, columnIndex) => (
                 <div key={column.id} className="min-w-0 overflow-visible">
-                  {column.groups.map((group, groupIndex) => (
-                    <Group
-                      key={`${group.type}-${columnIndex}-${groupIndex}`}
-                      className="mb-2"
-                    >
-                      <GroupHeader
-                        className={`${
-                          columnIndex === 0 && groupIndex === 0
-                            ? "border-t-0"
-                            : ""
-                        } py-2`}
+                  {[...column.groups]
+                    .sort((a, b) => a.cards.length - b.cards.length)
+                    .map((group, groupIndex) => (
+                      <Group
+                        key={`${group.type}-${columnIndex}-${groupIndex}`}
+                        className="mb-2"
                       >
-                        <GroupTitle
-                          type={group.type}
-                          visibleGroups={visibleGroups}
-                          toggleGroupVisibility={toggleGroupVisibility}
-                        />
-                      </GroupHeader>
+                        <GroupHeader
+                          className={`${
+                            columnIndex === 0 && groupIndex === 0
+                              ? "border-t-0"
+                              : ""
+                          } py-2`}
+                        >
+                          <GroupTitle
+                            type={group.type}
+                            visibleGroups={visibleGroups}
+                            toggleGroupVisibility={toggleGroupVisibility}
+                          />
+                        </GroupHeader>
 
-                      <AnimatePresence>
-                        {visibleGroups.has(group.type) && (
-                          <motion.section
-                            id={group.type}
-                            key={`group-${group.type}`}
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{
-                              height: { duration: 0.45, ease: "easeInOut" },
-                            }}
-                            className="flex flex-col w-full min-w-0  px-1"
-                          >
-                            <GroupItems
-                              key="group-items"
-                              className="mt-2 flex flex-col gap-0 w-full min-w-0 shrink-0"
+                        <AnimatePresence>
+                          {visibleGroups.has(group.type) && (
+                            <motion.section
+                              id={group.type}
+                              key={`group-${group.type}`}
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{
+                                height: {
+                                  duration: 0.2 + 0.015 * group.cards.length,
+                                  ease: "easeInOut",
+                                },
+                              }}
+                              className="flex flex-col w-full min-w-0  px-1"
                             >
-                              {group.cards.map((card, cardIndex) => {
-                                const c = card as CardWithImage;
-                                const cardId =
-                                  (c as CardWithImage & { id?: string }).id ??
-                                  c.uuid;
-                                const previewHeight = 380;
-                                const previewWidth =
-                                  (previewHeight * 488) / 680;
-                                const isLastColumn =
-                                  columnIndex === columns.length - 1;
-                                return (
-                                  <motion.div
-                                    key={cardId}
-                                    initial={{ opacity: 0, x: -8 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{
-                                      opacity: 0,
-                                      x: -8,
-                                      transition: { duration: 0.15 },
-                                    }}
-                                    transition={{
-                                      type: "spring",
-                                      stiffness: 250,
-                                      damping: 12,
-                                      delay: 0.025 * cardIndex,
-                                    }}
-                                    className={cn(
-                                      "group/card flex justify-between w-full py-1.5 px-3 rounded-md md:hover:bg-dark/5 transition-colors duration-150 border-b border-dark/5 last:border-b-0 relative cursor-pointer",
-                                    )}
-                                    style={{
-                                      ["--preview-w" as string]: `${previewWidth + 8}px`,
-                                    }}
-                                  >
-                                    <div className="flex items-center gap-2 min-w-0 ">
-                                      <span className="font-medium text-dark truncate md:text-base text-sm">
-                                        {card.name ?? "Unknown"}
-                                      </span>
-                                      {card.count > 1 && (
-                                        <span className="shrink-0 text-muted-foreground font-semibold text-xs bg-dark/10 px-1.5 py-0.5 rounded">
-                                          ×{card.count}
-                                        </span>
+                              <GroupItems
+                                key="group-items"
+                                className="mt-2 flex flex-col gap-0 w-full min-w-0 shrink-0"
+                              >
+                                {group.cards.map((card, cardIndex) => {
+                                  const c = card as CardWithImage;
+                                  const cardId =
+                                    (c as CardWithImage & { id?: string }).id ??
+                                    c.uuid;
+                                  const previewHeight = 380;
+                                  const previewWidth =
+                                    (previewHeight * 488) / 680;
+                                  const isLastColumn =
+                                    columnIndex === columns.length - 1;
+                                  return (
+                                    <motion.div
+                                      key={cardId}
+                                      initial={{ opacity: 0, x: -8 }}
+                                      animate={{ opacity: 1, x: 0 }}
+                                      exit={{
+                                        opacity: 0,
+                                        x: -8,
+                                        transition: { duration: 0.15 },
+                                      }}
+                                      transition={{
+                                        type: "spring",
+                                        stiffness: 250,
+                                        damping: 12,
+                                        delay: 0.1 + 0.025 * cardIndex,
+                                      }}
+                                      className={cn(
+                                        "group/card flex justify-between w-full py-1.5 px-3 rounded-md md:hover:bg-dark/5 transition-colors duration-150 border-b border-dark/5 last:border-b-0 relative cursor-pointer",
                                       )}
-                                    </div>
-                                    <span className="shrink-0 text-muted-foreground font-bold tabular-nums md:text-base text-sm w-8 text-right">
-                                      {card.mana_value}
-                                    </span>
-                                    {c.imageFrontUrl && (
-                                      <div
-                                        className={cn(
-                                          "pointer-events-none absolute  z-1 rounded-2xl shadow-xl opacity-0 transition-opacity duration-150 group-hover/card:opacity-100",
-                                          isLastColumn
-                                            ? "right-full mr-2"
-                                            : "left-full ml-2",
+                                      style={{
+                                        ["--preview-w" as string]: `${previewWidth + 8}px`,
+                                      }}
+                                    >
+                                      <div className="flex items-center gap-2 min-w-0 ">
+                                        <span className="font-medium text-dark truncate md:text-base text-sm">
+                                          {card.name ?? "Unknown"}
+                                        </span>
+                                        {card.count > 1 && (
+                                          <span className="shrink-0 text-muted-foreground font-semibold text-xs bg-dark/10 px-1.5 py-0.5 rounded">
+                                            ×{card.count}
+                                          </span>
                                         )}
-                                        style={{
-                                          width: `${previewWidth}px`,
-                                          height: `${previewHeight}px`,
-                                        }}
-                                      >
-                                        <Image
-                                          src={c.imageFrontUrl}
-                                          width={488}
-                                          height={680}
-                                          alt=""
-                                          className="object-cover w-full h-full rounded-lg"
-                                        />
                                       </div>
-                                    )}
-                                  </motion.div>
-                                );
-                              })}
-                            </GroupItems>
-                          </motion.section>
-                        )}
-                      </AnimatePresence>
-                    </Group>
-                  ))}
+                                      <span className="shrink-0 text-muted-foreground font-bold tabular-nums md:text-base text-sm w-8 text-right">
+                                        {card.mana_value}
+                                      </span>
+                                      {c.imageFrontUrl && (
+                                        <div
+                                          className={cn(
+                                            "pointer-events-none absolute  z-1 rounded-2xl shadow-xl opacity-0 transition-opacity duration-150 group-hover/card:opacity-100",
+                                            isLastColumn
+                                              ? "right-full mr-2"
+                                              : "left-full ml-2",
+                                          )}
+                                          style={{
+                                            width: `${previewWidth}px`,
+                                            height: `${previewHeight}px`,
+                                          }}
+                                        >
+                                          <Image
+                                            src={c.imageFrontUrl}
+                                            width={488}
+                                            height={680}
+                                            alt=""
+                                            className="object-cover w-full h-full rounded-lg"
+                                          />
+                                        </div>
+                                      )}
+                                    </motion.div>
+                                  );
+                                })}
+                              </GroupItems>
+                            </motion.section>
+                          )}
+                        </AnimatePresence>
+                      </Group>
+                    ))}
                 </div>
               ))}
             </div>

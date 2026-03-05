@@ -118,24 +118,28 @@ export const CardView = () => {
     [groupedCardsArray],
   );
 
-  // Initialise / update visible groups with 0.15s delay between each group
+  // Initialise / update visible groups; delay each group by (cards in all previous groups) * msPerCard
+  const msPerCard = 17;
   useEffect(() => {
-    if (allTypes.length === 0) {
+    if (groupedCardsArray.length === 0) {
       setVisibleGroups(new Set());
       return;
     }
     setVisibleGroups(new Set());
-    const delays = allTypes.map((type, index) =>
-      setTimeout(() => {
+    let previousCardCount = 0;
+    const delays = groupedCardsArray.map((group, index) => {
+      const delayMs = previousCardCount * msPerCard;
+      previousCardCount += group.cards.length;
+      return setTimeout(() => {
         setVisibleGroups((prev) => {
           const next = new Set(prev);
-          next.add(type);
+          next.add(group.type);
           return next;
         });
-      }, 150 * index),
-    );
+      }, delayMs);
+    });
     return () => delays.forEach(clearTimeout);
-  }, [allTypes, changesMadeState]);
+  }, [groupedCardsArray, changesMadeState]);
 
   // Toggle visibility for a single group
   const toggleGroupVisibility = (type: string) => {
@@ -208,7 +212,7 @@ export const CardView = () => {
               {groupedCardsArray.map((group, index) => (
                 <motion.div
                   initial={{ height: 0 }}
-                  animate={{ height: "auto" }}
+                  animate={{ height: "100%" }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.4 }}
                 >

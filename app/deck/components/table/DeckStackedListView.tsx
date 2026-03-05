@@ -378,73 +378,78 @@ export const DeckStackedListView = () => {
             >
               {columns.map((column, columnIndex) => (
                 <div key={column.id} className="px-2">
-                  {column.groups.map((group, groupIndex) => (
-                    <Group
-                      key={`${group.type}-${columnIndex}-${groupIndex}`}
-                      className="mb-2"
-                    >
-                      <GroupHeader
-                        className={`${
-                          columnIndex === 0 && groupIndex === 0
-                            ? "border-t-0"
-                            : ""
-                        } py-2`}
+                  {[...column.groups]
+                    .sort((a, b) => a.cards.length - b.cards.length)
+                    .map((group, groupIndex) => (
+                      <Group
+                        key={`${group.type}-${columnIndex}-${groupIndex}`}
+                        className="mb-2"
                       >
-                        <GroupTitle
-                          type={group.type}
-                          visibleGroups={visibleGroups}
-                          toggleGroupVisibility={toggleGroupVisibility}
-                        />
-                      </GroupHeader>
+                        <GroupHeader
+                          className={`${
+                            columnIndex === 0 && groupIndex === 0
+                              ? "border-t-0"
+                              : ""
+                          } py-2`}
+                        >
+                          <GroupTitle
+                            type={group.type}
+                            visibleGroups={visibleGroups}
+                            toggleGroupVisibility={toggleGroupVisibility}
+                          />
+                        </GroupHeader>
 
-                      <AnimatePresence>
-                        {visibleGroups.has(group.type) && (
-                          <motion.section
-                            id={group.type}
-                            key={`group-${group.type}`}
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{
-                              height: { duration: 0.655, ease: "easeInOut" },
-                            }}
-                            className="flex flex-col w-full min-w-0"
-                          >
-                            <GroupItems
-                              key="group-items"
-                              className="mt-2 flex flex-col gap-1 rounded-xl w-full shrink-0 items-center"
+                        <AnimatePresence>
+                          {visibleGroups.has(group.type) && (
+                            <motion.section
+                              id={group.type}
+                              key={`group-${group.type}`}
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{
+                                height: {
+                                  duration: 0.2 + group.cards.length * 0.015,
+                                  ease: "easeInOut",
+                                },
+                              }}
+                              className="flex flex-col w-full min-w-0"
                             >
-                              {group.cards.map((card, cardIndex) => {
-                                const c = card as CardWithImage;
-                                const cardId =
-                                  (c as CardWithImage & { id?: string }).id ??
-                                  c.uuid;
-                                const isExpanded =
-                                  cardIndex === group.cards.length - 1;
-                                const previewHeight = 336;
-                                const previewWidth =
-                                  (previewHeight * 488) / 680;
-                                const isLastColumn =
-                                  columnIndex === columns.length - 1;
-                                return (
-                                  <StackedListCardRow
-                                    key={cardId}
-                                    card={c}
-                                    cardId={cardId}
-                                    isExpanded={isExpanded}
-                                    isLastColumn={isLastColumn}
-                                    previewWidth={previewWidth}
-                                    previewHeight={previewHeight}
-                                    cardIndex={cardIndex}
-                                  />
-                                );
-                              })}
-                            </GroupItems>
-                          </motion.section>
-                        )}
-                      </AnimatePresence>
-                    </Group>
-                  ))}
+                              <GroupItems
+                                key="group-items"
+                                className="mt-2 flex flex-col gap-1 rounded-xl w-full shrink-0 items-center"
+                              >
+                                {group.cards.map((card, cardIndex) => {
+                                  const c = card as CardWithImage;
+                                  const cardId =
+                                    (c as CardWithImage & { id?: string }).id ??
+                                    c.uuid;
+                                  const isExpanded =
+                                    cardIndex === group.cards.length - 1;
+                                  const previewHeight = 336;
+                                  const previewWidth =
+                                    (previewHeight * 488) / 680;
+                                  const isLastColumn =
+                                    columnIndex === columns.length - 1;
+                                  return (
+                                    <StackedListCardRow
+                                      key={cardId}
+                                      card={c}
+                                      cardId={cardId}
+                                      isExpanded={isExpanded}
+                                      isLastColumn={isLastColumn}
+                                      previewWidth={previewWidth}
+                                      previewHeight={previewHeight}
+                                      cardIndex={cardIndex}
+                                    />
+                                  );
+                                })}
+                              </GroupItems>
+                            </motion.section>
+                          )}
+                        </AnimatePresence>
+                      </Group>
+                    ))}
                 </div>
               ))}
             </div>
