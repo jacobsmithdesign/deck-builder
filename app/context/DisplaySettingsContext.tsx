@@ -18,7 +18,7 @@ type CardViewState = {
 const CardViewContext = createContext<CardViewState | null>(null);
 
 export function CardViewProvider({
-  deckId,
+  CardId,
   children,
   defaultMode = "overview",
 }: {
@@ -26,7 +26,7 @@ export function CardViewProvider({
   children: React.ReactNode;
   defaultMode?: CardViewMode;
 }) {
-  const key = `Card:view:${deckId}`;
+  const key = `Card:view:${CardId}`;
 
   const [mode, setMode] = useState<CardViewMode>(defaultMode);
 

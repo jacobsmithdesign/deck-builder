@@ -1,10 +1,9 @@
-import { AnimatePresence, motion } from "framer-motion";
-import AddToCollectionModal from "./AddToCollectionModal";
-import { useCompactView } from "@/app/context/compactViewContext";
-import { useEffect, useState } from "react";
 import { useCardList } from "@/app/context/CardListContext";
+import { useCompactView } from "@/app/context/compactViewContext";
 import { useUser } from "@/app/context/userContext";
+import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "lucide-react";
+import { useEffect, useState } from "react";
 import { RxArrowRight } from "react-icons/rx";
 import { Button } from "../primitives/button";
 export default function DeckEditTools() {

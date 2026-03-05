@@ -248,7 +248,7 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
     // Initialise the Commander card info
     const commanderCardRecord = deck.commander;
     const commanderCard: CommanderCard = {
-      id: commanderCardRecord.id,
+      uuid: commanderCardRecord.uuid,
       name: commanderCardRecord.name,
       type: commanderCardRecord.type,
       mana_cost: commanderCardRecord.mana_cost,
@@ -261,6 +261,7 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
       artwork: `https://cards.scryfall.io/art_crop/front/${commanderCardRecord.identifiers.scryfallId[0]}/${commanderCardRecord.identifiers.scryfallId[1]}/${commanderCardRecord.identifiers.scryfallId}.jpg`,
       isDoubleFaced: !!commanderCardRecord.identifiers?.scryfallCardBackId,
       identifiers: commanderCardRecord.identifiers,
+      count: 1,
     };
     setCommanderCard(commanderCard);
   }, [deck?.id, setArchetypeOverview]);

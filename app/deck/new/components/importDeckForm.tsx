@@ -72,8 +72,8 @@ export default function ImportDeckForm({ onCancel }: { onCancel: () => void }) {
       try {
         const { newDeckId } = await saveNewDeckClient({
           name: name,
-          commander_uuid: commander?.id,
-          display_card_uuid: commander?.id,
+          commander_uuid: commander?.uuid,
+          display_card_uuid: commander?.uuid,
           description: description,
           isPublic: isPublic,
           type: "Commander Deck",

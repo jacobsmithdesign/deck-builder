@@ -29,8 +29,8 @@ export default function CommanderFormatForm({
     try {
       const { newDeckId } = await saveNewDeckClient({
         name: name,
-        commander_uuid: selectedCommander?.id,
-        display_card_uuid: selectedCommander?.id,
+        commander_uuid: selectedCommander?.uuid,
+        display_card_uuid: selectedCommander?.uuid,
         description: description,
         isPublic: isPublic,
         type: "Commander Deck",

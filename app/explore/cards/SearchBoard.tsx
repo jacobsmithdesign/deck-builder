@@ -14,6 +14,7 @@ import {
 
 import PerspectiveCard from "@/app/deck/components/card/perspectiveCardUI/DeckPerspectiveCard";
 import CustomScrollArea from "@/app/components/ui/CustomScrollArea";
+import { embedQuery } from "@/lib/client/embedQuery";
 
 // --- Type Ordering ---
 const typeOrder = [
