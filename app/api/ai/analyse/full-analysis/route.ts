@@ -188,7 +188,7 @@ export async function GET(req: NextRequest) {
         })();
         // Call AI via SDK (provider/model from env: AI_PROVIDER, AI_MODEL, etc.)
         const { text, usage } = await generateText({
-          model,
+          model: model as unknown as Parameters<typeof generateText>[0]["model"],
           maxRetries: 1,
           system:
             "You are an expert MTG Commander deck analyst. You must analyse cards from a deck to accurately determine it's power level, strengths, weaknesses, archetype, and difficulty. Return only JSON in the provided format.",

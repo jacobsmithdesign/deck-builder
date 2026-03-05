@@ -1,4 +1,4 @@
-import type { LanguageModelV1 } from "@ai-sdk/provider";
+import type { LanguageModelV2 } from "@ai-sdk/provider";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
@@ -30,27 +30,27 @@ function getModelId(): string {
  * Set AI_PROVIDER=openai|anthropic|google and optionally AI_MODEL (or
  * OPENAI_MODEL, ANTHROPIC_MODEL, GOOGLE_GENERATIVE_AI_MODEL) to swap providers.
  */
-export function getLanguageModel(): LanguageModelV1 {
+export function getLanguageModel(): LanguageModelV2 {
   const modelId = getModelId();
   switch (PROVIDER) {
     case "anthropic": {
       const anthropic = createAnthropic({
         apiKey: process.env.ANTHROPIC_API_KEY,
       });
-      return anthropic.chat(modelId as any);
+      return anthropic.chat(modelId) as unknown as LanguageModelV2;
     }
     case "google": {
       const google = createGoogleGenerativeAI({
         apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
       });
-      return google.chat(modelId as any);
+      return google.chat(modelId) as unknown as LanguageModelV2;
     }
     case "openai":
     default: {
       const openai = createOpenAI({
         apiKey: process.env.OPENAI_API_KEY,
       });
-      return openai.chat(modelId as any);
+      return openai.chat(modelId) as unknown as LanguageModelV2;
     }
   }
 }
