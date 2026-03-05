@@ -59,7 +59,7 @@ export function SpellTypeCounts({
               index === displayCounts.length - 1 && "rounded-br-2xl",
             )}
             innerClassName={cn(
-              "transition-all duration-250 w-full flex -translate-y-1 -translate-x-1 opacity-20 md:group-hover:opacity-0",
+              "transition-all duration-250 w-full flex opacity-20 md:group-hover:opacity-0",
             )}
             childClassName="flex w-full justify-between px-1"
             key={index}

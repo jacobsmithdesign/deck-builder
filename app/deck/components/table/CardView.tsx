@@ -4,6 +4,7 @@ import CustomScrollArea from "@/app/components/ui/CustomScrollArea";
 import { useCardList } from "@/app/context/CardListContext";
 import { useCompactView } from "@/app/context/compactViewContext";
 import { useEditMode } from "@/app/context/editModeContext";
+import { useDeckView, type DeckSortOption } from "@/app/context/DeckViewContext";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import NewCardModal from "../card/NewCardModal";
@@ -46,9 +47,50 @@ const groupByCardType = (cards: any[] = []) => {
     .filter((group) => group.cards && group.cards.length > 0);
 };
 
+const sortGroupCards = (cards: any[] = [], sortOption: DeckSortOption) => {
+  if (sortOption === "deck") return cards;
+
+  const sorted = [...cards];
+
+  sorted.sort((a, b) => {
+    const nameA = (a?.name as string | undefined) ?? "";
+    const nameB = (b?.name as string | undefined) ?? "";
+    const manaA =
+      typeof a?.mana_value === "number"
+        ? (a.mana_value as number)
+        : Number.POSITIVE_INFINITY;
+    const manaB =
+      typeof b?.mana_value === "number"
+        ? (b.mana_value as number)
+        : Number.POSITIVE_INFINITY;
+
+    switch (sortOption) {
+      case "name-asc":
+        return nameA.localeCompare(nameB, undefined, { sensitivity: "base" });
+      case "name-desc":
+        return nameB.localeCompare(nameA, undefined, { sensitivity: "base" });
+      case "mana-asc":
+        if (manaA === manaB) {
+          return nameA.localeCompare(nameB, undefined, { sensitivity: "base" });
+        }
+        return manaA - manaB;
+      case "mana-desc":
+        if (manaA === manaB) {
+          return nameA.localeCompare(nameB, undefined, { sensitivity: "base" });
+        }
+        return manaB - manaA;
+      default:
+        return 0;
+    }
+  });
+
+  return sorted;
+};
+
 export const CardView = () => {
   const { editMode } = useEditMode();
   const { cards, changesMadeState } = useCardList();
+  const { sortOption } = useDeckView();
   const [visibleGroups, setVisibleGroups] = useState<Set<string>>(new Set());
   const [openNewCardModal, setOpenNewCardModal] = useState(false);
   const [newCardType, setNewCardType] = useState<string>("");
@@ -57,7 +99,13 @@ export const CardView = () => {
   const { bgColor, showBoard } = useCompactView();
 
   // Group cards by type, memoised so we don’t rebuild it needlessly
-  const groupedCardsArray = useMemo(() => groupByCardType(cards), [cards]);
+  const groupedCardsArray = useMemo(() => {
+    const groups = groupByCardType(cards);
+    return groups.map((group) => ({
+      ...group,
+      cards: sortGroupCards(group.cards, sortOption),
+    }));
+  }, [cards, sortOption]);
 
   // All group types, derived from the grouped cards
   const allTypes = useMemo(

@@ -229,7 +229,6 @@ function CostBars({
                 bgColor={bgColor}
                 childClassName="w-full bg-dark/25 transition-all duration-700 ease-out"
                 className="w-full bg-dark/75 from-light/60 outline outline-light/20"
-                innerClassName="-translate-y-1 -translate-x-1"
                 style={{ height: `${pct}%` }}
                 aria-label={`${b} MV: ${v} (${Math.round(pct)}%)`}
               />
