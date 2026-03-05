@@ -1,14 +1,13 @@
-// app/api/ai/analyse/stream/route.ts
+// app/api/ai/analyse/full-analysis/route.ts
 import { NextRequest } from "next/server";
-import OpenAI from "openai";
+import { generateText } from "ai";
+import { getLanguageModel } from "@/lib/ai/model";
 import { buildFeatures } from "@/lib/ai/features";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { compressLands } from "@/lib/ai/landCompression";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const MODEL = process.env.OPENAI_MODEL ?? "gpt-4.1-mini";
 const ai_spec = "v5-difficulty-axes-gpt-4.1";
 const LOG_TOKENS = process.env.LOG_TOKENS === "true"; // <- add
 const LOG_DEBUG = process.env.LOG_DEBUG === "true"; // <- add
@@ -45,10 +44,7 @@ export async function GET(req: NextRequest) {
   const stream = new ReadableStream({
     async start(controller) {
       const supabase = await createServerSupabase();
-      const openai = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY,
-        maxRetries: 1,
-      });
+      const model = getLanguageModel();
       const enc = new TextEncoder();
       const write = (event: string, data: any) =>
         controller.enqueue(enc.encode(sse(event, data)));
@@ -190,31 +186,31 @@ export async function GET(req: NextRequest) {
             Cards: ${CARDS}
             `;
         })();
-        // Submission to OpenAI with full prompt
-        const completion = await openai.chat.completions.create({
-          model: MODEL,
-          response_format: { type: "json_object" },
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are an expert MTG Commander deck analyst. You must analyse cards from a deck to accurately determine it's power level, strengths, weaknesses, archetype, and difficulty. Return only JSON in the provided format.",
-            },
-            { role: "user", content: prompt },
-          ],
+        // Call AI via SDK (provider/model from env: AI_PROVIDER, AI_MODEL, etc.)
+        const { text, usage } = await generateText({
+          model,
+          maxRetries: 1,
+          system:
+            "You are an expert MTG Commander deck analyst. You must analyse cards from a deck to accurately determine it's power level, strengths, weaknesses, archetype, and difficulty. Return only JSON in the provided format.",
+          prompt,
         });
-        if (LOG_TOKENS && (completion as any).usage) {
-          const u = (completion as any).usage;
+        if (LOG_TOKENS && usage) {
           console.log(
-            `[tokens overview] prompt=${u.prompt_tokens} out=${u.completion_tokens} total=${u.total_tokens}`,
+            `[tokens overview] prompt=${usage.promptTokens} out=${usage.completionTokens} total=${usage.totalTokens}`,
           );
-          if (LOG_DEBUG) write("debug", { label: "tokens", usage: u });
+          if (LOG_DEBUG)
+            write("debug", {
+              label: "tokens",
+              usage: {
+                prompt_tokens: usage.promptTokens,
+                completion_tokens: usage.completionTokens,
+                total_tokens: usage.totalTokens,
+              },
+            });
         }
 
         write("progress", { step: "parsing", progress: 85 });
-        const json = JSON.parse(
-          completion.choices[0]?.message?.content ?? "{}",
-        );
+        const json = JSON.parse(text ?? "{}");
         // basic guards
         if (!json || !json.archetype || !json.difficulty) {
           throw new Error("Model output missing required fields");
