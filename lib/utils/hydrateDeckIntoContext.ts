@@ -33,6 +33,7 @@ type DeckRow = {
       text?: string | null;
       identifiers?: any;
       color_identity?: string[] | null;
+      keywords?: string[] | null;
     };
   }[];
 
@@ -120,6 +121,7 @@ export function hydrateDeckIntoContext(
         // include your UI fields if your CardRecord has them:
         count: Number(dc.count ?? 1),
         board_section: dc.board_section,
+        keywords: c.keywords ?? undefined,
       } as CardRecord;
     });
 

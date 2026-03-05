@@ -86,7 +86,7 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
       deck_cards:deck_cards!inner (
         count, board_section,
         card:cards!deck_cards_card_uuid_fkey (
-          uuid, name, mana_cost, mana_value, type, text, identifiers, color_identity
+          uuid, name, mana_cost, mana_value, type, text, identifiers, color_identity, keywords
         )
       ),
 

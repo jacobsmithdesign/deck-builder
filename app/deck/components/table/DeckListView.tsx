@@ -7,6 +7,7 @@ import {
   useDeckView,
   type DeckSortOption,
 } from "@/app/context/DeckViewContext";
+import { useFilteredCards } from "@/app/hooks/useFilteredCards";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
@@ -168,6 +169,7 @@ type CardWithImage = CardRecord & { imageFrontUrl?: string | null };
 export const DeckListView = () => {
   const { editMode } = useEditMode();
   const { cards, changesMadeState } = useCardList();
+  const filteredCards = useFilteredCards(cards);
   const { sortOption } = useDeckView();
   const [visibleGroups, setVisibleGroups] = useState<Set<string>>(new Set());
   const [openNewCardModal, setOpenNewCardModal] = useState(false);
@@ -176,12 +178,12 @@ export const DeckListView = () => {
   const [viewportWidth, setViewportWidth] = useState<number | null>(null);
 
   const groupedCardsArray = useMemo(() => {
-    const groups = groupByCardType(cards);
+    const groups = groupByCardType(filteredCards);
     return groups.map((group) => ({
       ...group,
       cards: sortGroupCards(group.cards, sortOption),
     }));
-  }, [cards, sortOption]);
+  }, [filteredCards, sortOption]);
 
   const allTypes = useMemo(
     () => groupedCardsArray.map((g) => g.type),
@@ -303,18 +305,21 @@ export const DeckListView = () => {
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: "auto", opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
-                            className="overflow-visible flex px-1"
+                            transition={{
+                              height: { duration: 0.45, ease: "easeInOut" },
+                            }}
+                            className="flex flex-col w-full min-w-0  px-1"
                           >
                             <GroupItems
                               key="group-items"
-                              className="mt-2 flex flex-col gap-0 w-full"
+                              className="mt-2 flex flex-col gap-0 w-full min-w-0 shrink-0"
                             >
                               {group.cards.map((card, cardIndex) => {
                                 const c = card as CardWithImage;
                                 const cardId =
                                   (c as CardWithImage & { id?: string }).id ??
                                   c.uuid;
-                                const previewHeight = 320;
+                                const previewHeight = 380;
                                 const previewWidth =
                                   (previewHeight * 488) / 680;
                                 const isLastColumn =
@@ -333,7 +338,7 @@ export const DeckListView = () => {
                                       type: "spring",
                                       stiffness: 250,
                                       damping: 12,
-                                      delay: 0.02 * cardIndex,
+                                      delay: 0.025 * cardIndex,
                                     }}
                                     className={cn(
                                       "group/card flex justify-between w-full py-1.5 px-3 rounded-md md:hover:bg-dark/5 transition-colors duration-150 border-b border-dark/5 last:border-b-0 relative cursor-pointer",

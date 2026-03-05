@@ -10,7 +10,6 @@ function logCardsBrief(cards: CardRecord[]) {
     mana_value: c.mana_value,
     text: c.text,
   }));
-  console.log("cards (brief):", brief);
 }
 
 // ---------- Count of each type (eg creature, land, etc.) in entire cardlist ---------- //
@@ -56,7 +55,7 @@ export type KeywordCount = {
 
 export function getKeywordCounts(cards: CardRecord[]): KeywordCount[] {
   const keywordMap: Record<string, number> = {};
-
+  console.log("cards into ekywords:", cards);
   for (const card of cards) {
     const quantity = card.count ?? 1;
     if (!card.keywords) continue;

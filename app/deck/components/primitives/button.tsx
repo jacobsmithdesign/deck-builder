@@ -16,6 +16,10 @@ const buttonVariants = cva(
         navigation:
           "text-primary-foreground hover:bg-dark/20 bg-darksecondary/5",
         save: "bg-green-200/40 text-green-400 md:hover:bg-green-300/40 md:hover:text-green-600 transition-colors duration-150",
+        raindrop:
+          "relative overflow-hidden bg-gradient-to-t from-light/55 to-light/30 p-1 shadow-inner shadow-light/80 border-light backdrop-blur-md md:hover:bg-light/80",
+        raindropDisabled:
+          "relative overflow-hidden bg-gradient-to-t from-light/30 to-light/10 p-1 shadow-inner shadow-light/300 border-light backdrop-blur-md text-dark/30 cursor-default",
         secondaryBlue:
           "rounded-xl text-light hover:text-light/80 hover:bg-buttonBlue/80 bg-buttonBlue  hover:shadow-lg ease-in-out duration-100",
         cardGroup:

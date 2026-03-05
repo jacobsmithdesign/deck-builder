@@ -116,34 +116,7 @@ export default function SidePanel() {
         <div className="h-fit">
           <SpellTypeCounts spellCounts={typeCount} compactView={false} />
         </div>
-        {/* <div className="flex flex-col gap-1">
-          <p className="font-bold text-dark/80">Jump to</p>
-          <Link href={`#card-view`}>
-            <div className="w-full rounded-lg">
-              <Button variant="navigation" className="w-full justify-start">
-                Cards
-              </Button>
-              <div className="flex flex-col pl-1">
-                {typeCount.map((type) => (
-                  <Link key={type.type} href={`#${type.type}`}>
-                    <Button
-                      variant="navigation"
-                      key={type.type}
-                      className="w-full justify-start pl-2"
-                    >
-                      {type.type}
-                    </Button>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </Link>
-          <Link href={`#overview`}>
-            <Button variant="navigation" className="w-full justify-start">
-              Archetype
-            </Button>
-          </Link>
-        </div> */}
+
         <div className="overflow-y-scroll w-full flex flex-col hide-scrollbar gap-1">
           <motion.div
             initial={{

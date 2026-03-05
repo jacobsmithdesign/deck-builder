@@ -7,6 +7,7 @@ import {
   useDeckView,
   type DeckSortOption,
 } from "@/app/context/DeckViewContext";
+import { useFilteredCards } from "@/app/hooks/useFilteredCards";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
@@ -165,9 +166,109 @@ const buildColumns = (groups: GroupedType[], numColumns: number): Column[] => {
 
 type CardWithImage = CardRecord & { imageFrontUrl?: string | null };
 
+const PREVIEW_DELAY_MS = 1000;
+
+/** Wraps a stacked-list card row and delays hover preview until after entrance animation. */
+function StackedListCardRow({
+  card,
+  cardId,
+  isExpanded,
+  isLastColumn,
+  previewWidth,
+  previewHeight,
+  cardIndex,
+}: {
+  card: CardWithImage;
+  cardId: string;
+  isExpanded: boolean;
+  isLastColumn: boolean;
+  previewWidth: number;
+  previewHeight: number;
+  cardIndex: number;
+}) {
+  const [previewAllowed, setPreviewAllowed] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setPreviewAllowed(true), PREVIEW_DELAY_MS);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.7 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{
+        opacity: 0,
+        transition: { duration: 0.15 },
+      }}
+      transition={{
+        type: "spring",
+        stiffness: 250,
+        damping: 12,
+        delay: 0.025 * cardIndex,
+      }}
+      className={cn(
+        "group/card flex items-center rounded-xl transition-colors duration-150 border-b border-dark/5 last:border-b-0 relative justify-center w-full max-w-72",
+      )}
+      style={{
+        ["--preview-w" as string]: `${previewWidth + 8}px`,
+      }}
+    >
+      <div
+        className={cn(
+          "relative shrink-0 rounded-xl max-w-60",
+          isExpanded ? "h-full" : "h-9",
+        )}
+      >
+        {card.imageFrontUrl ? (
+          <Image
+            src={card.imageFrontUrl}
+            width={488}
+            height={680}
+            alt=""
+            className={cn("object-cover w-fit object-top rounded-xl h-fit")}
+            style={{
+              objectPosition: "0 0",
+            }}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs" />
+        )}
+      </div>
+      {/* Hover preview: hidden for PREVIEW_DELAY_MS after render to avoid layout shift during entrance animation */}
+      {card.imageFrontUrl && (
+        <div
+          className={cn(
+            "pointer-events-none absolute top-0 z-10 rounded-2xl shadow-xl transition-opacity duration-150",
+            previewAllowed
+              ? "opacity-0 group-hover/card:opacity-100"
+              : "hidden",
+          )}
+          style={{
+            width: `${previewWidth}px`,
+            height: `${previewHeight}px`,
+            ...(isLastColumn
+              ? { right: "100%", marginRight: "0.5rem" }
+              : { left: "100%", marginLeft: "0.5rem" }),
+          }}
+        >
+          <Image
+            src={card.imageFrontUrl}
+            width={488}
+            height={680}
+            alt=""
+            className="object-cover w-full h-full rounded-2xl"
+          />
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
 export const DeckStackedListView = () => {
   const { editMode } = useEditMode();
   const { cards, changesMadeState } = useCardList();
+  const filteredCards = useFilteredCards(cards);
   const { sortOption } = useDeckView();
   const [visibleGroups, setVisibleGroups] = useState<Set<string>>(new Set());
   const [openNewCardModal, setOpenNewCardModal] = useState(false);
@@ -176,12 +277,12 @@ export const DeckStackedListView = () => {
   const [viewportWidth, setViewportWidth] = useState<number | null>(null);
 
   const groupedCardsArray = useMemo(() => {
-    const groups = groupByCardType(cards);
+    const groups = groupByCardType(filteredCards);
     return groups.map((group) => ({
       ...group,
       cards: sortGroupCards(group.cards, sortOption),
     }));
-  }, [cards, sortOption]);
+  }, [filteredCards, sortOption]);
 
   const allTypes = useMemo(
     () => groupedCardsArray.map((g) => g.type),
@@ -221,8 +322,8 @@ export const DeckStackedListView = () => {
     else if (viewportWidth < 1150) numColumns = 2;
     else if (viewportWidth < 1400) numColumns = 3;
     else if (viewportWidth < 1650) numColumns = 4;
-    else if (viewportWidth < 1600) numColumns = 5;
-    else if (viewportWidth < 2000) numColumns = 6;
+    else if (viewportWidth < 1850) numColumns = 5;
+    else if (viewportWidth < 2100) numColumns = 6;
     else if (viewportWidth < 2300) numColumns = 7;
     else numColumns = 8;
     return buildColumns(groupedCardsArray, numColumns);
@@ -276,10 +377,7 @@ export const DeckStackedListView = () => {
               }}
             >
               {columns.map((column, columnIndex) => (
-                <div
-                  key={column.id}
-                  className="w-full max-w-72 px-2 overflow-visible"
-                >
+                <div key={column.id} className="px-2">
                   {column.groups.map((group, groupIndex) => (
                     <Group
                       key={`${group.type}-${columnIndex}-${groupIndex}`}
@@ -307,11 +405,14 @@ export const DeckStackedListView = () => {
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: "auto", opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
-                            className="overflow-visible flex justify-center"
+                            transition={{
+                              height: { duration: 0.655, ease: "easeInOut" },
+                            }}
+                            className="flex flex-col w-full min-w-0"
                           >
                             <GroupItems
                               key="group-items"
-                              className="mt-2 flex flex-col gap-0  rounded-xl overflow-visible"
+                              className="mt-2 flex flex-col gap-1 rounded-xl w-full shrink-0 items-center"
                             >
                               {group.cards.map((card, cardIndex) => {
                                 const c = card as CardWithImage;
@@ -320,80 +421,22 @@ export const DeckStackedListView = () => {
                                   c.uuid;
                                 const isExpanded =
                                   cardIndex === group.cards.length - 1;
-                                const previewHeight = 320;
+                                const previewHeight = 336;
                                 const previewWidth =
                                   (previewHeight * 488) / 680;
                                 const isLastColumn =
                                   columnIndex === columns.length - 1;
                                 return (
-                                  <motion.div
+                                  <StackedListCardRow
                                     key={cardId}
-                                    initial={{ opacity: 0, scale: 0.7 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{
-                                      opacity: 0,
-                                      transition: { duration: 0.15 },
-                                    }}
-                                    transition={{
-                                      type: "spring",
-                                      stiffness: 250,
-                                      damping: 12,
-                                      delay: 0.01 * cardIndex,
-                                    }}
-                                    className={cn(
-                                      "group/card flex items-center rounded-xl transition-colors duration-150 border-b border-dark/5 last:border-b-0 relative",
-                                    )}
-                                    style={{
-                                      ["--preview-w" as string]: `${previewWidth + 8}px`,
-                                    }}
-                                  >
-                                    <div
-                                      className={cn(
-                                        "relative shrink-0 rounded-xl max-w-60",
-                                        isExpanded ? "h-full" : "h-9",
-                                      )}
-                                    >
-                                      {c.imageFrontUrl ? (
-                                        <Image
-                                          src={c.imageFrontUrl}
-                                          width={488}
-                                          height={680}
-                                          alt=""
-                                          className={cn(
-                                            "object-cover w-fit object-top rounded-xl h-fit",
-                                          )}
-                                          style={{
-                                            objectPosition: "0 0",
-                                          }}
-                                        />
-                                      ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs" />
-                                      )}
-                                    </div>
-                                    {/* Hover preview: same-size card duplicate, higher z-index, right or left by column */}
-                                    {c.imageFrontUrl && (
-                                      <div
-                                        className={cn(
-                                          "pointer-events-none absolute top-0 z-[100] rounded-2xl shadow-xl opacity-0 transition-opacity duration-150 group-hover/card:opacity-100",
-                                          isLastColumn
-                                            ? "right-full mr-2"
-                                            : "left-full ml-2",
-                                        )}
-                                        style={{
-                                          width: `${previewWidth}px`,
-                                          height: `${previewHeight}px`,
-                                        }}
-                                      >
-                                        <Image
-                                          src={c.imageFrontUrl}
-                                          width={488}
-                                          height={680}
-                                          alt=""
-                                          className="object-cover w-full h-full rounded-2xl"
-                                        />
-                                      </div>
-                                    )}
-                                  </motion.div>
+                                    card={c}
+                                    cardId={cardId}
+                                    isExpanded={isExpanded}
+                                    isLastColumn={isLastColumn}
+                                    previewWidth={previewWidth}
+                                    previewHeight={previewHeight}
+                                    cardIndex={cardIndex}
+                                  />
                                 );
                               })}
                             </GroupItems>

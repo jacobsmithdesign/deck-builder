@@ -36,7 +36,7 @@ export default function AnimatedDeckView() {
               <div className="h-full min-w-88 max-w-86 z-20 overflow-y-hidden pb-2">
                 <SidePanel />
               </div>
-              <CustomScrollArea className="h-full w-full overflow-y-scroll hide-scrollbar z-10">
+              <CustomScrollArea className="h-full w-full overflow-y-scroll overflow-x-hidden hide-scrollbar z-10">
                 <DeckControls />
                 <div className="pt-14">
                   <DeckViewContent />
