@@ -31,10 +31,10 @@ export default function UnsavedChanges() {
   };
 
   return (
-    <div className="flex gap-1 items-center ">
+    <div className="flex gap-1 items-center">
       <AnimatePresence>
         {changesMadeState && changesMadeState.length > 0 && editMode && (
-          <div className="flex flex-col gap-1 items-start ">
+          <div className="flex flex-col gap-1 ">
             <div className="flex gap-1 pointer-events-auto">
               {/* Save button */}
               <motion.div

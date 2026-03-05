@@ -14,7 +14,7 @@ const RaindropContainer = React.forwardRef<HTMLDivElement, ContainerProps>(
     <div
       ref={ref}
       className={cn(
-        "relative overflow-hidden bg-gradient-to-t from-light/75 to-light/40 backdrop-blur-sm p-1 shadow-inner shadow-light/80",
+        "relative overflow-hidden bg-gradient-to-t from-light/75 to-light/40 p-1 shadow-inner shadow-light/80 border-light",
         className,
       )}
       {...props}

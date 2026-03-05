@@ -12,6 +12,16 @@ import {
 } from "@/lib/db/searchCardForDeck";
 import { useEditMode } from "@/app/context/editModeContext";
 import { RaindropContainer } from "../primitives/RaindropContainer";
+import { Button } from "@headlessui/react";
+import { AnimatedButton } from "../primitives/AnimatedButton";
+import {
+  BsFilter,
+  BsFilterCircle,
+  BsSortDown,
+  BsWindow,
+  BsWindowDock,
+} from "react-icons/bs";
+import { RiFilter2Line, RiFilterFill } from "react-icons/ri";
 
 export default function DeckControls() {
   const { deck, addCard } = useCardList();
@@ -36,20 +46,48 @@ export default function DeckControls() {
   return (
     <div className="absolute z-10 flex w-full pr-4 pt-2 h-10 pl-1">
       <RaindropContainer
-        className="w-full h-10 rounded-full drop-shadow-xl outline outline-light/30 border-t "
-        innerClassName="rounded-full -translate-y-1 -translate-x-1"
+        className="w-full h-10 rounded-full drop-shadow-xl backdrop-blur-sm p-0 from-light/80"
+        innerClassName="scale-100 outline-light border-t border-light/20 outline"
         bgColor={bgColor ? bgColor : "light"}
       ></RaindropContainer>
       {userOwnsDeck ? (
-        <div className="absolute flex h-10 w-full justify-center items-center">
-          <SearchBox
-            searchFunction={searchCardForDeck}
-            selectFunction={addSelectedCard}
-            placeholder="Search for new card"
-            padding={12}
-          />
-          <div className="left-2 top-2 absolute z-10 pointer-events-none">
-            <UnsavedChanges />
+        <div className="absolute w-full items-center h-10 pl-2 pr-6 grid grid-cols-3">
+          <div className="relative flex mb-6">
+            <div className="absolute">
+              <UnsavedChanges />
+            </div>
+          </div>
+          <div className="flex justify-center">
+            <SearchBox
+              searchFunction={searchCardForDeck}
+              selectFunction={addSelectedCard}
+              placeholder="Search for new card"
+              padding={12}
+            />
+          </div>
+
+          <div className="flex justify-end gap-1">
+            {/* View Button */}
+            <AnimatedButton
+              variant="raindrop"
+              className="w-fit h-8 rounded-full bg-light/0 font-bold text-dark/80 gap-1"
+              title="View"
+              icon={<BsWindow className="w-5 h-4" />}
+            />
+            {/* Sort Button */}
+            <AnimatedButton
+              variant="raindrop"
+              className="w-fit h-8 rounded-full bg-light/0 font-bold text-dark/80 gap-1"
+              title="Sort"
+              icon={<BsSortDown className="w-5 h-4" />}
+            />
+            {/* Filter Button */}
+            <AnimatedButton
+              variant="raindrop"
+              className="w-fit h-8 rounded-full bg-light/0 font-bold text-dark/80 gap-1"
+              title="Filters"
+              icon={<RiFilter2Line className="w-5 h-4" />}
+            />
           </div>
         </div>
       ) : (

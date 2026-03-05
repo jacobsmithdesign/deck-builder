@@ -30,6 +30,8 @@ import {
 } from "../primitives/FrostedPill";
 import DeckControls from "./DeckControls";
 
+interface ViewStates {}
+
 // This is the main section of the deck page that contains the
 // CardTable and Details view underneath the commander overview.
 //
@@ -40,7 +42,7 @@ export default function AnimatedDeckView() {
   const { profile } = useUser();
   const { addCard } = useCardList();
   const { setEditMode } = useEditMode();
-
+  const [view, setView] = useState();
   return (
     <AnimatePresence>
       <div className="bg-light">

@@ -13,6 +13,8 @@ const buttonVariants = cva(
           "bg-light text-primary-foreground hover:bg-primary/90 hover:drop-shadow-sm bg-light/80 md:hover:bg-light/70 dropshadow-md border border-light/0 md:hover:border-light/60",
         frosted:
           "bg-gradient-to-t from-light/65 to-light/40 backdrop-blur-sm p-1 border border-light/40 shadow-inner shadow-light/60",
+        raindrop:
+          "relative overflow-hidden bg-gradient-to-t from-light/55 to-light/30 p-1 shadow-inner shadow-light/80 border-light backdrop-blur-md md:hover:bg-light/80",
         primary: "bg-dark/90 text-light hover:bg-dark/80",
         secondary:
           "bg-dark/10 text-primary-foreground hover:bg-primary/90 hover:bg-dark/20",
@@ -45,10 +47,23 @@ export interface ButtonProps
     React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
+  icon?: any;
 }
 
 const AnimatedButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, title, variant, size, asChild = false, ...props }, ref) => {
+  (
+    {
+      className,
+      children,
+      title,
+      variant,
+      size,
+      icon,
+      asChild = false,
+      ...props
+    },
+    ref,
+  ) => {
     const Comp = asChild ? Slot : "button";
     return (
       <AnimatePresence>
@@ -76,7 +91,9 @@ const AnimatedButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
             ref={ref}
             {...props}
           >
+            {icon}
             {title}
+            {children}
           </Comp>
         </motion.div>
       </AnimatePresence>

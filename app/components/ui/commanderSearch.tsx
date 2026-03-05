@@ -63,7 +63,7 @@ export default function CommanderSearch({
             <ul className="absolute z-50 w-full bg-light shadow border rounded-xl overflow-clip">
               {searchResults.map((card) => (
                 <li
-                  key={`${card.id}`}
+                  key={`${card.uuid}`}
                   className="p-2 hover:bg-lightsecondary/20 cursor-pointer"
                   onClick={() => {
                     onSelect(card);
