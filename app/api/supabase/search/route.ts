@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     if (error) {
       console.error("Supabase match_cards error:", error);
       return NextResponse.json(
-        { error: "Failed to search cards" },
+        { error: "Failed to search cards", details: error.message },
         { status: 500 }
       );
     }

@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-// import { embedQuery } from "@/lib/embedding/embedQuery";
 
 import {
   BoardContent,
@@ -10,11 +9,12 @@ import {
   GroupHeader,
   GroupItems,
   GroupTitle,
-} from "@/app/deck/components/primitives/Board"; // adjust path if needed
+} from "@/app/deck/components/primitives/Board";
 
-import PerspectiveCard from "@/app/deck/components/card/perspectiveCardUI/DeckPerspectiveCard";
+import DeckPerspectiveCard from "@/app/deck/components/card/perspectiveCardUI/DeckPerspectiveCard";
 import CustomScrollArea from "@/app/components/ui/CustomScrollArea";
-import { embedQuery } from "@/lib/client/embedQuery";
+import { normalizeSearchCard } from "@/lib/client/normalizeSearchCard";
+import type { CardRecord } from "@/lib/schemas";
 
 // --- Type Ordering ---
 const typeOrder = [
@@ -52,13 +52,20 @@ const groupByCardType = (cards: any[] = []) => {
 // ---------------------------------------------
 export default function SearchBoard() {
   const [searchText, setSearchText] = useState("");
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<
+    (CardRecord & { imageFrontUrl: string | null })[]
+  >([]);
   const [loading, setLoading] = useState(false);
   const [visibleGroups, setVisibleGroups] = useState<Set<string>>(new Set());
 
   // Derived grouping
   const grouped = useMemo(() => groupByCardType(results), [results]);
   const allTypes = grouped.map((g) => g.type);
+
+  // Initialise group visibility when search results change
+  useEffect(() => {
+    setVisibleGroups(new Set(allTypes));
+  }, [allTypes.join(",")]);
 
   // Toggle visibility of a group
   const toggleGroupVisibility = (type: string) => {
@@ -69,37 +76,51 @@ export default function SearchBoard() {
     });
   };
 
-  // Initialise group visibility when search results change
-  useMemo(() => {
-    setVisibleGroups(new Set(allTypes));
-  }, [allTypes.join(",")]);
-
-  // Search Handler
+  // Search handler: embed on server via Ollama (same model as DB), then vector search
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     if (!searchText.trim()) return;
 
-    const vector = await embedQuery(searchText);
-    console.log(vector);
-
     setLoading(true);
-
-    const params = new URLSearchParams();
-    params.append("vector", vector);
-    params.append("threshold", "0.1");
-    params.append("limit", "100");
-
-    // Make a request to the /classify route on the server.
     try {
-      const result = await fetch(`/api/supabase/search?${params.toString()}`);
+      const embedRes = await fetch("/api/embed", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: searchText.trim() }),
+      });
+      const embedJson = await embedRes.json();
+      if (!embedRes.ok) {
+        console.error("Embed failed", embedJson);
+        setResults([]);
+        return;
+      }
+      const vector = embedJson.vector as number[];
+      if (!Array.isArray(vector) || vector.length === 0) {
+        setResults([]);
+        return;
+      }
 
-      const json = await result.json();
-
-      console.log("Results returned from embed search: ", json);
+      const searchRes = await fetch("/api/supabase/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          vector,
+          threshold: 0.1,
+          limit: 100,
+        }),
+      });
+      const searchJson = await searchRes.json();
+      if (!searchRes.ok) {
+        setResults([]);
+        return;
+      }
+      const raw = Array.isArray(searchJson.data) ? searchJson.data : [];
+      setResults(raw.map(normalizeSearchCard));
+    } catch (err) {
+      console.error("Semantic card search failed", err);
+      setResults([]);
+    } finally {
       setLoading(false);
-      return setResults(json.data);
-    } catch (error) {
-      console.log("Error embedding search", error);
     }
   }
 
@@ -147,9 +168,8 @@ export default function SearchBoard() {
               </p>
             )}
 
-            {/* Results */}
-
-            {/* {grouped.map((group, index) => (
+            {/* Results in CardView style (grouped by type) */}
+            {grouped.map((group) => (
               <Group key={group.type}>
                 <GroupHeader className="py-2">
                   <GroupTitle
@@ -181,10 +201,10 @@ export default function SearchBoard() {
                               stiffness: 200,
                             }}
                           >
-                            <PerspectiveCard
+                            <DeckPerspectiveCard
                               id={card.uuid}
-                              image={card.imageFrontUrl}
-                              label={card.name}
+                              image={card.imageFrontUrl ?? undefined}
+                              label={card.name ?? undefined}
                               card={card}
                               isEditMode={false}
                             />
@@ -195,7 +215,7 @@ export default function SearchBoard() {
                   )}
                 </AnimatePresence>
               </Group>
-            ))} */}
+            ))}
           </CustomScrollArea>
         </motion.div>
       </BoardContent>

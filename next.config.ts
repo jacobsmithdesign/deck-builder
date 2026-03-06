@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  // Server can load onnxruntime-node for /api/embed (Transformers.js in Node)
+  serverExternalPackages: ["@huggingface/transformers", "onnxruntime-node"],
+
   webpack: (config, { isServer }) => {
     config.module.rules.push({
       test: /\.svg$/,
@@ -11,7 +14,8 @@ const nextConfig: NextConfig = {
     config.resolve.alias = {
       ...config.resolve.alias,
       sharp$: false,
-      "onnxruntime-node$": false,
+      // Only exclude onnxruntime-node from client bundle; server uses it for /api/embed
+      ...(isServer ? {} : { "onnxruntime-node$": false }),
     };
     return config;
   },

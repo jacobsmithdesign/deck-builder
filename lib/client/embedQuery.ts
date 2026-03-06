@@ -1,11 +1,10 @@
 // lib/client/embedQuery.ts
-import { getEmbedder } from "@/lib/client/applicationSingleton";
+import { embedQueryMxbai } from "@/lib/client/mxbaiEmbedder";
 
-export async function embedQuery(text: string) {
-  const { tokenizer, text_model } = await getEmbedder();
-
-  const inputs = tokenizer(text, { padding: true, truncation: true });
-  const { text_embeds } = await text_model(inputs);
-
-  return text_embeds.tolist()[0];
+/**
+ * Embeds a search query for semantic card search.
+ * Uses mxbai-embed-large-v1 (compatible with DB rules_embedding from Ollama mxbai-embed-large:latest).
+ */
+export async function embedQuery(text: string): Promise<number[]> {
+  return embedQueryMxbai(text);
 }
