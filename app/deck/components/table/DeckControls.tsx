@@ -160,7 +160,6 @@ export default function DeckControls() {
           {/* View Button + dropdown bubbles */}
           <div className="relative" ref={viewDropdownRef}>
             <button
-              type="button"
               onClick={() => setViewOpen((o) => !o)}
               className="contents"
               aria-expanded={viewOpen}
