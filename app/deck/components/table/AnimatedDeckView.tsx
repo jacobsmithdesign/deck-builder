@@ -33,7 +33,7 @@ export default function AnimatedDeckView() {
             style={{ background: bgColor }}
             className="h-dvh items-center text-dark pt-12 flex flex-col"
           >
-            <div className="w-full h-full flex gap-2 overflow-y-hidden relative my-1 rounded-xl">
+            <div className="w-full h-full flex gap-2 overflow-y-hidden relative my-1 rounded-xl items-center">
               <div className="h-full min-w-88 max-w-86 z-20 overflow-y-hidden pb-2">
                 <SidePanel />
               </div>

@@ -239,7 +239,7 @@ function StackedListCardRow({
       {card.imageFrontUrl && (
         <div
           className={cn(
-            "pointer-events-none absolute top-0 z-10 rounded-2xl shadow-xl transition-opacity duration-150",
+            "pointer-events-none absolute top-0 z-10 rounded-2xl transition-opacity duration-150 overflow-visible drop-shadow-xl",
             previewAllowed
               ? "opacity-0 group-hover/card:opacity-100"
               : "hidden",
@@ -257,7 +257,7 @@ function StackedListCardRow({
             width={488}
             height={680}
             alt=""
-            className="object-cover w-full h-full rounded-2xl"
+            className="object-cover w-full h-full rounded-2xl "
           />
         </div>
       )}

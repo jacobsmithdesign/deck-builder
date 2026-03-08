@@ -15,6 +15,7 @@ type DeckRow = {
   name: string;
   user_id: string | null;
   type: string | null;
+  is_public?: boolean | null;
   code?: string | null;
   release_date?: string | null;
   sealed_product?: string | null;
@@ -51,9 +52,12 @@ type DeckRow = {
     created_at?: string | null;
   } | null;
 
-  deck_ai_pillars?: {
-    pillars?: Record<string, string> | null;
-  } | null;
+  deck_ai_pillars?:
+    | {
+        pillars?: Record<string, string> | null;
+      }
+    | { pillars?: Record<string, string> | null }[]
+    | null;
 
   deck_ai_difficulty?: {
     power_level: number;
@@ -91,7 +95,8 @@ export function hydrateDeckIntoContext(
     name: row.name,
     userId: row.user_id,
     type: row.type ?? undefined,
-    isUserDeck: !!row.user_id, // true if owned; adjust if needed
+    isUserDeck: !!row.user_id,
+    isPublic: row.is_public === true,
     code: row.code ?? null,
     release_date: row.release_date ?? null,
     sealed_product: row.sealed_product ?? null,
@@ -155,11 +160,14 @@ export function hydrateDeckIntoContext(
     opts.setStrengthsAndWeaknesses(null as any);
   }
 
-  // 5) Pillars
-  if (row.deck_ai_pillars) {
+  // 5) Pillars (Supabase may return one-to-many as array)
+  const pillarsRow = Array.isArray(row.deck_ai_pillars)
+    ? row.deck_ai_pillars[0]
+    : row.deck_ai_pillars;
+  if (pillarsRow?.pillars) {
     opts.setPillars({
       deckId: row.id,
-      pillars: row.deck_ai_pillars.pillars ?? {},
+      pillars: pillarsRow.pillars ?? {},
       updated_at: null,
     });
   } else {

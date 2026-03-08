@@ -80,9 +80,9 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
       .from("decks")
       .select(
         `
-        id, name, user_id, type, code, release_date, sealed_product,
-      commander_uuid, display_card_uuid,
-      creator:profiles(username),
+        id, name, user_id, type, is_public, code, release_date, sealed_product,
+        commander_uuid, display_card_uuid,
+        creator:profiles(username),
 
       deck_cards:deck_cards!inner (
         count, board_section,

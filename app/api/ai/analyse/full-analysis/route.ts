@@ -222,7 +222,19 @@ export async function GET(req: NextRequest) {
                   - pillars: array of { "slug": string (e.g. ramp, card_draw, interaction, wincon), "markdown": string (2-4 sentences) }. Length at least 1.
                   
                   You must provide explanations for all difficulty metrics.
-                  Rate pilot skill based on how much deck building and prior game experience is required to play the deck to its potential and how beginner friendly the deck is.
+
+                  Examine the provided card list to assign a Power Level (1-10) by evaluating card efficiency, synergy density, and the Consistent Win Turn (CWT) after applying the specified modifiers:
+                  Level 1: The deck lacks any functional cohesion or intentional synergy, consisting of a random assortment of cards with no discernible path to victory.
+                  Level 2: While a basic theme exists, the deck utilizes strictly 'sub-optimal' or 'unplayable' cards that fail to establish any board dominance or pressure.
+                  Level 3: Features a clear strategy but operates with extreme inefficiency (CWT 12+), relying on high-mana, low-impact cards and minimal interaction.
+                  Level 4: A casual build with a CWT of 10-11 that shows basic synergy but is easily disrupted due to a lack of protection or redundant pieces.
+                  Level 5: A 'focused' deck with a CWT of 8-9 that utilizes foundational format staples and a consistent mana base to execute its primary game plan.
+                  Level 6: Demonstrates strong optimization with a CWT of 7, integrating efficient card draw and reliable tutors to threaten the board mid-game.
+                  Level 7: An 'optimized' high-power build with a CWT of 6 that features a dense suite of interaction and highly efficient win conditions.
+                  Level 8: Operates at the ceiling of non-competitive play with a CWT of 5, maximizing staple density and the ability to recover instantly from setbacks.
+                  Level 9: A 'fringe-competitive' deck with a CWT of 3-4 that employs fast mana and free spells to consistently attempt an early-game lockdown or win.
+                  Level 10: The absolute format peak with a CWT of 1-2, utilizing every possible efficiency to present a protected win-state or total dominance immediately.
+
                   Rate interaction intensity based on the frequency of interactions with the board.
                   Rate complexity based on the variety of cards and the potential for multiple interactions with the board.
 
@@ -243,7 +255,7 @@ export async function GET(req: NextRequest) {
           prompt,
           providerOptions: {
             google: {
-              temperature: 0.75,
+              temperature: 0.3,
               thinkingConfig: {
                 thinkingLevel: "high",
               },

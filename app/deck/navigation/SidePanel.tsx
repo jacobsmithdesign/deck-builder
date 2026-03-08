@@ -1,10 +1,5 @@
-import CustomScrollArea from "@/app/components/ui/CustomScrollArea";
 import { useCommander } from "@/app/context/CommanderContext";
 import { AnimatePresence, motion } from "framer-motion";
-import { ManaCurve } from "../components/overview/manaCurve";
-import { useCardList } from "@/app/context/CardListContext";
-import { SpellTypeCounts } from "../components/overview/spellTypeCounts";
-import { useCompactView } from "@/app/context/compactViewContext";
 import { useEffect, useState } from "react";
 import {
   CardTypeCount,
@@ -15,18 +10,26 @@ import {
 import { getAverageColorFromImage } from "@/lib/getAverageColour";
 import { CardTitle } from "@/app/components/ui/card";
 import { ManaCost } from "@/app/components/ui/manaCost";
-import { Button } from "../components/primitives/button";
-import Link from "next/link";
-import PerspectiveCard from "../components/card/perspectiveCardUI/PerspectiveCard";
+import { useCompactView } from "@/app/context/compactViewContext";
+import { SpellTypeCounts } from "../components/overview/spellTypeCounts";
+
+const OVERVIEW_NAV: { id: string; label: string }[] = [
+  { id: "overview-archetype", label: "Archetype" },
+  { id: "overview-strengths", label: "Strengths & Weaknesses" },
+  { id: "overview-mana", label: "Mana" },
+  { id: "overview-pillars", label: "Pillars" },
+];
+
+function scrollToSection(sectionId: string) {
+  document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
+}
 
 export default function SidePanel() {
-  const { compactView, toggleCompactView, setBgColor, bgColor } =
-    useCompactView();
+  const { setBgColor } = useCompactView();
   const { deckDetails, commanderCard } = useCommander();
   const [artworkColor, setArtworkColor] = useState<string>();
   const [typeCount, setTypeCount] = useState<CardTypeCount[]>([]);
   const [keywordCount, setKeywordCount] = useState<KeywordCount[]>([]);
-  const { deckFeatures, aiOverview, strengthsAndWeaknesses } = useCardList();
   const [showCommander, setShowCommander] = useState<boolean>(false);
   // Set the artworkColour from the card artwork image
   useEffect(() => {
@@ -53,10 +56,6 @@ export default function SidePanel() {
     }
   }, [deckDetails?.cards]);
 
-  const rgbaFrom = artworkColor
-    ?.replace("rgb(", "rgba(")
-    .replace(")", ", 0.1)");
-  const rgbaTo = artworkColor?.replace("rgb(", "rgba(").replace(")", ", 0)");
   return (
     <AnimatePresence>
       <div className="min-w-86 max-w-86 h-full bg-darksecondary/10 hide-scrollbar z-10 p-2 flex flex-col gap-1 ml-2 mb-1 mt-1 rounded-xl">
@@ -117,95 +116,21 @@ export default function SidePanel() {
           <SpellTypeCounts spellCounts={typeCount} compactView={false} />
         </div>
 
-        <div className="overflow-y-scroll w-full flex flex-col hide-scrollbar gap-1">
-          <motion.div
-            initial={{
-              opacity: 0,
-              scale: 0.7,
-              translateX: -60,
-              translateY: -60,
-            }}
-            animate={{
-              opacity: 1,
-              scale: 1,
-              translateY: 0,
-              translateX: 0,
-            }}
-            exit={{
-              opacity: 0,
-              scale: 0.4,
-              translateX: -40,
-              translateY: -60,
-              transition: { delay: 0.05 },
-            }}
-            transition={{ duration: 0.2 }}
-            className="h-33"
-          >
-            <ManaCurve
-              deckFeatures={deckFeatures}
-              defaultMode="pool"
-              compactView={false}
-            />
-          </motion.div>
-          <motion.div
-            initial={{
-              opacity: 0,
-              scale: 0.7,
-              translateX: -60,
-              translateY: -60,
-            }}
-            animate={{
-              opacity: 1,
-              scale: 1,
-              translateY: 0,
-              translateX: 0,
-            }}
-            exit={{
-              opacity: 0,
-              scale: 0.4,
-              translateX: -40,
-              translateY: -60,
-              transition: { delay: 0.05 },
-            }}
-            transition={{ duration: 0.2 }}
-            className="min-h-33"
-          >
-            <ManaCurve
-              deckFeatures={deckFeatures}
-              defaultMode="curve"
-              compactView={false}
-            />
-          </motion.div>
-          <motion.div
-            initial={{
-              opacity: 0,
-              scale: 0.7,
-              translateX: -60,
-              translateY: -60,
-            }}
-            animate={{
-              opacity: 1,
-              scale: 1,
-              translateY: 0,
-              translateX: 0,
-            }}
-            exit={{
-              opacity: 0,
-              scale: 0.4,
-              translateX: -40,
-              translateY: -60,
-              transition: { delay: 0.05 },
-            }}
-            transition={{ duration: 0.2 }}
-            className="min-h-33"
-          >
-            <ManaCurve
-              deckFeatures={deckFeatures}
-              defaultMode="cost"
-              compactView={false}
-            />
-          </motion.div>
-        </div>
+        <nav
+          className="w-full flex flex-col gap-1 mt-2"
+          aria-label="Overview sections"
+        >
+          {OVERVIEW_NAV.map(({ id, label }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => scrollToSection(id)}
+              className="text-left text-sm font-medium text-dark/80 hover:text-dark hover:bg-light/20 rounded-md px-2 py-1.5 transition-colors w-full"
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
       </div>
     </AnimatePresence>
   );

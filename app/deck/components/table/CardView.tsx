@@ -255,7 +255,7 @@ export const CardView = () => {
                               ease: "easeInOut",
                             },
                           }}
-                          className="overflow-y-hidden flex px-2"
+                          className="overflow-y-hidden flex px-2 scroll-mt-26"
                         >
                           <GroupItems key="group-items" className="mt-2">
                             {group.cards.map((card, index) => (

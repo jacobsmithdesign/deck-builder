@@ -36,7 +36,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user) return;
+    if (!user) {
+      setProfile(null);
+      setUserLoggedIn(false);
+      setLoading(false);
+      return;
+    }
 
     const { data } = await supabase
       .from("profiles")
@@ -45,8 +50,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       .single();
 
     setProfile(data);
-    setLoading(false);
     setUserLoggedIn(!!data);
+    setLoading(false);
   };
 
   useEffect(() => {

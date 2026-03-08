@@ -10,6 +10,7 @@ import { ExpandablePillsMini } from "../overview/expandablePillsMini";
 import { CardRecord } from "@/lib/schemas";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { AnimatePresence, motion } from "framer-motion";
 
 function formatTagLabel(slug: string) {
   return slug.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
@@ -46,6 +47,30 @@ export default function DeckOverviewSection() {
   const { deck, difficulty, archetypeOverview, setDeck, userOwnsDeck } =
     useCardList();
   const { deckDetails, commanderCard, setDeckDetails } = useCommander();
+  const [visibilitySaving, setVisibilitySaving] = React.useState(false);
+  const [visibilityHovered, setVisibilityHovered] = React.useState(false);
+  const isPublic = deck?.isPublic ?? false;
+
+  const toggleVisibility = React.useCallback(async () => {
+    if (!deck?.id || !userOwnsDeck || visibilitySaving) return;
+    const next = !isPublic;
+    setVisibilitySaving(true);
+    try {
+      const res = await fetch("/api/decks/update-visibility", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deckId: deck.id, isPublic: next }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        console.error("Failed to update visibility:", data.error);
+        return;
+      }
+      setDeck({ ...deck, isPublic: next });
+    } finally {
+      setVisibilitySaving(false);
+    }
+  }, [deck, userOwnsDeck, isPublic, visibilitySaving, setDeck]);
 
   // On page load or archetype change: sync tags from axes (65+) to DB if owner and different
   React.useEffect(() => {
@@ -159,6 +184,56 @@ export default function DeckOverviewSection() {
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-dark/60">
                 {creatorName && <span>by {creatorName}</span>}
                 {releaseDate && <span>{formatDate(releaseDate)}</span>}
+                {userOwnsDeck && (
+                  <div
+                    className="relative inline-block"
+                    onMouseEnter={() => setVisibilityHovered(true)}
+                    onMouseLeave={() => setVisibilityHovered(false)}
+                  >
+                    <button
+                      type="button"
+                      onClick={toggleVisibility}
+                      disabled={visibilitySaving}
+                      className="flex items-center justify-center rounded-md px-2 py-1 transition-colors hover:bg-light/30 disabled:opacity-60 cursor-pointer"
+                      title={
+                        isPublic
+                          ? "Deck is visible to everyone"
+                          : "Only you can see this deck"
+                      }
+                    >
+                      {visibilitySaving ? (
+                        <span className="text-dark/60 text-sm">Updating…</span>
+                      ) : (
+                        <span
+                          className={`inline-block h-2 w-2 shrink-0 rounded-full ${isPublic ? "bg-green-500" : "bg-dark/40"}`}
+                          aria-hidden
+                        />
+                      )}
+                    </button>
+                    <AnimatePresence>
+                      {visibilityHovered && !visibilitySaving && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 4 }}
+                          transition={{ duration: 0.15, ease: "easeOut" }}
+                          className="absolute left-1/2 bottom-full z-20 -translate-x-1/2 mb-1 min-w-20 rounded-md shadow-lg border border-dark/10 overflow-hidden bg-light/95 backdrop-blur-sm"
+                        >
+                          <div className="px-2 py-1.5">
+                            <p className="font-semibold text-sm text-dark/90 whitespace-nowrap">
+                              {isPublic ? "Public" : "Private"}
+                            </p>
+                            <p className="text-xs text-dark/60 leading-snug">
+                              {isPublic
+                                ? "Deck is visible to everyone"
+                                : "Only you can see this deck"}
+                            </p>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )}
               </div>
               {commanderCard?.mana_cost && (
                 <div className="flex flex-wrap items-center gap-2">

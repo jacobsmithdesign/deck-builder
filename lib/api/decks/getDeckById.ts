@@ -36,6 +36,7 @@ export async function getDeckById(deckId: string) {
       release_date: deckData.release_date ?? null,
       sealed_product: deckData.sealed_product ?? null,
       isUserDeck,
+      is_public: deckData.is_public === true,
       display_card_uuid: deckData.display_card_uuid ?? null,
       commander_uuid: deckData.commander_uuid ?? null,
       commander: deckData.commander ?? null,

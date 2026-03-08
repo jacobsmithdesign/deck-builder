@@ -28,6 +28,10 @@ const ALL_SPELL_TYPES = [
   "Sideboard",
 ];
 
+function scrollToSection(sectionId: string) {
+  document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
+}
+
 export function SpellTypeCounts({
   spellCounts,
   compactView,
@@ -47,7 +51,7 @@ export function SpellTypeCounts({
       className={` text-dark transition-all duration-250 rounded-3xl p-2`}
     >
       {displayCounts.map((type, index) => (
-        <Link href={`#${type.type}`}>
+        <button onClick={() => scrollToSection(type.type)}>
           <RaindropContainer
             bgColor={bgColor}
             className={cn(
@@ -61,7 +65,7 @@ export function SpellTypeCounts({
             innerClassName={cn(
               "transition-all duration-250 w-full flex opacity-20 md:group-hover:opacity-0",
             )}
-            childClassName="flex w-full justify-between px-1"
+            childClassName="flex w-full justify-between px-2 py-1"
             key={index}
           >
             <SpellType
@@ -83,7 +87,7 @@ export function SpellTypeCounts({
               {type.count}
             </SpellCount>
           </RaindropContainer>
-        </Link>
+        </button>
       ))}
     </RaindropContainer>
   );

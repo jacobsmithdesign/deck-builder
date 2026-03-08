@@ -18,6 +18,7 @@ export interface DeckMetadata {
   userId?: string | null;
   type?: string;
   isUserDeck: boolean;
+  isPublic?: boolean;
   code?: string | null;
   release_date?: string | null;
   sealed_product?: string | null;

@@ -12,7 +12,7 @@ const COST_BUCKETS = ["0-1", "2", "3", "4", "5", "6+"] as const;
 const MODES: Array<"pool" | "curve" | "cost"> = ["pool", "curve", "cost"];
 
 const fillClasses: Record<Color, string> = {
-  W: "bg-manaWhite",
+  W: "bg-yellow-100",
   U: "bg-manaBlue",
   B: "bg-manaBlack/60",
   R: "bg-manaRed",
@@ -80,9 +80,9 @@ export function ManaCurve({
   return (
     <RaindropContainer
       bgColor={bgColor}
-      childClassName="h-22"
+      childClassName="h-32"
       innerClassName="-translate-y-2 -translate-x-2"
-      className={`relative flex flex-col gap-2 w-full bg-darksecondary/15 p-2 transition-all duration-250 cursor-default min-h-33 rounded-3xl shadow-light overflow-hidden`}
+      className={`relative flex flex-col gap-2 w-full bg-darksecondary/15 p-2 transition-all duration-250 cursor-default h-43 rounded-3xl shadow-light overflow-hidden`}
     >
       {toggle && (
         <button
