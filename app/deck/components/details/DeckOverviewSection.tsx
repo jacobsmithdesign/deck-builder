@@ -121,8 +121,9 @@ export default function DeckOverviewSection() {
     (deckDetails as { releaseDate?: string | null } | null)?.releaseDate ??
     deck?.release_date ??
     null;
-  const creatorName = (deckDetails as { creatorName?: string | null } | null)
-    ?.creatorName;
+  const creatorName =
+    (deckDetails as { creatorName?: string | null } | null)?.creatorName ??
+    (deck as { creatorName?: string | null } | null)?.creatorName;
 
   return (
     <Card className="mb-6">
@@ -144,28 +145,28 @@ export default function DeckOverviewSection() {
           <div className="flex justify-between">
             {/* Left: deck name, creator, release date, type, commander mana cost */}
             <div className="flex flex-col gap-2">
-              <CardTitle className="font-bold text-dark/90 truncate">
-                {name}
-              </CardTitle>
-
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-dark/60">
-                {creatorName && <span>by {creatorName}</span>}
-                {releaseDate && <span>{formatDate(releaseDate)}</span>}
+              <div className="flex items-center gap-2">
+                <CardTitle className="font-bold text-dark/90 truncate">
+                  {name}
+                </CardTitle>{" "}
                 {type && (
                   <span className="font-normal bg-light/20 px-2 rounded-md whitespace-nowrap">
                     {type}
                   </span>
                 )}
               </div>
+
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-dark/60">
+                {creatorName && <span>by {creatorName}</span>}
+                {releaseDate && <span>{formatDate(releaseDate)}</span>}
+              </div>
               {commanderCard?.mana_cost && (
                 <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-md text-dark/70">
-                    <span className="font-medium rounded-lg bg-light/20 px-1">
-                      Commander:
-                    </span>{" "}
-                    {commanderCard.name}
-                  </p>
-                  <ManaCost manaCost={commanderCard.mana_cost} />
+                  <p className="text-md text-dark/70">Commander</p>
+                  <div className="flex items-center gap-2 bg-light/15 rounded-lg px-2">
+                    <p>{commanderCard.name}</p>
+                    <ManaCost manaCost={commanderCard.mana_cost} />
+                  </div>
                 </div>
               )}
             </div>
