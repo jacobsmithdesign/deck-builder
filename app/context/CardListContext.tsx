@@ -24,6 +24,7 @@ export interface DeckMetadata {
   commander_uuid?: string | null;
   display_card_uuid?: string | null;
   tags?: string[];
+  creatorName?: string | null;
 }
 
 // Smaller land feature object for AI models

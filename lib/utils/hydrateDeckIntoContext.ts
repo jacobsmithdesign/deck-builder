@@ -20,6 +20,7 @@ type DeckRow = {
   sealed_product?: string | null;
   commander_uuid?: string | null;
   display_card_uuid?: string | null;
+  creator?: { username?: string | null } | null;
 
   deck_cards: {
     count: number;
@@ -96,6 +97,7 @@ export function hydrateDeckIntoContext(
     sealed_product: row.sealed_product ?? null,
     commander_uuid: row.commander_uuid ?? null,
     display_card_uuid: row.display_card_uuid ?? null,
+    creatorName: row.creator?.username ?? null,
   };
   opts.setDeck(deckMeta);
 

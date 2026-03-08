@@ -8,6 +8,7 @@ export async function getDeckById(deckId: string) {
     .from("decks")
     .select(
       `*, 
+      creator:profiles(username),
       deck_cards(*, cards(*)), 
       commander:cards!decks_commander_uuid_fkey( uuid, name, mana_value, mana_cost, type, text, color_identity, identifiers)
       `,
@@ -19,12 +20,17 @@ export async function getDeckById(deckId: string) {
 
   const isUserDeck = !!deckData.user_id;
 
+  const creatorName =
+    (deckData as { creator?: { username?: string | null } | null })?.creator
+      ?.username ?? null;
+
   return {
     source: isUserDeck ? "user" : "official",
     deck: {
       id: deckData.id,
       user_id: deckData.user_id ?? null,
       name: deckData.name,
+      creatorName: creatorName ?? null,
       code: deckData.code ?? null,
       type: deckData.type,
       release_date: deckData.release_date ?? null,

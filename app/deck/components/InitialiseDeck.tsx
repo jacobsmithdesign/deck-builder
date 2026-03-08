@@ -82,6 +82,7 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
         `
         id, name, user_id, type, code, release_date, sealed_product,
       commander_uuid, display_card_uuid,
+      creator:profiles(username),
 
       deck_cards:deck_cards!inner (
         count, board_section,
@@ -221,6 +222,8 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
       userId: "user_id" in deck ? deck.user_id : null,
       type: deck.type,
       isUserDeck: "user_id" in deck,
+      creatorName:
+        "creatorName" in deck ? ((deck as any).creatorName ?? null) : null,
       cards: deck.cards.map((c) => ({
         uuid: c.uuid,
         name: c.name,

@@ -10,7 +10,7 @@ import {
 } from "@/app/context/DeckViewContext";
 import { useFilteredCards } from "@/app/hooks/useFilteredCards";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import NewCardModal from "../card/NewCardModal";
 import UnsavedChanges from "../overlays/UnsavedChanges";
 import DeckPerspectiveCard from "../card/perspectiveCardUI/DeckPerspectiveCard";
@@ -93,10 +93,11 @@ const sortGroupCards = (cards: any[] = [], sortOption: DeckSortOption) => {
 
 export const CardView = () => {
   const { editMode } = useEditMode();
-  const { cards, changesMadeState } = useCardList();
+  const { cards } = useCardList();
+  const { sortOption, filters } = useDeckView();
   const filteredCards = useFilteredCards(cards);
-  const { sortOption } = useDeckView();
   const [visibleGroups, setVisibleGroups] = useState<Set<string>>(new Set());
+  const prevTypesKeyRef = useRef<string>("");
   const [openNewCardModal, setOpenNewCardModal] = useState(false);
   const [newCardType, setNewCardType] = useState<string>("");
   const [openCardInfoModal, setOpenCardInfoModal] = useState(false);
@@ -112,34 +113,41 @@ export const CardView = () => {
     }));
   }, [filteredCards, sortOption]);
 
-  // All group types, derived from the grouped cards
+  // All group types, derived from the grouped cards (stable so we only re-run open animation when types change, not on every add/remove)
   const allTypes = useMemo(
     () => groupedCardsArray.map((g) => g.type),
     [groupedCardsArray],
   );
+  const typesKey = useMemo(() => allTypes.join(","), [allTypes]);
 
-  // Initialise / update visible groups; delay each group by (cards in all previous groups) * msPerCard
+  // Initialise / update visible groups only when the set of group types changes (not when card count changes).
+  // This prevents the open animation from retriggering on every card add/remove.
+  // prevTypesKeyRef is set only after the stagger finishes so Strict Mode's double effect run still opens groups.
   const msPerCard = 17;
   useEffect(() => {
     if (groupedCardsArray.length === 0) {
       setVisibleGroups(new Set());
+      prevTypesKeyRef.current = "";
       return;
     }
+    if (prevTypesKeyRef.current === typesKey) return;
     setVisibleGroups(new Set());
     let previousCardCount = 0;
-    const delays = groupedCardsArray.map((group, index) => {
+    const timeouts = groupedCardsArray.map((group, index) => {
       const delayMs = previousCardCount * msPerCard;
       previousCardCount += group.cards.length;
+      const isLast = index === groupedCardsArray.length - 1;
       return setTimeout(() => {
         setVisibleGroups((prev) => {
           const next = new Set(prev);
           next.add(group.type);
           return next;
         });
+        if (isLast) prevTypesKeyRef.current = typesKey;
       }, delayMs);
     });
-    return () => delays.forEach(clearTimeout);
-  }, [groupedCardsArray, changesMadeState]);
+    return () => timeouts.forEach(clearTimeout);
+  }, [typesKey, groupedCardsArray]);
 
   // Toggle visibility for a single group
   const toggleGroupVisibility = (type: string) => {

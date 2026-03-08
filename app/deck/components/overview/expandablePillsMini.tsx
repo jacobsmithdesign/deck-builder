@@ -10,14 +10,14 @@ import { AnimatePresence, motion } from "framer-motion";
 // Power Level: numeric 1–10 (green = low, red = high)
 export const power_levelColors: Record<number, string> = {
   1: "bg-green-200 outline outline-green-300 text-green-800/80",
-  2: "bg-green-100 outline outline-green-400 text-green-800/80",
+  2: "bg-green-300 outline outline-green-400 text-green-800/80",
   3: "bg-yellow-200 outline outline-yellow-300 text-yellow-950/80",
-  4: "bg-yellow-100 outline outline-yellow-400 text-yellow-950/80",
+  4: "bg-yellow-300 outline outline-yellow-400 text-yellow-950/80",
   5: "bg-amber-200 outline outline-amber-300 text-amber-950/80",
   6: "bg-orange-200 outline outline-orange-300 text-orange-950/80",
-  7: "bg-orange-100 outline outline-orange-400 text-orange-950/80",
+  7: "bg-orange-300 outline outline-orange-400 text-orange-950/80",
   8: "bg-red-200 outline outline-red-300 text-red-950/80",
-  9: "bg-red-100 outline outline-red-400 text-red-950/80",
+  9: "bg-red-200 outline outline-red-400 text-red-950/80",
   10: "bg-red-300 outline outline-red-500 text-red-950/90",
 };
 

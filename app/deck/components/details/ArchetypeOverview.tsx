@@ -22,8 +22,8 @@ export function niceLabel(slug: string) {
 
 // Archetype score 0–100: 5 colours, 100 = green, 0 = red (same style as expandablePillsMini).
 const archetypeScoreColors: Record<number, string> = {
-  0: "bg-red-300 outline outline-red-500 text-red-950/90", // 0–19
-  1: "bg-amber-200 outline outline-amber-400 text-amber-950/80", // 20–39
+  0: "bg-red-300/30 outline outline-red-500/30 text-red-800/90", // 0–19
+  1: "bg-amber-200/30 outline outline-amber-400/30 text-amber-800/80", // 20–39
   2: "bg-yellow-200/30 outline outline-yellow-400/30 text-yellow-800/80", // 40–59
   3: "bg-lime-200/30 outline outline-lime-300/30 text-lime-800/80", // 60–79
   4: "bg-green-200/30 outline outline-green-400/30 text-green-800/80", // 80–100

@@ -1,11 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  Card,
-  CardContent,
-  CardTitle,
-} from "@/app/components/ui/card";
+import { Card, CardContent, CardTitle } from "@/app/components/ui/card";
 import { useCardList } from "@/app/context/CardListContext";
 import { useCommander } from "@/app/context/CommanderContext";
 import { ManaCost } from "@/app/components/ui/manaCost";
@@ -73,7 +69,11 @@ export default function DeckOverviewSection() {
         const data = await res.json();
         const newTags = data.tags ?? expectedTags;
         setDeck({ ...deck, tags: newTags });
-        if (deckDetails) setDeckDetails({ ...deckDetails, tags: newTags });
+        if (deckDetails)
+          setDeckDetails({
+            ...deckDetails,
+            tags: newTags,
+          } as typeof deckDetails);
       } catch {
         // background sync, ignore
       }
@@ -139,37 +139,55 @@ export default function DeckOverviewSection() {
             />
           </div>
         )}
-        <div className="flex-1 min-w-0 flex flex-col md:flex-row md:gap-4">
-          {/* Left: title row, meta, mana, description */}
-          <div className="flex-1 min-w-0 flex flex-col gap-2">
-            {/* Title + Commander on same row, title ellipsis on overflow */}
-            <div className="flex items-baseline gap-2 min-w-0">
-              <CardTitle className="font-bold text-dark/90 truncate min-w-0">
+        {/* Top: deck name, creator, release date, type, commander mana cost */}
+        <div className="flex-1 flex-col min-w-0">
+          <div className="flex justify-between">
+            {/* Left: deck name, creator, release date, type, commander mana cost */}
+            <div className="flex flex-col gap-2">
+              <CardTitle className="font-bold text-dark/90 truncate">
                 {name}
               </CardTitle>
-              {commanderCard && (
-                <span className="text-sm text-dark/60 shrink-0">
-                  · {commanderCard.name}
-                </span>
-              )}
-            </div>
 
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-dark/60">
-              {creatorName && <span>by {creatorName}</span>}
-              {releaseDate && <span>{formatDate(releaseDate)}</span>}
-              {type && (
-                <span className="font-normal bg-light/20 px-2 rounded-md whitespace-nowrap">
-                  {type}
-                </span>
-              )}
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-dark/60">
+                {creatorName && <span>by {creatorName}</span>}
+                {releaseDate && <span>{formatDate(releaseDate)}</span>}
+                {type && (
+                  <span className="font-normal bg-light/20 px-2 rounded-md whitespace-nowrap">
+                    {type}
+                  </span>
+                )}
+              </div>
               {commanderCard?.mana_cost && (
-                <ManaCost manaCost={commanderCard.mana_cost} />
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-md text-dark/70">
+                    <span className="font-medium rounded-lg bg-light/20 px-1">
+                      Commander:
+                    </span>{" "}
+                    {commanderCard.name}
+                  </p>
+                  <ManaCost manaCost={commanderCard.mana_cost} />
+                </div>
               )}
             </div>
-
+            {/* Right: expandable pills, then tag pills below */}
+            <div className="flex flex-col justify-between items-end">
+              {difficulty && <ExpandablePillsMini difficulty={difficulty} />}
+              {tags.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center rounded-full bg-light/40 px-2 py-0.5 text-sm font-medium text-dark/80"
+                    >
+                      {formatTagLabel(tag)}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          {/* Bottom: archetype overview description */}
+          <div>
             {archetypeOverview?.description && (
               <div className="mt-3 pt-3 border-t border-dark/10">
                 <div className="prose prose-sm dark:prose-invert max-w-none text-dark/80">
@@ -177,25 +195,6 @@ export default function DeckOverviewSection() {
                     {archetypeOverview.description}
                   </ReactMarkdown>
                 </div>
-              </div>
-            )}
-          </div>
-
-          {/* Right: expandable pills, then tag pills below */}
-          <div className="flex flex-col items-end gap-2 shrink-0">
-            {difficulty && (
-              <ExpandablePillsMini difficulty={difficulty} />
-            )}
-            {tags.length > 0 && (
-              <div className="flex flex-wrap gap-1 justify-end">
-                {tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center rounded-full bg-light/40 px-2 py-0.5 text-xs font-medium text-dark/80"
-                  >
-                    {formatTagLabel(tag)}
-                  </span>
-                ))}
               </div>
             )}
           </div>
