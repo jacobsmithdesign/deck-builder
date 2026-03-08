@@ -11,6 +11,7 @@ import { Board, BoardContent } from "../primitives/Board";
 import { useCompactView } from "@/app/context/compactViewContext";
 import CustomScrollArea from "@/app/components/ui/CustomScrollArea";
 import { useCardList } from "@/app/context/CardListContext";
+import DeckOverviewSection from "./DeckOverviewSection";
 import ArchetypeOverview from "./ArchetypeOverview";
 import PrimarySecondaryAxis from "./PrimarySecondaryAxist";
 import CardSuggestions from "./CardSuggestions";
@@ -25,6 +26,7 @@ export default function Details() {
           <div className="w-full h-full hide-scrollbar absolute px-2 ">
             <div className="pt-8 pr-1 flex flex-col">
               {/* New components go here */}
+              <DeckOverviewSection />
               <ArchetypeOverview />
               <StrengthsWeaknessesPanel />
               {/* <PrimarySecondaryAxis /> */}

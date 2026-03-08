@@ -13,6 +13,7 @@ import { DeckListView } from "./DeckListView";
 import { DeckStackedListView } from "./DeckStackedListView";
 import CustomScrollArea from "@/app/components/ui/CustomScrollArea";
 import DeckControls from "./DeckControls";
+import CommanderOverview from "@/app/components/ui/commanderOverview";
 
 function DeckViewContent() {
   const { view } = useDeckView();

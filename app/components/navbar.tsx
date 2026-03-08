@@ -22,6 +22,18 @@ export default function Navbar() {
             <Button variant="primaryBlue">Add New Deck</Button>
           </Link>
 
+          <Link href="/explore/cards">
+            <Button
+              variant="secondary"
+              className="flex items-center gap-1 px-1 rounded-lg bg-dark/20 shadow-none md:hover:shadow-md border-dark/10 md:hover:bg-dark/0 md:hover:border-dark/5 transition-all duration-150"
+            >
+              Explore cards
+              <span className="font-bold text-dark/70 bg-dark/20 rounded-md px-1">
+                WIP
+              </span>
+            </Button>
+          </Link>
+
           {/* <Link href="/explore/cards">
             <Button variant="link">Explore Cards</Button>
           </Link> */}

@@ -15,6 +15,7 @@ import DeckPerspectiveCard from "@/app/deck/components/card/perspectiveCardUI/De
 import CustomScrollArea from "@/app/components/ui/CustomScrollArea";
 import { normalizeSearchCard } from "@/lib/client/normalizeSearchCard";
 import type { CardRecord } from "@/lib/schemas";
+import PerspectiveCard from "@/app/deck/components/card/perspectiveCardUI/PerspectiveCard";
 
 // --- Type Ordering ---
 const typeOrder = [
@@ -76,7 +77,8 @@ export default function SearchBoard() {
     });
   };
 
-  // Search handler: embed on server via Ollama (same model as DB), then vector search
+  // Search handler: server rewrites natural language → embeds (HF) → vector search (Supabase).
+  // Rewrite + embed live in /api/embed → lib/server/embedPipeline.ts (no client import).
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     if (!searchText.trim()) return;
@@ -201,7 +203,7 @@ export default function SearchBoard() {
                               stiffness: 200,
                             }}
                           >
-                            <DeckPerspectiveCard
+                            <PerspectiveCard
                               id={card.uuid}
                               image={card.imageFrontUrl ?? undefined}
                               label={card.name ?? undefined}

@@ -20,7 +20,7 @@ import {
 } from "@/lib/getCardCounts";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCompactView } from "@/app/context/compactViewContext";
-import { useCardList } from "@/app/context/CardListContext";
+import { Difficulty, useCardList } from "@/app/context/CardListContext";
 import { SpellTypeCounts } from "@/app/deck/components/overview/spellTypeCounts";
 import { ManaCurve } from "@/app/deck/components/overview/manaCurve";
 import { DeckMetricsXL } from "@/app/deck/components/overview/deckMetricsXLContextual";

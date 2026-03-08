@@ -133,6 +133,7 @@ export const DeckSchema = z.object({
   original_deck_id: z.string().nullable(),
   commander_uuid: z.string().nullable(),
   display_card_uuid: z.string().nullable(),
+  tags: z.array(z.string()).optional().default([]),
   sets: z
     .object({
       code: z.string().nullable(),
@@ -179,3 +180,163 @@ export const DeckWithCommanderSchema = DeckSchema.extend({
 });
 
 export type CommanderDeckRecord = z.infer<typeof DeckWithCommanderSchema>;
+
+// ---------- AI OUTPUT SCHEMA ----------
+const AiJsonSchema = z.object({
+  tagline: z.string().min(8).max(70), // keep 70 to avoid strict failures
+  power_level: z.number().min(1).max(10),
+  power_level_explanation: z.string().min(10).max(170),
+
+  complexity: z.enum(["Low", "Medium", "High"]),
+  complexity_explanation: z.string().min(10).max(170),
+
+  pilot_skill: z.enum(["Beginner", "Intermediate", "Advanced"]),
+  pilot_skill_explanation: z.string().min(10).max(170),
+
+  interaction_intensity: z.enum(["Low", "Medium", "High"]),
+  interaction_explanation: z.string().min(10).max(170),
+
+  tags: z.array(z.string()).min(3).max(6),
+  strengths: z.array(z.string()).min(2).max(4),
+  weaknesses: z.array(z.string()).min(2).max(4),
+  confidence: z.number().min(0).max(1).optional(),
+});
+export type AiOutput = z.infer<typeof AiJsonSchema>;
+
+// ---------- Full deck analysis output (for structured AI output) ----------
+// Helpers: coerce/relax so model output rarely fails validation
+const lowMediumHigh = z.union([z.string(), z.number()]).transform((v) => {
+  const s = String(v ?? "")
+    .trim()
+    .toLowerCase();
+  if (s === "low") return "Low";
+  if (s === "medium") return "Medium";
+  if (s === "high") return "High";
+  return "Medium";
+});
+const pilotSkill = z.union([z.string(), z.number()]).transform((v) => {
+  const s = String(v ?? "")
+    .trim()
+    .toLowerCase();
+  if (s === "beginner") return "Beginner";
+  if (s === "intermediate") return "Intermediate";
+  if (s === "advanced") return "Advanced";
+  return "Intermediate";
+});
+const num0To100 = z
+  .union([z.number(), z.string()])
+  .transform((n) => Math.min(100, Math.max(0, Number(n))));
+const num1To10 = z
+  .union([z.number(), z.string()])
+  .transform((n) => Math.min(10, Math.max(1, Math.round(Number(n)))));
+const shortString = z
+  .string()
+  .optional()
+  .default("")
+  .transform((s) => String(s ?? "").slice(0, 170));
+// Required string for OpenAI (required array must list every property). No .optional/.default.
+const shortStringRequired = z
+  .string()
+  .transform((s) => String(s ?? "").slice(0, 170));
+
+// Model returns arrays; we transform to records so DB and app keep Record<string, T>.
+// Arrays with .min() produce JSON Schema minItems, which forces the model to fill them.
+const axesItem = z.object({
+  slug: z
+    .string()
+    .describe("Archetype slug, e.g. spellslinger, token swarm, combo"),
+  score: num0To100,
+});
+const explanationItem = z.object({
+  slug: z.string().describe("Same archetype slug as in axes"),
+  markdown: z
+    .string()
+    .describe("2-4 sentences in markdown explaining this archetype's score"),
+});
+const strengthWeaknessItem = z.object({
+  name: z.string().describe("1-2 word label"),
+  explanation: z.string().describe("3-6 sentences in markdown"),
+});
+const pillarItem = z.object({
+  slug: z
+    .string()
+    .describe("Pillar slug, e.g. ramp, card_draw, interaction, wincon"),
+  markdown: z.string().describe("2-4 sentences in markdown"),
+});
+
+export const fullAnalysisOutputSchema = z.object({
+  archetype: z.object({
+    axes: z
+      .array(axesItem)
+      .min(4, "Provide at least 4 archetypes")
+      .max(8)
+      .describe(
+        "4-8 archetypes with slug and score 0-100. Use slugs like spellslinger, token swarm, combo, graveyard, reanimator, stax, voltron, blink, +1/+1 counters, lifegain, control, landfall, artifacts, enchantress, burn, treasure, aristocrats, mill, extra turns, dragons, elves.",
+      )
+      .transform((arr) =>
+        Object.fromEntries(arr.map((a) => [a.slug, a.score] as const)),
+      ),
+    explanation_md: z
+      .array(explanationItem)
+      .min(4, "Provide at least 4 explanations")
+      .max(8)
+      .describe("Same slugs as axes; each with a markdown explanation.")
+      .transform((arr) =>
+        Object.fromEntries(arr.map((a) => [a.slug, a.markdown] as const)),
+      ),
+    description: z
+      .string()
+      .describe("2-4 sentences overall deck summary")
+      .transform((s) => String(s ?? "")),
+  }),
+  sw: z.object({
+    strengths: z
+      .array(strengthWeaknessItem)
+      .min(1, "Provide at least 1 strength")
+      .max(4)
+      .describe(
+        "1-4 strengths: name (1-2 words) and explanation (3-6 sentences markdown).",
+      )
+      .transform((arr) =>
+        Object.fromEntries(arr.map((a) => [a.name, a.explanation] as const)),
+      ),
+    weaknesses: z
+      .array(strengthWeaknessItem)
+      .min(1, "Provide at least 1 weakness")
+      .max(4)
+      .describe(
+        "1-4 weaknesses: name (1-2 words) and explanation (3-6 sentences markdown).",
+      )
+      .transform((arr) =>
+        Object.fromEntries(arr.map((a) => [a.name, a.explanation] as const)),
+      ),
+  }),
+  difficulty: z.object({
+    complexity: lowMediumHigh,
+    complexity_explanation: shortStringRequired.describe(
+      "Explanation for complexity, max 170 chars",
+    ),
+    pilot_skill: pilotSkill,
+    pilot_skill_explanation: shortStringRequired.describe(
+      "Explanation for pilot skill, max 170 chars",
+    ),
+    interaction_intensity: lowMediumHigh,
+    interaction_intensity_explanation: shortStringRequired.describe(
+      "Explanation for interaction intensity, max 170 chars",
+    ),
+    power_level: num1To10,
+    power_level_explanation: shortStringRequired.describe(
+      "Explanation for power level, max 170 chars",
+    ),
+  }),
+  pillars: z
+    .array(pillarItem)
+    .min(1, "Provide at least 1 pillar")
+    .describe(
+      "At least 1 pillar: slug (e.g. ramp, card_draw, interaction, wincon) and markdown (2-4 sentences).",
+    )
+    .transform((arr) =>
+      Object.fromEntries(arr.map((a) => [a.slug, a.markdown] as const)),
+    ),
+});
+export type FullAnalysisOutput = z.infer<typeof fullAnalysisOutputSchema>;

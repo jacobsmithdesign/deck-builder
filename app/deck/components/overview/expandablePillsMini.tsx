@@ -7,13 +7,18 @@ import { AiFillInteraction } from "react-icons/ai";
 import { IoExtensionPuzzle } from "react-icons/io5";
 import { AnimatePresence, motion } from "framer-motion";
 
-// Power Level: numeric 1–10
+// Power Level: numeric 1–10 (green = low, red = high)
 export const power_levelColors: Record<number, string> = {
-  1: "bg-green-200 outline outline-green-300",
-  2: "bg-yellow-200 outline outline-yellow-300",
-  3: "bg-amber-200 outline outline-amber-300",
-  4: "bg-orange-200 outline outline-orange-300",
-  5: "bg-red-200 outline outline-red-300",
+  1: "bg-green-200 outline outline-green-300 text-green-800/80",
+  2: "bg-green-100 outline outline-green-400 text-green-800/80",
+  3: "bg-yellow-200 outline outline-yellow-300 text-yellow-950/80",
+  4: "bg-yellow-100 outline outline-yellow-400 text-yellow-950/80",
+  5: "bg-amber-200 outline outline-amber-300 text-amber-950/80",
+  6: "bg-orange-200 outline outline-orange-300 text-orange-950/80",
+  7: "bg-orange-100 outline outline-orange-400 text-orange-950/80",
+  8: "bg-red-200 outline outline-red-300 text-red-950/80",
+  9: "bg-red-100 outline outline-red-400 text-red-950/80",
+  10: "bg-red-300 outline outline-red-500 text-red-950/90",
 };
 
 export const complexityColors: Record<string, string> = {
@@ -54,10 +59,18 @@ type Difficulty = {
   complexity?: "Low" | "Medium" | "High";
   complexity_explanation?: string;
   interaction_intensity?: "Low" | "Medium" | "High";
-  interaction_explanation?: string;
+  interaction_intensity_explanation?: string;
   pilot_skill?: "Beginner" | "Intermediate" | "Advanced";
   pilot_skill_explanation?: string;
 };
+
+function getExplanation(difficulty: Difficulty, descKeys: string[]): string {
+  for (const key of descKeys) {
+    const v = (difficulty as Record<string, unknown>)[key];
+    if (typeof v === "string" && v.trim()) return v;
+  }
+  return "";
+}
 const metricConfig: MetricDef[] = [
   {
     key: "power_level",
@@ -87,6 +100,7 @@ const metricConfig: MetricDef[] = [
     icon: AiFillInteraction,
     get: (ai) => ai?.interaction_intensity,
     descKeys: [
+      "interaction_intensity_explanation",
       "interaction_explanation",
       "interaction_intensity_desc",
       "interaction_intensity_text",
@@ -102,7 +116,7 @@ const metricConfig: MetricDef[] = [
 ];
 
 function prettyLabel(k: string) {
-  return k.replace("", "").replace(/_/g, " ");
+  return k.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
 }
 
 export function ExpandablePillsMini({
@@ -112,57 +126,78 @@ export function ExpandablePillsMini({
   className?: string;
   difficulty: Difficulty;
 }) {
+  const [hoveredKey, setHoveredKey] = useState<MetricKey | null>(null);
+
   if (!difficulty) return null;
 
   return (
     <div className={`flex gap-1`} role="tablist" aria-label="Deck metrics">
-      {metricConfig.map((def, i) => {
-        const value = def.get(difficulty);
+      {metricConfig.map((def) => {
+        const rawValue = def.get(difficulty);
 
         let colorClass = "bg-light/50 outline outline-dark/10";
-        if (def.key === "power_level" && typeof value === "number") {
-          const n = Math.max(1, Math.min(10, value));
+        let displayValue: React.ReactNode = rawValue;
+
+        if (def.key === "power_level") {
+          const n = Math.max(1, Math.min(10, Number(rawValue) || 0));
+          if (n >= 1) {
+            colorClass =
+              (power_levelColors as Record<number, string>)[n] ?? colorClass;
+            displayValue = n;
+          }
+        } else if (typeof rawValue === "string") {
           colorClass =
-            (power_levelColors as Record<number, string>)[n] ?? colorClass;
-        } else if (typeof value === "string") {
-          colorClass =
-            (def.colorMap as Record<string, string>)[value] ?? colorClass;
+            (def.colorMap as Record<string, string>)[rawValue] ?? colorClass;
         }
 
         const Icon = def.icon;
+        const explanation = getExplanation(difficulty, def.descKeys);
+        const isHovered = hoveredKey === def.key;
 
         return (
-          <button
+          <div
             key={def.key}
-            type="button"
-            role="tab"
-            aria-controls={`metric-panel-${def.key}`}
-            onClick={() => {}}
-            className={
-              "relative group flex items-center rounded transition-transform cursor-pointer"
-            }
+            className="relative"
+            onMouseEnter={() => setHoveredKey(def.key)}
+            onMouseLeave={() => setHoveredKey(null)}
           >
-            <div
-              className={`w-fit rounded-xs px-1 gap-1 flex items-center jsutify-center transition-all duration-200 ${colorClass} hover:opacity-80 group`}
+            <button
+              type="button"
+              role="tab"
+              aria-controls={`metric-panel-${def.key}`}
+              aria-expanded={isHovered}
+              onClick={() => {}}
+              className="flex items-center rounded transition-transform mb-1"
             >
-              <Icon
-                className={`"h-3.5 w-3.5 transition-all duration-200 text-dark outline-none ${colorClass}
-                `}
-              />
-              <p className="text-sm">{value}</p>
-            </div>
-
-            {/* Tooltip */}
-            <div
-              className={`absolute left-0 bottom-7 ml-1 translate-y-0 group-hover:translate-y-1 transition-all duration-100 ease-out rounded px-1 whitespace-nowrap shadow z-20 ${colorClass} h-5 flex items-center pointer-events-none opacity-0 group-hover:opacity-100`}
-            >
-              <span
-                className={`font-medium text-sm outline-none ${colorClass}`}
+              <div
+                className={`w-fit rounded-xs px-1 gap-1 flex items-center justify-center transition-all duration-200 ${colorClass}`}
               >
-                {prettyLabel(def.key)}
-              </span>
-            </div>
-          </button>
+                <Icon className="h-3.5 w-3.5 transition-all duration-200 outline-none shrink-0" />
+                <p className="text-sm font-medium">{displayValue}</p>
+              </div>
+            </button>
+
+            <AnimatePresence>
+              {isHovered && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  className={`absolute right-0 top-full z-20 min-w-78 max-w-64 rounded-md shadow-lg border border-dark/10 overflow-hidden ${colorClass}`}
+                >
+                  <div className="p-2">
+                    <p className="font-semibold text-sm">
+                      {prettyLabel(def.key)}
+                    </p>
+                    {explanation ? (
+                      <p className="text-xs mt-1 leading-snug">{explanation}</p>
+                    ) : null}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         );
       })}
     </div>

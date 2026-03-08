@@ -20,6 +20,21 @@ export function niceLabel(slug: string) {
   return slug.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
 }
 
+// Archetype score 0–100: 5 colours, 100 = green, 0 = red (same style as expandablePillsMini).
+const archetypeScoreColors: Record<number, string> = {
+  0: "bg-red-300 outline outline-red-500 text-red-950/90", // 0–19
+  1: "bg-amber-200 outline outline-amber-400 text-amber-950/80", // 20–39
+  2: "bg-yellow-200/30 outline outline-yellow-400/30 text-yellow-800/80", // 40–59
+  3: "bg-lime-200/30 outline outline-lime-300/30 text-lime-800/80", // 60–79
+  4: "bg-green-200/30 outline outline-green-400/30 text-green-800/80", // 80–100
+};
+
+function getArchetypeScoreColor(score: number): string {
+  const n = Math.max(0, Math.min(100, Number(score) || 0));
+  const bucket = n >= 80 ? 4 : n >= 60 ? 3 : n >= 40 ? 2 : n >= 20 ? 1 : 0;
+  return archetypeScoreColors[bucket] ?? "bg-light/50 outline outline-dark/10";
+}
+
 // This function turns the axis record into something recharts can use, or a blank object.
 function toRadarData(axes?: Record<string, number> | null) {
   const safe = axes ?? {};
@@ -29,13 +44,20 @@ function toRadarData(axes?: Record<string, number> | null) {
   }));
 }
 
-// This function turns the explanation record into something we can map over.
-function toExplanationArray(explanation?: Record<string, string> | null) {
+// This function turns the explanation record into something we can map over, sorted by archetype score (greatest first), with score included.
+function toExplanationArray(
+  explanation?: Record<string, string> | null,
+  axes?: Record<string, number> | null,
+) {
   const safe = explanation ?? {};
-  return Object.entries(safe).map(([k, v]) => ({
-    axis: niceLabel(k),
-    value: v,
-  }));
+  const axesSafe = axes ?? {};
+  return Object.entries(safe)
+    .map(([slug, markdown]) => ({
+      axis: niceLabel(slug),
+      value: markdown,
+      score: Number(axesSafe[slug]) ?? 0,
+    }))
+    .sort((a, b) => b.score - a.score);
 }
 
 export default function ArchetypeOverview() {
@@ -49,8 +71,12 @@ export default function ArchetypeOverview() {
     [archetypeOverview?.axes],
   );
   const explanationArray = React.useMemo(
-    () => toExplanationArray(archetypeOverview?.explanation_md),
-    [archetypeOverview?.explanation_md],
+    () =>
+      toExplanationArray(
+        archetypeOverview?.explanation_md,
+        archetypeOverview?.axes,
+      ),
+    [archetypeOverview?.explanation_md, archetypeOverview?.axes],
   );
 
   const hasData = explanationArray.length > 0 && radarData.length > 0;
@@ -150,12 +176,19 @@ export default function ArchetypeOverview() {
               <div className="max-w-none flex flex-col w-2/3">
                 <div className="w-full rounded-md my-auto grid gap-1 grid-cols-2">
                   {explanationArray ? (
-                    explanationArray.map(({ axis, value }) => (
+                    explanationArray.map(({ axis, value, score }) => (
                       <div
                         key={axis}
                         className="rounded-md bg-gradient-to-t to-light/15 from-transparent w-full text-center border border-dark/10 bg-light/5"
                       >
-                        <h3 className="rounded-sm w-fit rounded-tl-md outline outline-dark/5 h-fit px-2 py-0.5 text-base bg-light/10 font-bold">
+                        <h3
+                          className={`rounded-sm w-fit rounded-tl-md h-fit  text-base font-bold p-1`}
+                        >
+                          <span
+                            className={`p-1 px-2 mr-2 rounded-md font-bold ${getArchetypeScoreColor(score)}`}
+                          >
+                            {score}
+                          </span>
                           {axis}
                         </h3>
                         <ReactMarkdown

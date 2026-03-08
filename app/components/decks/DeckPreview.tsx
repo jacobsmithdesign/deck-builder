@@ -48,13 +48,6 @@ export default function DeckPreview({ deck }: { deck: CommanderDeckRecord }) {
                 className={`${openPanel && "rotate-180"} transition-all`}
               />
             </button>
-            {/* AI Ranks */}
-            {!openPanel && (
-              <div className="pb-2  top-0 left-30 w-fit">
-                <ExpandablePillsMini difficulty={deck.deck_ai_difficulty} />
-              </div>
-            )}
-
             {/* Hidden deck details */}
             {openPanel && (
               <div className="flex flex-col h-full mb-8 gap-1 rounded">
@@ -65,7 +58,7 @@ export default function DeckPreview({ deck }: { deck: CommanderDeckRecord }) {
                     Strengths
                   </span>
                   {Object.keys(
-                    deck.deck_ai_strengths_weaknesses?.strengths ?? {}
+                    deck.deck_ai_strengths_weaknesses?.strengths ?? {},
                   ).map((name) => (
                     <div
                       key={name}
@@ -81,7 +74,7 @@ export default function DeckPreview({ deck }: { deck: CommanderDeckRecord }) {
                   </span>
 
                   {Object.keys(
-                    deck.deck_ai_strengths_weaknesses?.weaknesses ?? {}
+                    deck.deck_ai_strengths_weaknesses?.weaknesses ?? {},
                   ).map((name) => (
                     <div
                       key={name}

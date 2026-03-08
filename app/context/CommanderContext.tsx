@@ -28,6 +28,9 @@ export type CommanderDeckDetails = {
   type: string;
   isUserDeck: boolean;
   cards: CardRecord[];
+  tags?: string[];
+  releaseDate?: string | null;
+  creatorName?: string | null;
 };
 
 type CommanderContextProps = {

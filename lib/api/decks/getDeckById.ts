@@ -10,7 +10,7 @@ export async function getDeckById(deckId: string) {
       `*, 
       deck_cards(*, cards(*)), 
       commander:cards!decks_commander_uuid_fkey( uuid, name, mana_value, mana_cost, type, text, color_identity, identifiers)
-      `
+      `,
     )
     .eq("id", deckId)
     .single();
@@ -57,7 +57,7 @@ export async function getDeckById(deckId: string) {
           imageBackUrl: scryfallBackId
             ? `https://cards.scryfall.io/normal/front/${scryfallBackId.slice(
                 0,
-                2
+                2,
               )}/${scryfallBackId}.jpg`
             : null,
           isDoubleFaced: !!scryfallBackId,

@@ -23,6 +23,7 @@ export interface DeckMetadata {
   sealed_product?: string | null;
   commander_uuid?: string | null;
   display_card_uuid?: string | null;
+  tags?: string[];
 }
 
 // Smaller land feature object for AI models
@@ -93,11 +94,11 @@ export type Difficulty = {
   deckId: string;
   power_level: number;
   power_level_explanation: string;
-  complexity: string;
+  complexity: "Low" | "Medium" | "High";
   complexity_explanation: string;
-  pilot_skill: string;
+  pilot_skill: "Beginner" | "Intermediate" | "Advanced";
   pilot_skill_explanation: string;
-  interaction_intensity: string;
+  interaction_intensity: "Low" | "Medium" | "High";
   interaction_intensity_explanation: string;
   updatedAt?: string | null;
 };

@@ -5,15 +5,15 @@ import { createOpenAI } from "@ai-sdk/openai";
 
 export type AIProviderId = "openai" | "anthropic" | "google";
 
-const PROVIDER = (process.env.AI_PROVIDER ?? "openai") as AIProviderId;
+const PROVIDER = "google" as AIProviderId;
 const AI_MODEL = process.env.AI_MODEL;
 
 const OPENAI_MODEL = process.env.OPENAI_MODEL ?? "gpt-4.1-mini";
-const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL ?? "claude-3-5-sonnet-latest";
-const GOOGLE_MODEL = process.env.GOOGLE_GENERATIVE_AI_MODEL ?? "gemini-1.5-pro";
+const ANTHROPIC_MODEL =
+  process.env.ANTHROPIC_MODEL ?? "claude-3-5-sonnet-latest";
+const GOOGLE_MODEL = "gemini-3-flash-preview";
 
 function getModelId(): string {
-  if (AI_MODEL) return AI_MODEL;
   switch (PROVIDER) {
     case "anthropic":
       return ANTHROPIC_MODEL;
