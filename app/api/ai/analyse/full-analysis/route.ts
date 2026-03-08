@@ -220,6 +220,11 @@ export async function GET(req: NextRequest) {
                   - strengths: array of 3 - 5 items { "name": string (1-2 words), "explanation": string (3-6 sentences) }. Length 1-4. 
                   - weaknesses: array of 3 - 5 items { "name": string (1-2 words), "explanation": string (3-6 sentences) }. Length 1-4.
                   - pillars: array of { "slug": string (e.g. ramp, card_draw, interaction, wincon), "markdown": string (2-4 sentences) }. Length at least 1.
+
+                  Power level: 1 - 10,
+                  Pilot skill: Beginner, Intermediate, Advanced,
+                  Interaction intensity: Low, Medium, High,
+                  Complexity: Low, Medium, High,
                   
                   You must provide explanations for all difficulty metrics.
 

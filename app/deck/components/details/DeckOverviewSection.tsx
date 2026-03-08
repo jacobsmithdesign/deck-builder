@@ -11,6 +11,7 @@ import { CardRecord } from "@/lib/schemas";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { AnimatePresence, motion } from "framer-motion";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 function formatTagLabel(slug: string) {
   return slug.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
@@ -186,7 +187,7 @@ export default function DeckOverviewSection() {
                 {releaseDate && <span>{formatDate(releaseDate)}</span>}
                 {userOwnsDeck && (
                   <div
-                    className="relative inline-block"
+                    className="relative inline-flex"
                     onMouseEnter={() => setVisibilityHovered(true)}
                     onMouseLeave={() => setVisibilityHovered(false)}
                   >
@@ -194,41 +195,36 @@ export default function DeckOverviewSection() {
                       type="button"
                       onClick={toggleVisibility}
                       disabled={visibilitySaving}
-                      className="flex items-center justify-center rounded-md px-2 py-1 transition-colors hover:bg-light/30 disabled:opacity-60 cursor-pointer"
-                      title={
-                        isPublic
-                          ? "Deck is visible to everyone"
-                          : "Only you can see this deck"
-                      }
+                      className="flex items-center justify-center rounded-md px-2 py-1 transition-colors w-full hover:bg-light/30 disabled:opacity-60 cursor-pointer gap-2"
                     >
                       {visibilitySaving ? (
-                        <span className="text-dark/60 text-sm">Updating…</span>
+                        <>
+                          <AiOutlineLoading3Quarters className="h-4 w-4 p-0.5 shrink-0 animate-spin text-dark/60" />
+                          Saving
+                        </>
                       ) : (
-                        <span
-                          className={`inline-block h-2 w-2 shrink-0 rounded-full ${isPublic ? "bg-green-500" : "bg-dark/40"}`}
-                          aria-hidden
-                        />
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`inline-block h-2 w-2 shrink-0 ml-1 rounded-full ${isPublic ? "bg-green-500" : "bg-dark/40"}`}
+                          />
+                          {isPublic ? "Public" : "Private"}
+                        </div>
                       )}
                     </button>
                     <AnimatePresence>
                       {visibilityHovered && !visibilitySaving && (
                         <motion.div
-                          initial={{ opacity: 0, y: 4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 4 }}
+                          initial={{ opacity: 0, x: -4 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -4 }}
                           transition={{ duration: 0.15, ease: "easeOut" }}
-                          className="absolute left-1/2 bottom-full z-20 -translate-x-1/2 mb-1 min-w-20 rounded-md shadow-lg border border-dark/10 overflow-hidden bg-light/95 backdrop-blur-sm"
+                          className="absolute left-full top-1/2 z-20 ml-1 -translate-y-1/2 w-max min-w-0 rounded-xl px-2 py-1  bg-light/35 whitespace-nowrap"
                         >
-                          <div className="px-2 py-1.5">
-                            <p className="font-semibold text-sm text-dark/90 whitespace-nowrap">
-                              {isPublic ? "Public" : "Private"}
-                            </p>
-                            <p className="text-xs text-dark/60 leading-snug">
-                              {isPublic
-                                ? "Deck is visible to everyone"
-                                : "Only you can see this deck"}
-                            </p>
-                          </div>
+                          <span className="text-dark/70 text-sm">
+                            {isPublic
+                              ? "Visible to everyone"
+                              : "Only you can see this deck"}
+                          </span>
                         </motion.div>
                       )}
                     </AnimatePresence>

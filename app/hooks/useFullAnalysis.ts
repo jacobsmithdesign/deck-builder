@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useCardList } from "../context/CardListContext";
 import { streamObject } from "ai";
+import { Difficulty } from "../context/CardListContext";
 
 export type ArchetypeOverviewResult = {
   axes: Record<string, number>;
@@ -118,7 +119,7 @@ export function useFullAnalysis(opts?: {
         setArchetypeOverview(archetypeClean);
         setStrengthsAndWeaknesses(swClean);
         setPillars(pillarsClean);
-        setDifficulty(difficultyClean);
+        setDifficulty(difficultyClean as Difficulty);
 
         onDone?.({
           progress: 100,

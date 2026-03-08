@@ -180,11 +180,20 @@ export function hydrateDeckIntoContext(
       deckId: row.id,
       power_level: row.deck_ai_difficulty.power_level,
       power_level_explanation: row.deck_ai_difficulty.power_level_explanation,
-      complexity: row.deck_ai_difficulty.complexity,
+      complexity: row.deck_ai_difficulty.complexity as
+        | "Low"
+        | "Medium"
+        | "High",
       complexity_explanation: row.deck_ai_difficulty.complexity_explanation,
-      pilot_skill: row.deck_ai_difficulty.pilot_skill,
+      pilot_skill: row.deck_ai_difficulty.pilot_skill as
+        | "Beginner"
+        | "Intermediate"
+        | "Advanced",
       pilot_skill_explanation: row.deck_ai_difficulty.pilot_skill_explanation,
-      interaction_intensity: row.deck_ai_difficulty.interaction_intensity,
+      interaction_intensity: row.deck_ai_difficulty.interaction_intensity as
+        | "Low"
+        | "Medium"
+        | "High",
       interaction_intensity_explanation:
         row.deck_ai_difficulty.interaction_explanation,
       updatedAt: row.deck_ai_difficulty.updated_at ?? null,
