@@ -20,6 +20,7 @@ import {
   AiFillHeart,
   AiOutlineComment,
 } from "react-icons/ai";
+import CustomScrollArea from "@/app/components/ui/CustomScrollArea";
 
 function formatTagLabel(slug: string) {
   return slug.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
@@ -82,6 +83,7 @@ export default function DeckOverviewSection() {
   const [descriptionSaving, setDescriptionSaving] = React.useState(false);
   const titleInputRef = React.useRef<HTMLInputElement>(null);
   const descriptionTextareaRef = React.useRef<HTMLTextAreaElement>(null);
+  const cancelDescRef = React.useRef<HTMLButtonElement>(null);
   const isPublic = deck?.isPublic ?? false;
 
   // Record view once per deck when overview is shown
@@ -220,8 +222,10 @@ export default function DeckOverviewSection() {
 
   React.useEffect(() => {
     if (isEditingTitle && titleInputRef.current) {
-      titleInputRef.current.focus();
-      titleInputRef.current.select();
+      const input = titleInputRef.current;
+      input.focus();
+      const len = input.value.length;
+      input.setSelectionRange(len, len);
     }
   }, [isEditingTitle]);
 
@@ -356,12 +360,15 @@ export default function DeckOverviewSection() {
                         titleInputRef.current?.blur();
                       }
                     }}
-                    className="font-bold text-dark/90 min-w-32 flex-1 rounded-md px-2 py-1 -mx-2 -my-1 bg-transparent border border-transparent hover:bg-light/15 focus:bg-light/25 focus:outline-none focus:border-dark/20 transition-colors"
+                    className="font-bold text-dark/90 min-w-0 rounded-md px-2 -mx-2 -my-1 bg-transparent  text-md md:text-lg lg:text-xl hover:bg-light/15 tracking-tight focus:bg-light/25 focus:outline-none transition-colors mr-1"
+                    style={{
+                      width: `${Math.max(localTitle.length - 1, 0)}ch`,
+                    }}
                     aria-label="Deck title"
                   />
                 ) : (
                   <CardTitle
-                    className={`font-bold text-dark/90 truncate ${userOwnsDeck ? "cursor-pointer rounded-md px-2 py-1 -mx-2 -my-1 hover:bg-light/15 focus:bg-light/25 focus:outline-none transition-colors" : ""}`}
+                    className={`font-bold text-dark/90 truncate ${userOwnsDeck ? "cursor-pointer rounded-md px-2 py-1 -mx-2 -my-1 hover:bg-light/15 focus:bg-light/25 focus:outline-none transition-colors" : ""} mr-1`}
                     onClick={() => {
                       if (userOwnsDeck) {
                         setLocalTitle(name);
@@ -378,7 +385,7 @@ export default function DeckOverviewSection() {
                   >
                     {name}
                   </CardTitle>
-                )}{" "}
+                )}
                 {type && (
                   <span className="font-normal bg-light/20 px-2 rounded-md whitespace-nowrap">
                     {type}
@@ -506,9 +513,16 @@ export default function DeckOverviewSection() {
                     ref={descriptionTextareaRef}
                     value={localDescription}
                     onChange={(e) => setLocalDescription(e.target.value)}
+                    onBlur={(e) => {
+                      if (
+                        (e.relatedTarget as Node) &&
+                        cancelDescRef.current?.contains(e.relatedTarget as Node)
+                      )
+                        return;
+                      saveDescription();
+                    }}
                     placeholder="Add a description..."
-                    rows={4}
-                    className="w-full rounded-md px-3 py-2 text-sm text-dark/90 bg-transparent border border-dark/15 hover:bg-light/15 focus:bg-light/25 focus:outline-none focus:border-dark/20 transition-colors resize-y min-h-24"
+                    className="w-full rounded-md px-3 py-2 text-md text-dark/90 hide-scrollbar focus:border-dark/20 transition-colors resize-y min-h-24 bg-light/60"
                     aria-label="Deck description"
                   />
                   <div className="flex justify-end mt-2 gap-2">
@@ -528,8 +542,12 @@ export default function DeckOverviewSection() {
                       )}
                     </button>
                     <button
+                      ref={cancelDescRef}
                       type="button"
-                      onClick={() => setIsEditingDescription(false)}
+                      onClick={() => {
+                        setLocalDescription(description);
+                        setIsEditingDescription(false);
+                      }}
                       className="rounded-md px-3 py-1.5 text-sm font-medium bg-dark/5 text-dark/80 hover:bg-dark/25 focus:outline-none focus:ring-2 focus:ring-dark/20 disabled:opacity-60 transition-colors"
                     >
                       Cancel

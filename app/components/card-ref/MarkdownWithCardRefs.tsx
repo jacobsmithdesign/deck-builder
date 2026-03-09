@@ -41,7 +41,7 @@ function CardRefSpan({
     <span
       role="link"
       tabIndex={0}
-      className="bg-light/25 font-bold rounded px-1 cursor-default hover:bg-light text-inherit"
+      className="bg-light/15 font-bold rounded px-1 cursor-default hover:bg-light text-inherit"
       onMouseEnter={(e) => {
         setHoveredCard(card);
         setPreviewPosition({ x: e.clientX, y: e.clientY });

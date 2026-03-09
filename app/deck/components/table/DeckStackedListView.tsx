@@ -211,8 +211,6 @@ function StackedListCardRow({
       }}
       className={cn(
         "group/card flex items-center rounded-xl transition-colors duration-150 border-b border-dark/5 last:border-b-0 relative justify-center w-full max-w-72",
-        isNewCard &&
-          "ring-2 ring-green-500 shadow-[inset_0_0_14px_rgba(34,197,94,0.25)]",
       )}
       style={{
         ["--preview-w" as string]: `${previewWidth + 8}px`,
@@ -221,16 +219,25 @@ function StackedListCardRow({
       <div
         className={cn(
           "relative shrink-0 rounded-xl max-w-60",
-          isExpanded ? "h-full" : "h-9",
+          isExpanded ? "h-full " : "h-8",
+          isNewCard && "outline-4 outline-green-500 bg-green-500",
         )}
       >
+        {isNewCard && (
+          <div className="px-2 rounded-full absolute top-2 left-24 z-20 text-light bg-green-500 font-bold backdrop-blur-xs [transform:translateZ(20px)] shadow-lg">
+            New
+          </div>
+        )}
         {card.imageFrontUrl ? (
           <Image
             src={card.imageFrontUrl}
             width={488}
             height={680}
             alt=""
-            className={cn("object-cover w-fit object-top rounded-xl h-fit")}
+            className={cn(
+              "object-cover w-fit object-top rounded-xl h-fit",
+              isNewCard && "opacity-90",
+            )}
             style={{
               objectPosition: "0 0",
             }}

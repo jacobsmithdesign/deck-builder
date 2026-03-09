@@ -317,7 +317,7 @@ export const DeckListView = () => {
                             >
                               <GroupItems
                                 key="group-items"
-                                className="mt-2 flex flex-col gap-0 w-full min-w-0 shrink-0"
+                                className="mt-2 flex flex-col gap-1 w-full min-w-0 shrink-0"
                               >
                                 {group.cards.map((card, cardIndex) => {
                                   const c = card as CardWithImage;
@@ -346,9 +346,9 @@ export const DeckListView = () => {
                                         delay: 0.1 + 0.025 * cardIndex,
                                       }}
                                       className={cn(
-                                        "group/card flex justify-between w-full py-1.5 px-3 rounded-md md:hover:bg-dark/5 transition-colors duration-150 border-b border-dark/5 last:border-b-0 relative cursor-pointer",
+                                        "group/card flex justify-between w-full py-1 px-2 rounded-lg md:hover:bg-light/15 transition-colors duration-150 relative cursor-pointer",
                                         newlyAddedCardUuids.has(c.uuid) &&
-                                          "bg-green-100 dark:bg-green-900/30",
+                                          "bg-green-500/50 md:hover:bg-green-300/50 outline outline-green-500/50 dark:bg-green-900/30",
                                       )}
                                       style={{
                                         ["--preview-w" as string]: `${previewWidth + 8}px`,

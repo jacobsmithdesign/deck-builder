@@ -52,10 +52,30 @@ type DeckToolItem = {
 };
 
 const DECK_TOOLS: DeckToolItem[] = [
-  { id: "import-cards", label: "Import cards", restriction: "loggedIn", disabledHint: "Log in to use" },
-  { id: "export-cards", label: "Export deck", restriction: "loggedIn", disabledHint: "Log in to use" },
-  { id: "analyse-interactions", label: "Analyse selected card interactions", restriction: "premium", disabledHint: "Premium only" },
-  { id: "compare-deck", label: "Compare deck", restriction: "loggedIn", disabledHint: "Log in to use" },
+  {
+    id: "import-cards",
+    label: "Import cards",
+    restriction: "loggedIn",
+    disabledHint: "Log in to use",
+  },
+  {
+    id: "export-cards",
+    label: "Export deck",
+    restriction: "loggedIn",
+    disabledHint: "Log in to use",
+  },
+  {
+    id: "analyse-interactions",
+    label: "Analyse selected card interactions",
+    restriction: "premium",
+    disabledHint: "Premium only",
+  },
+  {
+    id: "compare-deck",
+    label: "Compare deck",
+    restriction: "loggedIn",
+    disabledHint: "Log in to use",
+  },
 ];
 
 type SortKey = "deck" | "name" | "mana";
@@ -88,7 +108,10 @@ interface DeckControlsProps {
   onOpenExportModal?: () => void;
 }
 
-export default function DeckControls({ onOpenImportModal, onOpenExportModal }: DeckControlsProps = {}) {
+export default function DeckControls({
+  onOpenImportModal,
+  onOpenExportModal,
+}: DeckControlsProps = {}) {
   const { deck, addCard } = useCardList();
   const { profile } = useUser();
   const { view, setView, sortOption, setSortOption, hasActiveFilters } =
@@ -164,7 +187,7 @@ export default function DeckControls({ onOpenImportModal, onOpenExportModal }: D
     setEditMode(true);
   };
   return (
-    <div className="absolute z-20 flex w-full pr-7 pt-2 h-10 pl-1">
+    <div className="absolute z-30 flex w-full pr-7 pt-2 h-10 pl-1">
       <RaindropContainer
         className="w-full h-10 rounded-full drop-shadow-xl backdrop-blur-sm p-0 from-light/80"
         innerClassName="scale-100 outline-light border-t border-light/20 outline"

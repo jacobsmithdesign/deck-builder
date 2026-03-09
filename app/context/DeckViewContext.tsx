@@ -46,7 +46,9 @@ interface DeckViewContextType {
   sortOption: DeckSortOption;
   setSortOption: (option: DeckSortOption) => void;
   filters: DeckFiltersState;
-  setFilters: (f: DeckFiltersState | ((prev: DeckFiltersState) => DeckFiltersState)) => void;
+  setFilters: (
+    f: DeckFiltersState | ((prev: DeckFiltersState) => DeckFiltersState),
+  ) => void;
   resetFilters: () => void;
   hasActiveFilters: boolean;
 }
@@ -56,15 +58,14 @@ const DeckViewContext = createContext<DeckViewContextType | undefined>(
 );
 
 export const DeckViewProvider = ({ children }: { children: ReactNode }) => {
-  const [view, setView] = useState<DeckViewType>("cards");
+  const [view, setView] = useState<DeckViewType>("stacked-list");
   const [sortOption, setSortOption] = useState<DeckSortOption>("deck");
-  const [filters, setFiltersState] = useState<DeckFiltersState>(DEFAULT_DECK_FILTERS);
+  const [filters, setFiltersState] =
+    useState<DeckFiltersState>(DEFAULT_DECK_FILTERS);
 
   const setFilters = useCallback(
     (f: DeckFiltersState | ((prev: DeckFiltersState) => DeckFiltersState)) => {
-      setFiltersState((prev) =>
-        typeof f === "function" ? f(prev) : f,
-      );
+      setFiltersState((prev) => (typeof f === "function" ? f(prev) : f));
     },
     [],
   );

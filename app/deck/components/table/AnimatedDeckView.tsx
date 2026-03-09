@@ -19,9 +19,9 @@ import { ExportCardsModal } from "./ExportCardsModal";
 
 function DeckViewContent() {
   const { view } = useDeckView();
-  if (view === "list") return <DeckListView />;
+  if (view === "cards") return <CardView />;
   if (view === "stacked-list") return <DeckStackedListView />;
-  return <CardView />;
+  return <DeckListView />;
 }
 
 export default function AnimatedDeckView() {

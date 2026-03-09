@@ -90,6 +90,18 @@ export default function ArchetypeOverview() {
 
   const hasData = explanationArray.length > 0 && radarData.length > 0;
 
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
+  const selected = explanationArray[selectedIndex] ?? explanationArray[0];
+
+  React.useEffect(() => {
+    if (
+      selectedIndex >= explanationArray.length &&
+      explanationArray.length > 0
+    ) {
+      setSelectedIndex(0);
+    }
+  }, [explanationArray.length, selectedIndex]);
+
   const handleAnalyse = () => {
     if (!deck?.id || analysing) return;
     start(deck.id);
@@ -168,9 +180,9 @@ export default function ArchetypeOverview() {
             ) : null}
           </CardHeader>
           {archetypeOverview && (
-            <CardContent className="p-0 flex gap-2">
+            <CardContent className="p-0 flex  gap-2">
               {/* Radar */}
-              <div className="h-64 md:h-76 w-1/3 rounded-md my-auto">
+              <div className="h-64 md:h-76 min-w-2/5 rounded-md my-auto">
                 {hasData ? (
                   <RadarIdentity axes={archetypeOverview.axes} />
                 ) : (
@@ -181,38 +193,78 @@ export default function ArchetypeOverview() {
                   </div>
                 )}
               </div>
-              {/* Explanation */}
-              <div className="max-w-none flex flex-col w-2/3">
-                <div className="w-full rounded-md my-auto grid gap-1 grid-cols-2">
-                  {explanationArray ? (
-                    explanationArray.map(({ axis, value, score }) => (
-                      <div
+              {/* Two-column: left = archetype list, right = explanation */}
+              <div className="max-w-none flex w-full gap-0 min-h-[200px]">
+                {/* Left column: archetype slug + score */}
+                <aside className="shrink-0 flex flex-col rounded-l-md my-auto">
+                  {explanationArray.length > 0 ? (
+                    explanationArray.map(({ axis, score }, i) => (
+                      <button
                         key={axis}
-                        className="rounded-md bg-gradient-to-t to-light/15 from-transparent w-full text-center border border-dark/10 bg-light/5"
+                        type="button"
+                        onClick={() => setSelectedIndex(i)}
+                        className={`w-full text-left rounded-2xl transition-colors pl-1 py-1 cursor-pointer ${selectedIndex === i ? `rounded-r-none` : " "} `}
                       >
-                        <h3
-                          className={`rounded-sm w-fit rounded-tl-md h-fit  text-base font-bold p-1`}
+                        <div
+                          className={`flex items-center gap-2 py-1 px-2 rounded-xl  md:hover:bg-light/10  ${selectedIndex === i ? `rounded-r-none bg-lightsecondary/30 drop-shadow-xl` : ""}
+                  `}
                         >
                           <span
-                            className={`p-1 px-2 mr-2 rounded-md font-bold ${getArchetypeScoreColor(score)}`}
+                            className={`inline-flex items-center ${getArchetypeScoreColor(score)} justify-center min-w-7 h-6 px-1.5 rounded text-lg font-bold ${selectedIndex === i ? `bg-dark/5` : ""}`}
                           >
                             {score}
                           </span>
-                          {axis}
-                        </h3>
-                        <MarkdownWithCardRefs
-                          source={value}
-                          resolvedCards={resolvedCards}
-                          className="text-sm w-full p-2 py-1 text-left"
-                        />
-                      </div>
+                          <span
+                            className={` rounded-lg text-lg px-2 ${selectedIndex === i ? `${getArchetypeScoreColor(score)}` : ""} `}
+                          >
+                            {axis}
+                          </span>
+                        </div>
+                      </button>
                     ))
                   ) : (
-                    <p className="text-sm text-muted-foreground ">
+                    <div className="p-3 text-sm text-muted-foreground">
+                      {analysing ? "Generating…" : "No archetypes yet."}
+                    </div>
+                  )}
+                </aside>
+
+                {/* Right: selected archetype explanation with animation */}
+                <div className="flex-1 rounded-2xl overflow-hidden bg-lightsecondary/30 drop-shadow-xl min-w-0">
+                  {explanationArray.length > 0 && selected ? (
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={selectedIndex}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        transition={{
+                          duration: 0.2,
+                          ease: [0.25, 0.1, 0.25, 1],
+                        }}
+                        className="p-4 h-full overflow-auto rounded-xl"
+                      >
+                        <h3
+                          className={`rounded-lg w-fit text-lg font-bold px-2 mb-2 ${getArchetypeScoreColor(selected.score)}`}
+                        >
+                          <span className="p-1 px-2 mr-2 rounded-md font-bold">
+                            {selected.score}
+                          </span>
+                          {selected.axis}
+                        </h3>
+                        <MarkdownWithCardRefs
+                          source={selected.value}
+                          resolvedCards={resolvedCards}
+                          className="text-base w-full text-left"
+                        />
+                      </motion.div>
+                    </AnimatePresence>
+                  ) : (
+                    <div className="p-4 text-sm text-muted-foreground">
                       {analysing
                         ? "Generating overview…"
-                        : "No overview yet. Once generated, a concise Markdown explanation of the deck’s archetype will appear here."}
-                    </p>
+                        : "No overview yet. Select an archetype or run analysis."}
+                    </div>
                   )}
                 </div>
               </div>
