@@ -80,8 +80,8 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
       .from("decks")
       .select(
         `
-        id, name, user_id, type, is_public, code, release_date, sealed_product,
-        commander_uuid, display_card_uuid,
+        id, name, description, user_id, type, is_public, code, release_date, sealed_product,
+        commander_uuid, display_card_uuid, tags,
         creator:profiles(username),
 
       deck_cards:deck_cards!inner (
@@ -143,6 +143,15 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
             setStrengthsAndWeaknesses,
             setPillars,
             setDifficulty,
+            engagement:
+              "viewCount" in deck && typeof (deck as any).viewCount === "number"
+                ? {
+                    viewCount: (deck as any).viewCount,
+                    likeCount: (deck as any).likeCount,
+                    commentCount: (deck as any).commentCount,
+                    userHasLiked: (deck as any).userHasLiked,
+                  }
+                : undefined,
           });
 
           const features = buildFeatures(row as any);
@@ -224,6 +233,9 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
       isUserDeck: "user_id" in deck,
       creatorName:
         "creatorName" in deck ? ((deck as any).creatorName ?? null) : null,
+      tags: Array.isArray((deck as { tags?: string[] }).tags)
+        ? (deck as { tags: string[] }).tags
+        : [],
       cards: deck.cards.map((c) => ({
         uuid: c.uuid,
         name: c.name,
@@ -255,7 +267,7 @@ export default function InitialiseDeck({ deck }: { deck: DeckWithCards }) {
       name: commanderCardRecord.name,
       type: commanderCardRecord.type,
       mana_cost: commanderCardRecord.mana_cost,
-      colorIdentity: commanderCardRecord.colorIdentity,
+      colorIdentity: commanderCardRecord.colorIdentity ?? (commanderCardRecord as { color_identity?: string[] }).color_identity ?? [],
       cmc: commanderCardRecord.cmc,
       text: commanderCardRecord.text,
       imageFrontUrl: `https://cards.scryfall.io/normal/front/${commanderCardRecord.identifiers.scryfallId[0]}/${commanderCardRecord.identifiers.scryfallId[1]}/${commanderCardRecord.identifiers.scryfallId}.jpg`,

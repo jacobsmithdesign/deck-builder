@@ -11,7 +11,15 @@ import { CardRecord } from "@/lib/schemas";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { AnimatePresence, motion } from "framer-motion";
-import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { useResolvedCardReferences } from "@/app/hooks/useResolvedCardReferences";
+import { MarkdownWithCardRefs } from "@/app/components/card-ref/MarkdownWithCardRefs";
+import {
+  AiOutlineLoading3Quarters,
+  AiOutlineEye,
+  AiOutlineHeart,
+  AiFillHeart,
+  AiOutlineComment,
+} from "react-icons/ai";
 
 function formatTagLabel(slug: string) {
   return slug.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
@@ -50,7 +58,82 @@ export default function DeckOverviewSection() {
   const { deckDetails, commanderCard, setDeckDetails } = useCommander();
   const [visibilitySaving, setVisibilitySaving] = React.useState(false);
   const [visibilityHovered, setVisibilityHovered] = React.useState(false);
+  const [likeLoading, setLikeLoading] = React.useState(false);
+  const [isEditingTitle, setIsEditingTitle] = React.useState(false);
+  const { resolved: resolvedCards, resolve: resolveCardRefs } =
+    useResolvedCardReferences();
+  const descriptionForRefs =
+    (deck as { description?: string | null })?.description ??
+    (deckDetails as { description?: string | null })?.description ??
+    "";
+
+  React.useEffect(() => {
+    const texts = [
+      ...(descriptionForRefs ? [descriptionForRefs] : []),
+      ...(archetypeOverview?.description
+        ? [archetypeOverview.description]
+        : []),
+    ];
+    if (texts.length) resolveCardRefs(texts);
+  }, [descriptionForRefs, archetypeOverview?.description, resolveCardRefs]);
+  const [localTitle, setLocalTitle] = React.useState("");
+  const [isEditingDescription, setIsEditingDescription] = React.useState(false);
+  const [localDescription, setLocalDescription] = React.useState("");
+  const [descriptionSaving, setDescriptionSaving] = React.useState(false);
+  const titleInputRef = React.useRef<HTMLInputElement>(null);
+  const descriptionTextareaRef = React.useRef<HTMLTextAreaElement>(null);
   const isPublic = deck?.isPublic ?? false;
+
+  // Record view once per deck when overview is shown
+  React.useEffect(() => {
+    if (!deck?.id) return;
+    fetch(`/api/decks/${deck.id}/view`, { method: "POST" }).catch(() => {});
+  }, [deck?.id]);
+
+  const scrollToComments = React.useCallback(() => {
+    document.getElementById("deck-comments")?.scrollIntoView({
+      behavior: "smooth",
+    });
+  }, []);
+
+  const toggleLike = React.useCallback(async () => {
+    if (!deck?.id || likeLoading) return;
+    setLikeLoading(true);
+    const prevLiked = deck.userHasLiked ?? false;
+    const prevCount = deck.likeCount ?? 0;
+    setDeck({
+      ...deck,
+      userHasLiked: !prevLiked,
+      likeCount: prevCount + (prevLiked ? -1 : 1),
+    });
+    try {
+      const res = await fetch(`/api/decks/${deck.id}/like`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (res.ok && typeof data.liked === "boolean") {
+        setDeck({
+          ...deck,
+          userHasLiked: data.liked,
+          likeCount: data.likeCount ?? deck.likeCount ?? 0,
+        });
+      } else {
+        setDeck({
+          ...deck,
+          userHasLiked: prevLiked,
+          likeCount: prevCount,
+        });
+      }
+    } catch {
+      setDeck({
+        ...deck,
+        userHasLiked: prevLiked,
+        likeCount: prevCount,
+      });
+    } finally {
+      setLikeLoading(false);
+    }
+  }, [deck, likeLoading, setDeck]);
 
   const toggleVisibility = React.useCallback(async () => {
     if (!deck?.id || !userOwnsDeck || visibilitySaving) return;
@@ -72,6 +155,85 @@ export default function DeckOverviewSection() {
       setVisibilitySaving(false);
     }
   }, [deck, userOwnsDeck, isPublic, visibilitySaving, setDeck]);
+
+  const currentName =
+    deck?.name ?? (deckDetails as { name?: string } | null)?.name ?? "";
+  const saveTitle = React.useCallback(async () => {
+    if (!deck?.id || !userOwnsDeck) return;
+    const trimmed = localTitle.trim();
+    if (trimmed === currentName) {
+      setIsEditingTitle(false);
+      return;
+    }
+    if (!trimmed) {
+      setLocalTitle(currentName);
+      setIsEditingTitle(false);
+      return;
+    }
+    try {
+      const res = await fetch("/api/decks/update-metadata", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deckId: deck.id, name: trimmed }),
+      });
+      if (res.ok) {
+        setDeck({ ...deck, name: trimmed });
+      } else {
+        setLocalTitle(currentName);
+      }
+    } catch {
+      setLocalTitle(currentName);
+    }
+    setIsEditingTitle(false);
+  }, [deck, userOwnsDeck, currentName, localTitle, setDeck]);
+
+  const saveDescription = React.useCallback(async () => {
+    if (!deck?.id || !userOwnsDeck || descriptionSaving) return;
+    const trimmed = localDescription.trim();
+    const current =
+      (deck as { description?: string | null })?.description ?? "";
+    if (trimmed === current) {
+      setIsEditingDescription(false);
+      return;
+    }
+    setDescriptionSaving(true);
+    try {
+      const res = await fetch("/api/decks/update-metadata", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          deckId: deck.id,
+          description: trimmed || null,
+        }),
+      });
+      if (res.ok) {
+        setDeck({
+          ...deck,
+          description: trimmed || null,
+        } as typeof deck & { description: string | null });
+      }
+    } finally {
+      setDescriptionSaving(false);
+      setIsEditingDescription(false);
+    }
+  }, [deck, userOwnsDeck, localDescription, descriptionSaving, setDeck]);
+
+  React.useEffect(() => {
+    if (isEditingTitle && titleInputRef.current) {
+      titleInputRef.current.focus();
+      titleInputRef.current.select();
+    }
+  }, [isEditingTitle]);
+
+  React.useEffect(() => {
+    if (isEditingDescription && descriptionTextareaRef.current) {
+      descriptionTextareaRef.current.focus();
+      descriptionTextareaRef.current.setSelectionRange(
+        descriptionTextareaRef.current.value.length,
+        descriptionTextareaRef.current.value.length,
+      );
+    }
+  }, [isEditingDescription]);
 
   // On page load or archetype change: sync tags from axes (65+) to DB if owner and different
   React.useEffect(() => {
@@ -138,6 +300,10 @@ export default function DeckOverviewSection() {
   if (!deck && !deckDetails) return null;
 
   const name = deck?.name ?? deckDetails?.name ?? "";
+  const description =
+    (deck as { description?: string | null })?.description ??
+    (deckDetails as { description?: string | null })?.description ??
+    "";
   const type = deck?.type ?? deckDetails?.type ?? "";
   const tags =
     (deckDetails as { tags?: string[] } | null)?.tags ??
@@ -172,9 +338,47 @@ export default function DeckOverviewSection() {
             {/* Left: deck name, creator, release date, type, commander mana cost */}
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <CardTitle className="font-bold text-dark/90 truncate">
-                  {name}
-                </CardTitle>{" "}
+                {userOwnsDeck && isEditingTitle ? (
+                  <input
+                    ref={titleInputRef}
+                    type="text"
+                    value={localTitle}
+                    onChange={(e) => setLocalTitle(e.target.value)}
+                    onBlur={saveTitle}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        saveTitle();
+                      }
+                      if (e.key === "Escape") {
+                        setLocalTitle(name);
+                        setIsEditingTitle(false);
+                        titleInputRef.current?.blur();
+                      }
+                    }}
+                    className="font-bold text-dark/90 min-w-32 flex-1 rounded-md px-2 py-1 -mx-2 -my-1 bg-transparent border border-transparent hover:bg-light/15 focus:bg-light/25 focus:outline-none focus:border-dark/20 transition-colors"
+                    aria-label="Deck title"
+                  />
+                ) : (
+                  <CardTitle
+                    className={`font-bold text-dark/90 truncate ${userOwnsDeck ? "cursor-pointer rounded-md px-2 py-1 -mx-2 -my-1 hover:bg-light/15 focus:bg-light/25 focus:outline-none transition-colors" : ""}`}
+                    onClick={() => {
+                      if (userOwnsDeck) {
+                        setLocalTitle(name);
+                        setIsEditingTitle(true);
+                      }
+                    }}
+                    onFocus={() =>
+                      userOwnsDeck &&
+                      (setLocalTitle(name), setIsEditingTitle(true))
+                    }
+                    tabIndex={userOwnsDeck ? 0 : undefined}
+                    role={userOwnsDeck ? "button" : undefined}
+                    aria-label={userOwnsDeck ? "Edit deck title" : undefined}
+                  >
+                    {name}
+                  </CardTitle>
+                )}{" "}
                 {type && (
                   <span className="font-normal bg-light/20 px-2 rounded-md whitespace-nowrap">
                     {type}
@@ -240,6 +444,41 @@ export default function DeckOverviewSection() {
                   </div>
                 </div>
               )}
+              {/* Engagement pills: views, likes, comments */}
+              <div className="flex flex-wrap items-center gap-2 mt-2">
+                <span
+                  className="inline-flex items-center gap-1.5 rounded-full bg-light/25 px-2.5 py-1 text-xs font-medium text-dark/70"
+                  aria-label="Views"
+                >
+                  <AiOutlineEye className="h-3.5 w-3.5 shrink-0" />
+                  {deck?.viewCount ?? 0}
+                </span>
+                <button
+                  type="button"
+                  onClick={toggleLike}
+                  disabled={likeLoading}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-light/25 px-2.5 py-1 text-xs font-medium text-dark/70 transition-colors hover:bg-light/40 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-dark/20"
+                  aria-label={deck?.userHasLiked ? "Unlike" : "Like"}
+                >
+                  {likeLoading ? (
+                    <AiOutlineLoading3Quarters className="h-3.5 w-3.5 shrink-0 animate-spin" />
+                  ) : deck?.userHasLiked ? (
+                    <AiFillHeart className="h-3.5 w-3.5 shrink-0 text-red-500" />
+                  ) : (
+                    <AiOutlineHeart className="h-3.5 w-3.5 shrink-0" />
+                  )}
+                  {deck?.likeCount ?? 0}
+                </button>
+                <button
+                  type="button"
+                  onClick={scrollToComments}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-light/25 px-2.5 py-1 text-xs font-medium text-dark/70 transition-colors hover:bg-light/40 focus:outline-none focus:ring-2 focus:ring-dark/20"
+                  aria-label="Scroll to comments"
+                >
+                  <AiOutlineComment className="h-3.5 w-3.5 shrink-0" />
+                  {deck?.commentCount ?? 0}
+                </button>
+              </div>
             </div>
             {/* Right: expandable pills, then tag pills below */}
             <div className="flex flex-col justify-between items-end">
@@ -258,18 +497,81 @@ export default function DeckOverviewSection() {
               )}
             </div>
           </div>
-          {/* Bottom: archetype overview description */}
-          <div>
-            {archetypeOverview?.description && (
-              <div className="mt-3 pt-3 border-t border-dark/10">
-                <div className="prose prose-sm dark:prose-invert max-w-none text-dark/80">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {archetypeOverview.description}
-                  </ReactMarkdown>
+          {/* Deck description (editable by owner) */}
+          {(userOwnsDeck || description) && (
+            <div className="mt-3 pt-3 border-t border-dark/10">
+              {userOwnsDeck && isEditingDescription ? (
+                <div className="relative">
+                  <textarea
+                    ref={descriptionTextareaRef}
+                    value={localDescription}
+                    onChange={(e) => setLocalDescription(e.target.value)}
+                    placeholder="Add a description..."
+                    rows={4}
+                    className="w-full rounded-md px-3 py-2 text-sm text-dark/90 bg-transparent border border-dark/15 hover:bg-light/15 focus:bg-light/25 focus:outline-none focus:border-dark/20 transition-colors resize-y min-h-24"
+                    aria-label="Deck description"
+                  />
+                  <div className="flex justify-end mt-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={saveDescription}
+                      disabled={descriptionSaving}
+                      className="rounded-md px-3 py-1.5 text-sm font-medium bg-dark/15 text-dark/80 hover:bg-dark/25 focus:outline-none focus:ring-2 focus:ring-dark/20 disabled:opacity-60 transition-colors"
+                    >
+                      {descriptionSaving ? (
+                        <>
+                          <AiOutlineLoading3Quarters className="inline h-4 w-4 mr-1.5 animate-spin align-middle" />
+                          Saving
+                        </>
+                      ) : (
+                        "Save"
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingDescription(false)}
+                      className="rounded-md px-3 py-1.5 text-sm font-medium bg-dark/5 text-dark/80 hover:bg-dark/25 focus:outline-none focus:ring-2 focus:ring-dark/20 disabled:opacity-60 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              ) : (
+                <div
+                  className={`prose prose-sm dark:prose-invert max-w-none text-dark/80 rounded-md px-3 py-2 min-h-10 ${userOwnsDeck ? "cursor-pointer hover:bg-light/15 focus:bg-light/25 focus:outline-none transition-colors" : ""}`}
+                  onClick={() => {
+                    if (userOwnsDeck) {
+                      setLocalDescription(description);
+                      setIsEditingDescription(true);
+                    }
+                  }}
+                  onFocus={() => {
+                    if (userOwnsDeck) {
+                      setLocalDescription(description);
+                      setIsEditingDescription(true);
+                    }
+                  }}
+                  tabIndex={userOwnsDeck ? 0 : undefined}
+                  role={userOwnsDeck ? "button" : undefined}
+                  aria-label={
+                    userOwnsDeck ? "Edit deck description" : undefined
+                  }
+                >
+                  {description ? (
+                    <MarkdownWithCardRefs
+                      source={description}
+                      resolvedCards={resolvedCards}
+                      className="prose prose-sm dark:prose-invert max-w-none"
+                    />
+                  ) : (
+                    <span className="text-dark/50 italic">
+                      {userOwnsDeck ? "Add a description..." : ""}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

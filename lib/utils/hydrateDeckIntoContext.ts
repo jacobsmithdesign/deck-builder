@@ -13,6 +13,7 @@ import type {
 type DeckRow = {
   id: string;
   name: string;
+  description?: string | null;
   user_id: string | null;
   type: string | null;
   is_public?: boolean | null;
@@ -22,6 +23,7 @@ type DeckRow = {
   commander_uuid?: string | null;
   display_card_uuid?: string | null;
   creator?: { username?: string | null } | null;
+  tags?: string[] | null;
 
   deck_cards: {
     count: number;
@@ -72,6 +74,13 @@ type DeckRow = {
   } | null;
 };
 
+export type DeckEngagement = {
+  viewCount?: number;
+  likeCount?: number;
+  commentCount?: number;
+  userHasLiked?: boolean;
+};
+
 export function hydrateDeckIntoContext(
   row: DeckRow,
   opts: {
@@ -87,12 +96,15 @@ export function hydrateDeckIntoContext(
     setDeckFeatures?: (f: DeckFeatureVector | null) => void;
     setLandFeatures?: (f: any) => void;
     setAiOverview?: (v: AiOverview | null) => void;
+    /** Preserve engagement from server (viewCount, likeCount, commentCount, userHasLiked) when hydrating from client fetch */
+    engagement?: DeckEngagement;
   },
 ) {
-  // 1) Deck metadata
+  // 1) Deck metadata (merge server-provided engagement when present)
   const deckMeta: DeckMetadata = {
     id: row.id,
     name: row.name,
+    description: row.description ?? null,
     userId: row.user_id,
     type: row.type ?? undefined,
     isUserDeck: !!row.user_id,
@@ -103,6 +115,13 @@ export function hydrateDeckIntoContext(
     commander_uuid: row.commander_uuid ?? null,
     display_card_uuid: row.display_card_uuid ?? null,
     creatorName: row.creator?.username ?? null,
+    tags: Array.isArray(row.tags) ? row.tags : [],
+    ...(opts.engagement && {
+      viewCount: opts.engagement.viewCount,
+      likeCount: opts.engagement.likeCount,
+      commentCount: opts.engagement.commentCount,
+      userHasLiked: opts.engagement.userHasLiked,
+    }),
   };
   opts.setDeck(deckMeta);
 

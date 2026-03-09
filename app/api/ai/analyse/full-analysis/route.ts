@@ -243,6 +243,10 @@ export async function GET(req: NextRequest) {
                   Rate interaction intensity based on the frequency of interactions with the board.
                   Rate complexity based on the variety of cards and the potential for multiple interactions with the board.
 
+                  
+
+                  If you name a card, write it as [[Card Name]] in explained responses. E.g. Ulalek, Fused Atrocity -> [[Ulalek, Fused Atrocity]]
+                  
                   DECK INFO:
                   Commander: ${commander}
                   Land feature extraction: ${LANDFEATURES}
@@ -376,10 +380,15 @@ export async function GET(req: NextRequest) {
             updated_at: new Date().toISOString(),
           });
         if (updateErr) throw updateErr;
-        // 5) Update deck with tags (1-5)
+        // 5) Update deck with tags and archetype description
+        const archetypeDescription =
+          (json.archetype.description as string)?.trim() || null;
         const { error: deckUpdateErr } = await supabase
           .from("decks")
-          .update({ tags })
+          .update({
+            tags,
+            description: archetypeDescription,
+          })
           .eq("id", deckId);
         if (deckUpdateErr) throw deckUpdateErr;
         write("done", {

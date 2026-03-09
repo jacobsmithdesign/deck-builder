@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { BsFillLightningChargeFill } from "react-icons/bs";
 import { RiBrainFill } from "react-icons/ri";
 import { AiFillInteraction } from "react-icons/ai";
 import { IoExtensionPuzzle } from "react-icons/io5";
 import { AnimatePresence, motion } from "framer-motion";
+import { useResolvedCardReferences } from "@/app/hooks/useResolvedCardReferences";
+import { CardReferenceText } from "@/app/components/card-ref/CardReferenceText";
 
 // Power Level: numeric 1–10 (green = low, red = high)
 export const power_levelColors: Record<number, string> = {
@@ -127,6 +129,23 @@ export function ExpandablePillsMini({
   difficulty: Difficulty;
 }) {
   const [hoveredKey, setHoveredKey] = useState<MetricKey | null>(null);
+  const { resolved: resolvedCards, resolve } = useResolvedCardReferences();
+
+  const explanationTextsKey = useMemo(() => {
+    if (!difficulty) return "";
+    const texts = metricConfig.map((def) =>
+      getExplanation(difficulty, def.descKeys),
+    );
+    return JSON.stringify(texts);
+  }, [difficulty]);
+
+  useEffect(() => {
+    if (!difficulty) return;
+    const texts = metricConfig
+      .map((def) => getExplanation(difficulty, def.descKeys))
+      .filter(Boolean);
+    if (texts.length) resolve(texts);
+  }, [difficulty, resolve, explanationTextsKey]);
 
   if (!difficulty) return null;
 
@@ -191,7 +210,12 @@ export function ExpandablePillsMini({
                       {prettyLabel(def.key)}
                     </p>
                     {explanation ? (
-                      <p className="text-xs mt-1 leading-snug">{explanation}</p>
+                      <p className="text-xs mt-1 leading-snug">
+                        <CardReferenceText
+                          text={explanation}
+                          resolvedCards={resolvedCards}
+                        />
+                      </p>
                     ) : null}
                   </div>
                 </motion.div>

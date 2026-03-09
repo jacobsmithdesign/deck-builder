@@ -3,6 +3,7 @@ import { CommanderCard } from "@/app/context/CommanderContext";
 import { parseDeckText } from "@/app/hooks/parseDeckText";
 import { saveNewDeckClient } from "@/lib/api/decks/client/saveNewDeckClient";
 import { searchCommander } from "@/lib/db/searchCommander";
+import { selectCardsDataFromIds } from "@/lib/db/searchCardForDeck";
 import { Checkbox, Field } from "@headlessui/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -37,31 +38,37 @@ export default function ImportDeckForm({ onCancel }: { onCancel: () => void }) {
 
   const router = useRouter();
 
-  // The function to handle importing the deck text which parses the text,
-  // displays the Legendary Creatures as commander options, and stores the full card list
+  // The function to handle importing the deck text: parse text, then batch-fetch
+  // full card data (same as deck editor import) and build commander options + card list.
   const handleDeckImport = async () => {
     const result = await parseDeckText(deckText);
-    if (result) {
-      setImportSuccess(true);
-      const commanderList: CardLine[] = [];
-      const cards: dbCardInterface[] = [];
-      for (const card of result) {
-        // If its legendary add to list of possible commanders
-        if (/Legendary\b(?:\s+[^\s]+)*\s+Creature\b/i.test(card.type))
-          commanderList.push(card);
-        // Otherwise add to full card list
-        cards.push({
-          card_uuid: card.uuid,
-          count: card.count,
-          board_section: "mainboard",
-        });
-      }
-      // Set the states for other functions to use
-      setCommanderOptions(commanderList);
-      setCardList(cards);
-    } else {
+    if (!result || result.length === 0) {
       setImportSuccess(false);
+      return;
     }
+    const uniqueUuids = [
+      ...new Set(result.map((r) => r.uuid).filter(Boolean)),
+    ] as string[];
+    const cardRecordsByUuid = await selectCardsDataFromIds(uniqueUuids);
+    const commanderList: CardLine[] = [];
+    const cards: dbCardInterface[] = [];
+    for (const card of result) {
+      if (!card.uuid || !cardRecordsByUuid.has(card.uuid)) continue;
+      if (/Legendary\b(?:\s+[^\s]+)*\s+Creature\b/i.test(card.type ?? ""))
+        commanderList.push(card);
+      cards.push({
+        card_uuid: card.uuid,
+        count: card.count,
+        board_section: "mainboard",
+      });
+    }
+    if (cards.length === 0) {
+      setImportSuccess(false);
+      return;
+    }
+    setImportSuccess(true);
+    setCommanderOptions(commanderList);
+    setCardList(cards);
   };
 
   const validDeck = name && commander;

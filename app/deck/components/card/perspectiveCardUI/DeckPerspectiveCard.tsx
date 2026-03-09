@@ -21,6 +21,7 @@ import { IoTrashOutline } from "react-icons/io5";
 import { useUser } from "@/app/context/userContext";
 import { useUserOwnsDeck } from "@/app/hooks/useUserOwnsDeck";
 import ConfirmDelete from "./ConfirmDelete";
+import { cn } from "@/lib/utils";
 
 interface DeckPerspectiveCardProps {
   id: string;
@@ -28,6 +29,8 @@ interface DeckPerspectiveCardProps {
   label?: React.ReactNode;
   isEditMode?: boolean;
   card: CardRecord;
+  /** Whether this card was newly added this session (green border + glow). */
+  isNewCard?: boolean;
 }
 
 const DeckPerspectiveCard: React.FC<DeckPerspectiveCardProps> = ({
@@ -36,6 +39,7 @@ const DeckPerspectiveCard: React.FC<DeckPerspectiveCardProps> = ({
   label,
   isEditMode = false,
   card,
+  isNewCard = false,
 }) => {
   const [hovered, setHovered] = useState(false);
   const [deleteClicked, setDeleteClicked] = useState(false);
@@ -68,6 +72,12 @@ const DeckPerspectiveCard: React.FC<DeckPerspectiveCardProps> = ({
         >
           {/* These are the menus that appear as an overlay on the card */}
           <div className="w-full h-full absolute z-10 transition-transform duration-300 ease-out  [transform-style:preserve-3d] flex items-center justify-center">
+            {/* New card bubble */}
+            {isNewCard && (
+              <div className="px-2 rounded-full absolute top-10 left-6 z-20 text-light bg-green-500 font-bold backdrop-blur-xs [transform:translateZ(20px)] shadow-lg">
+                New
+              </div>
+            )}
             {/* Confirm delete window */}
             <ConfirmDelete
               deleteClicked={deleteClicked}
@@ -78,14 +88,23 @@ const DeckPerspectiveCard: React.FC<DeckPerspectiveCardProps> = ({
           </div>
           {/* Base card content */}
           <div className=" inset-0 [transform:translateZ(0px)] z-0 pointer-events-none">
-            <Card className="p-1">
+            <Card
+              className={cn(
+                "m-1",
+                isNewCard &&
+                  "outline-2 outline-green-500 bg-green-500 rounded-xl",
+              )}
+            >
               {image && typeof image === "string" ? (
                 <Image
                   src={image}
                   width={488}
                   height={680}
                   alt={`Image of ${label} card`}
-                  className="w-52 rounded-lg select-none"
+                  className={cn(
+                    "w-52 rounded-xl select-none shadow-inner ",
+                    isNewCard && "shadow-green-500 opacity-90",
+                  )}
                 />
               ) : (
                 <></>

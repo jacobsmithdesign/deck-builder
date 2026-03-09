@@ -1,8 +1,6 @@
 // components/ArchetypeOverview.tsx
 "use client";
 import * as React from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import {
   Card,
   CardContent,
@@ -10,6 +8,8 @@ import {
   CardTitle,
 } from "@/app/components/ui/card";
 import { useCardList } from "@/app/context/CardListContext";
+import { useResolvedCardReferences } from "@/app/hooks/useResolvedCardReferences";
+import { MarkdownWithCardRefs } from "@/app/components/card-ref/MarkdownWithCardRefs";
 import { AnimatedButtonLoading } from "../primitives/AnimatedButtonLoading";
 import { RadarIdentity } from "./RadarIdentity";
 import { useFullAnalysis } from "@/app/hooks/useFullAnalysis";
@@ -78,6 +78,15 @@ export default function ArchetypeOverview() {
       ),
     [archetypeOverview?.explanation_md, archetypeOverview?.axes],
   );
+
+  const { resolved: resolvedCards, resolve } = useResolvedCardReferences();
+  const explanationTextsKey = React.useMemo(
+    () => JSON.stringify(explanationArray.map((e) => e.value)),
+    [explanationArray],
+  );
+  React.useEffect(() => {
+    if (explanationArray.length) resolve(explanationArray.map((e) => e.value));
+  }, [resolve, explanationTextsKey]);
 
   const hasData = explanationArray.length > 0 && radarData.length > 0;
 
@@ -191,12 +200,11 @@ export default function ArchetypeOverview() {
                           </span>
                           {axis}
                         </h3>
-                        <ReactMarkdown
-                          remarkPlugins={[remarkGfm]}
+                        <MarkdownWithCardRefs
+                          source={value}
+                          resolvedCards={resolvedCards}
                           className="text-sm w-full p-2 py-1 text-left"
-                        >
-                          {value}
-                        </ReactMarkdown>
+                        />
                       </div>
                     ))
                   ) : (

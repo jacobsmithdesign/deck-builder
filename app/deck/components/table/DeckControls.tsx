@@ -36,8 +36,27 @@ import {
   AiOutlineSortDescending,
 } from "react-icons/ai";
 import { RiFilter2Line } from "react-icons/ri";
+import { BsTools } from "react-icons/bs";
 
 const STAGGER_S = 0.1;
+
+/** Restriction for tools: require logged-in, or premium. Disabled tools still show in the list. */
+type ToolRestriction = "loggedIn" | "premium" | null;
+
+type DeckToolItem = {
+  id: string;
+  label: string;
+  restriction: ToolRestriction;
+  /** Optional short description for disabled state tooltip */
+  disabledHint?: string;
+};
+
+const DECK_TOOLS: DeckToolItem[] = [
+  { id: "import-cards", label: "Import cards", restriction: "loggedIn", disabledHint: "Log in to use" },
+  { id: "export-cards", label: "Export deck", restriction: "loggedIn", disabledHint: "Log in to use" },
+  { id: "analyse-interactions", label: "Analyse selected card interactions", restriction: "premium", disabledHint: "Premium only" },
+  { id: "compare-deck", label: "Compare deck", restriction: "loggedIn", disabledHint: "Log in to use" },
+];
 
 type SortKey = "deck" | "name" | "mana";
 
@@ -64,7 +83,12 @@ const viewOptions: {
   },
 ];
 
-export default function DeckControls() {
+interface DeckControlsProps {
+  onOpenImportModal?: () => void;
+  onOpenExportModal?: () => void;
+}
+
+export default function DeckControls({ onOpenImportModal, onOpenExportModal }: DeckControlsProps = {}) {
   const { deck, addCard } = useCardList();
   const { profile } = useUser();
   const { view, setView, sortOption, setSortOption, hasActiveFilters } =
@@ -72,14 +96,26 @@ export default function DeckControls() {
   const [viewOpen, setViewOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
   const viewDropdownRef = useRef<HTMLDivElement>(null);
   const sortDropdownRef = useRef<HTMLDivElement>(null);
   const filterDropdownRef = useRef<HTMLDivElement>(null);
+  const toolsDropdownRef = useRef<HTMLDivElement>(null);
   const [userOwnsDeck, setUserOwnsDeck] = useState<boolean>(false);
   const { setEditMode } = useEditMode();
 
   const isLoggedIn = !!profile;
   const showAddToCollection = isLoggedIn && !userOwnsDeck;
+
+  // Placeholder until premium/subscription is implemented
+  const isPremium = false;
+
+  const isToolDisabled = (restriction: ToolRestriction): boolean => {
+    if (!restriction) return false;
+    if (restriction === "loggedIn") return !isLoggedIn;
+    if (restriction === "premium") return !isPremium;
+    return false;
+  };
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -103,12 +139,18 @@ export default function DeckControls() {
       ) {
         setFilterOpen(false);
       }
+      if (
+        toolsDropdownRef.current &&
+        !toolsDropdownRef.current.contains(target)
+      ) {
+        setToolsOpen(false);
+      }
     };
-    if (viewOpen || sortOpen || filterOpen) {
+    if (viewOpen || sortOpen || filterOpen || toolsOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [viewOpen, sortOpen, filterOpen]);
+  }, [viewOpen, sortOpen, filterOpen, toolsOpen]);
 
   useEffect(() => {
     if (deck && profile) {
@@ -122,13 +164,13 @@ export default function DeckControls() {
     setEditMode(true);
   };
   return (
-    <div className="absolute z-20 flex w-full pr-4 pt-2 h-10 pl-1">
+    <div className="absolute z-20 flex w-full pr-7 pt-2 h-10 pl-1">
       <RaindropContainer
         className="w-full h-10 rounded-full drop-shadow-xl backdrop-blur-sm p-0 from-light/80"
         innerClassName="scale-100 outline-light border-t border-light/20 outline"
         bgColor={bgColor ? bgColor : "light"}
       ></RaindropContainer>
-      <div className="absolute w-full items-center h-10 pl-2 pr-6 grid grid-cols-3">
+      <div className="absolute w-full items-center h-10 pl-2 pr-9 grid grid-cols-3">
         {userOwnsDeck && (
           <>
             <div className="relative flex mb-6">
@@ -398,6 +440,101 @@ export default function DeckControls() {
               onClose={() => setFilterOpen(false)}
               anchorRef={filterDropdownRef}
             />
+          </div>
+          {/* Tools Button + dropdown */}
+          <div className="relative" ref={toolsDropdownRef}>
+            <button
+              type="button"
+              onClick={() => setToolsOpen((o) => !o)}
+              className="contents"
+              aria-expanded={toolsOpen}
+              aria-haspopup="true"
+            >
+              <AnimatedButton
+                variant="raindrop"
+                className="w-fit h-8 rounded-full bg-light/0 font-bold text-dark/80 gap-1"
+                title="Tools"
+                icon={<BsTools className="w-5 h-4" />}
+              />
+            </button>
+            <AnimatePresence>
+              {toolsOpen && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{
+                    opacity: 0,
+                    height: 0,
+                    transition: { delay: 0.1 },
+                  }}
+                  transition={{ duration: 0.1 }}
+                  className="absolute top-full right-0 mt-2 flex flex-col gap-1.5 p-1 min-w-52 z-50 bg-light/30 backdrop-blur-sm rounded-2xl"
+                >
+                  {DECK_TOOLS.map((tool) => {
+                    const disabled = isToolDisabled(tool.restriction);
+                    return (
+                      <motion.div
+                        key={tool.id}
+                        initial={{ opacity: 0, scale: 0.85 }}
+                        animate={{
+                          opacity: 1,
+                          scale: 1,
+                          transition: {
+                            type: "spring",
+                            stiffness: 350,
+                            damping: 15,
+                            bounce: 1,
+                          },
+                        }}
+                        exit={{
+                          opacity: 0,
+                          scale: 0,
+                          transition: { duration: 0.15 },
+                        }}
+                        whileHover={!disabled ? { scale: 1.05 } : undefined}
+                        whileTap={!disabled ? { scale: 0.95 } : undefined}
+                        transition={{
+                          type: "spring",
+                          stiffness: 450,
+                          damping: 15,
+                          bounce: 0.5,
+                        }}
+                      >
+                        <RaindropContainer
+                          bgColor={bgColor}
+                          className={`rounded-full drop-shadow-md backdrop-blur-sm py-1.5 flex items-center gap-2 w-full transition-colors ${
+                            disabled
+                              ? "from-light/40 cursor-not-allowed opacity-70"
+                              : "cursor-pointer from-light/60 hover:from-light/90"
+                          }`}
+                          innerClassName="scale-100 rounded-full border border-light/20 opacity-12"
+                          childClassName="px-4 flex gap-2"
+                          onClick={() => {
+                            if (disabled) return;
+                            if (tool.id === "import-cards" && userOwnsDeck) {
+                              onOpenImportModal?.();
+                            }
+                            if (tool.id === "export-cards") {
+                              onOpenExportModal?.();
+                            }
+                            setToolsOpen(false);
+                          }}
+                          title={disabled ? tool.disabledHint : undefined}
+                        >
+                          <span
+                            className={`font-bold text-sm ${
+                              disabled ? "text-dark/50" : "text-dark/80"
+                            }`}
+                          >
+                            {tool.label}
+                          </span>
+                        </RaindropContainer>
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>

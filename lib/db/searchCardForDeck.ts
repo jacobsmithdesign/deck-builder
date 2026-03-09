@@ -60,42 +60,35 @@ export async function searchCardForDeck(
   }));
 }
 
-export async function selectCardDataFromId(id: string): Promise<CardRecord> {
-  const { data, error } = await supabase
-    .from("cards")
-    .select(
-      `
-    uuid, 
-    name, 
-    mana_cost, 
-    mana_value, 
-    type, 
-    text, 
-    flavor_text,
-    rarity,
-    identifiers, 
-    color_identity,
-    types
-    `,
-    )
-    .eq("uuid", id)
-    .single();
+const CARDS_SELECT =
+  "uuid, name, mana_cost, mana_value, type, text, flavor_text, rarity, identifiers, color_identity, types";
 
-  if (error) throw error;
-
-  const identifiers = data.identifiers ?? {};
+function rowToCardRecord(row: {
+  uuid: string;
+  name: string;
+  type: string | null;
+  mana_cost: string | null;
+  mana_value: number | null;
+  text: string | null;
+  flavor_text: string | null;
+  rarity: string | null;
+  identifiers: Record<string, string> | null;
+  color_identity: string[] | null;
+  types: string[] | null;
+}): CardRecord {
+  const identifiers = row.identifiers ?? {};
   const scryfallId = identifiers.scryfallId ?? null;
   const scryfallBackId = identifiers.scryfallCardBackId ?? null;
   return {
-    uuid: data.uuid,
-    name: data.name,
-    type: data.type,
-    mana_cost: data.mana_cost,
-    colorIdentity: data.color_identity ?? [],
-    cmc: data.mana_value ?? 0,
-    text: data.text ?? "",
-    flavourText: data.flavor_text,
-    rarity: data.rarity,
+    uuid: row.uuid,
+    name: row.name,
+    type: row.type,
+    mana_cost: row.mana_cost,
+    colorIdentity: row.color_identity ?? [],
+    cmc: row.mana_value ?? 0,
+    text: row.text ?? "",
+    flavourText: row.flavor_text,
+    rarity: row.rarity,
     count: 1,
     board_section: "mainboard",
     imageFrontUrl: scryfallId
@@ -110,6 +103,49 @@ export async function selectCardDataFromId(id: string): Promise<CardRecord> {
     isDoubleFaced: !!scryfallBackId,
     identifiers,
   } as CardRecord;
+}
+
+export async function selectCardDataFromId(id: string): Promise<CardRecord> {
+  const { data, error } = await supabase
+    .from("cards")
+    .select(CARDS_SELECT)
+    .eq("uuid", id)
+    .single();
+
+  if (error) throw error;
+  return rowToCardRecord(data);
+}
+
+/** Max UUIDs per request to avoid URL/query size limits. */
+const BATCH_SIZE = 150;
+
+/**
+ * Fetch full card data for many UUIDs in one or few requests.
+ * Returns a Map from uuid to CardRecord; missing/failed UUIDs are omitted.
+ */
+export async function selectCardsDataFromIds(
+  ids: string[],
+): Promise<Map<string, CardRecord>> {
+  const unique = [...new Set(ids)].filter(Boolean);
+  if (unique.length === 0) return new Map();
+
+  const map = new Map<string, CardRecord>();
+  for (let i = 0; i < unique.length; i += BATCH_SIZE) {
+    const chunk = unique.slice(i, i + BATCH_SIZE);
+    const { data, error } = await supabase
+      .from("cards")
+      .select(CARDS_SELECT)
+      .in("uuid", chunk);
+
+    if (error) {
+      console.error("selectCardsDataFromIds chunk error:", error);
+      continue;
+    }
+    for (const row of data ?? []) {
+      map.set(row.uuid, rowToCardRecord(row));
+    }
+  }
+  return map;
 }
 
 /**

@@ -4,6 +4,8 @@ import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCardList } from "@/app/context/CardListContext";
 import { CardTitle } from "@/app/components/ui/card";
+import { useResolvedCardReferences } from "@/app/hooks/useResolvedCardReferences";
+import { CardReferenceText } from "@/app/components/card-ref/CardReferenceText";
 
 // If you already have niceLabel, feel free to delete this and import yours
 function niceLabel(key: string) {
@@ -31,6 +33,23 @@ export function StrengthsWeaknessesPanel({
 
   const hasStrengths = strengths && Object.keys(strengths).length > 0;
   const hasWeaknesses = weaknesses && Object.keys(weaknesses).length > 0;
+
+  const { resolved: resolvedCards, resolve } = useResolvedCardReferences();
+  const textsKey = React.useMemo(
+    () =>
+      JSON.stringify([
+        ...Object.values(strengths ?? {}),
+        ...Object.values(weaknesses ?? {}),
+      ]),
+    [strengths, weaknesses],
+  );
+  React.useEffect(() => {
+    const texts = [
+      ...Object.values(strengths ?? {}),
+      ...Object.values(weaknesses ?? {}),
+    ];
+    if (texts.length) resolve(texts);
+  }, [resolve, textsKey]);
 
   return (
     <AnimatePresence>
@@ -84,7 +103,10 @@ export function StrengthsWeaknessesPanel({
                       + {niceLabel(key)}
                     </dt>
                     <dd className="text-sm leading-snug text-emerald-950  p-1">
-                      {value}
+                      <CardReferenceText
+                        text={value}
+                        resolvedCards={resolvedCards}
+                      />
                     </dd>
                   </motion.div>
                 ))}
@@ -135,7 +157,10 @@ export function StrengthsWeaknessesPanel({
                       - {niceLabel(key)}
                     </dt>
                     <dd className="text-sm leading-snug text-rose-950 p-1">
-                      {value}
+                      <CardReferenceText
+                        text={value}
+                        resolvedCards={resolvedCards}
+                      />
                     </dd>
                   </motion.div>
                 ))}
@@ -165,6 +190,20 @@ export function StrengthsWeaknessesWide({
   const strengths = aiOverview?.ai_strengths ?? {};
   const weaknesses = aiOverview?.ai_weaknesses ?? {};
 
+  const { resolved: resolvedCards, resolve } = useResolvedCardReferences();
+  const textsKey = React.useMemo(
+    () =>
+      JSON.stringify([
+        ...Object.values(strengths),
+        ...Object.values(weaknesses),
+      ]),
+    [strengths, weaknesses],
+  );
+  React.useEffect(() => {
+    const texts = [...Object.values(strengths), ...Object.values(weaknesses)];
+    if (texts.length) resolve(texts);
+  }, [resolve, textsKey]);
+
   return (
     <motion.section
       initial={{ opacity: 0, y: 12 }}
@@ -193,7 +232,9 @@ export function StrengthsWeaknessesWide({
                   <dt className="text-sm font-semibold text-emerald-800 ">
                     {niceLabel(k)}
                   </dt>
-                  <dd className="text-sm text-neutral-700 ">{v}</dd>
+                  <dd className="text-sm text-neutral-700 ">
+                    <CardReferenceText text={v} resolvedCards={resolvedCards} />
+                  </dd>
                 </div>
               ))}
             </dl>
@@ -211,7 +252,9 @@ export function StrengthsWeaknessesWide({
                   <dt className="text-sm font-semibold text-rose-800 ">
                     {niceLabel(k)}
                   </dt>
-                  <dd className="text-sm text-neutral-700 ">{v}</dd>
+                  <dd className="text-sm text-neutral-700 ">
+                    <CardReferenceText text={v} resolvedCards={resolvedCards} />
+                  </dd>
                 </div>
               ))}
             </dl>

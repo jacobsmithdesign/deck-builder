@@ -168,7 +168,7 @@ type CardWithImage = CardRecord & { imageFrontUrl?: string | null };
 
 export const DeckListView = () => {
   const { editMode } = useEditMode();
-  const { cards, changesMadeState } = useCardList();
+  const { cards, changesMadeState, newlyAddedCardUuids } = useCardList();
   const filteredCards = useFilteredCards(cards);
   const { sortOption } = useDeckView();
   const [visibleGroups, setVisibleGroups] = useState<Set<string>>(new Set());
@@ -347,6 +347,8 @@ export const DeckListView = () => {
                                       }}
                                       className={cn(
                                         "group/card flex justify-between w-full py-1.5 px-3 rounded-md md:hover:bg-dark/5 transition-colors duration-150 border-b border-dark/5 last:border-b-0 relative cursor-pointer",
+                                        newlyAddedCardUuids.has(c.uuid) &&
+                                          "bg-green-100 dark:bg-green-900/30",
                                       )}
                                       style={{
                                         ["--preview-w" as string]: `${previewWidth + 8}px`,

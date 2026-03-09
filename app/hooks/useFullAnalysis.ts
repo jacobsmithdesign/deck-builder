@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { useCardList } from "../context/CardListContext";
-import { streamObject } from "ai";
 import { Difficulty } from "../context/CardListContext";
 
 export type ArchetypeOverviewResult = {
@@ -47,11 +46,16 @@ export function useFullAnalysis(opts?: {
   const [result, setResult] = useState<ArchetypeOverviewResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const {
+    deck,
+    setDeck,
     setArchetypeOverview,
     setStrengthsAndWeaknesses,
     setPillars,
     setDifficulty,
   } = useCardList();
+  const deckRef = useRef(deck);
+  deckRef.current = deck;
+
   const start = (deckId: string) => {
     if (!deckId) return;
     setProgress(0);
@@ -120,6 +124,15 @@ export function useFullAnalysis(opts?: {
         setStrengthsAndWeaknesses(swClean);
         setPillars(pillarsClean);
         setDifficulty(difficultyClean as Difficulty);
+
+        // Update deck description in context so DeckOverviewSection shows the model-generated description
+        const currentDeck = deckRef.current;
+        if (currentDeck?.id === d.deckId && archetypeClean.description != null) {
+          setDeck({
+            ...currentDeck,
+            description: archetypeClean.description.trim() || null,
+          });
+        }
 
         onDone?.({
           progress: 100,

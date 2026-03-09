@@ -93,7 +93,7 @@ const sortGroupCards = (cards: any[] = [], sortOption: DeckSortOption) => {
 
 export const CardView = () => {
   const { editMode } = useEditMode();
-  const { cards } = useCardList();
+  const { cards, newlyAddedCardUuids } = useCardList();
   const { sortOption, filters } = useDeckView();
   const filteredCards = useFilteredCards(cards);
   const [visibleGroups, setVisibleGroups] = useState<Set<string>>(new Set());
@@ -257,7 +257,7 @@ export const CardView = () => {
                           }}
                           className="overflow-y-hidden flex px-2 scroll-mt-26"
                         >
-                          <GroupItems key="group-items" className="mt-2">
+                          <GroupItems key="group-items" className="mt-2 mb-6">
                             {group.cards.map((card, index) => (
                               <motion.div
                                 key={card.id} // <-- stable key per card
@@ -280,6 +280,7 @@ export const CardView = () => {
                                   delay: 0.015 * index,
                                   duration: 0.2,
                                 }}
+                                className="hover:z-1"
                               >
                                 <DeckPerspectiveCard
                                   key={card.id}
@@ -288,6 +289,7 @@ export const CardView = () => {
                                   label={card.name}
                                   isEditMode={editMode}
                                   card={card}
+                                  isNewCard={newlyAddedCardUuids.has(card.uuid)}
                                 />
                               </motion.div>
                             ))}

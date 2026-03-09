@@ -1,4 +1,4 @@
-// lib/api/supabase/decks/getDeckById.ts
+// lib/api/decks/getDeckById.ts
 import { createServerSupabase } from "@/lib/supabase/server";
 
 export async function getDeckById(deckId: string) {
@@ -18,11 +18,43 @@ export async function getDeckById(deckId: string) {
 
   if (error || !deckData) throw new Error("Deck not found");
 
+  const { data: { user } } = await supabase.auth.getUser();
+  const userId = user?.id ?? null;
+
+  // Engagement: like count, comment count, and whether current user liked (single batch for speed)
+  const [likeCountRes, commentCountRes, userLikeRes] = await Promise.all([
+    supabase
+      .from("deck_likes")
+      .select("deck_id", { count: "exact", head: true })
+      .eq("deck_id", deckId),
+    supabase
+      .from("deck_comments")
+      .select("id", { count: "exact", head: true })
+      .eq("deck_id", deckId),
+    userId
+      ? supabase
+          .from("deck_likes")
+          .select("deck_id")
+          .eq("deck_id", deckId)
+          .eq("user_id", userId)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
+
+  const viewCount = Number((deckData as { view_count?: number }).view_count ?? 0);
+  const likeCount = likeCountRes.count ?? 0;
+  const commentCount = commentCountRes.count ?? 0;
+  const userHasLiked = !!userLikeRes.data;
+
   const isUserDeck = !!deckData.user_id;
 
   const creatorName =
     (deckData as { creator?: { username?: string | null } | null })?.creator
       ?.username ?? null;
+
+  const tags = Array.isArray((deckData as { tags?: unknown }).tags)
+    ? (deckData as { tags: string[] }).tags
+    : [];
 
   return {
     source: isUserDeck ? "user" : "official",
@@ -30,6 +62,7 @@ export async function getDeckById(deckId: string) {
       id: deckData.id,
       user_id: deckData.user_id ?? null,
       name: deckData.name,
+      description: (deckData as { description?: string | null }).description ?? null,
       creatorName: creatorName ?? null,
       code: deckData.code ?? null,
       type: deckData.type,
@@ -40,6 +73,11 @@ export async function getDeckById(deckId: string) {
       display_card_uuid: deckData.display_card_uuid ?? null,
       commander_uuid: deckData.commander_uuid ?? null,
       commander: deckData.commander ?? null,
+      tags,
+      viewCount,
+      likeCount,
+      commentCount,
+      userHasLiked,
       cards: deckData.deck_cards.map((c: any) => {
         const card = c.cards;
         const identifiers = card.identifiers ?? {};

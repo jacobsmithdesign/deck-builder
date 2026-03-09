@@ -4,8 +4,8 @@ import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCardList } from "@/app/context/CardListContext";
 import { CardTitle } from "@/app/components/ui/card";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { useResolvedCardReferences } from "@/app/hooks/useResolvedCardReferences";
+import { MarkdownWithCardRefs } from "@/app/components/card-ref/MarkdownWithCardRefs";
 
 function niceLabel(slug: string) {
   return slug.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -26,6 +26,16 @@ export function PillarsPanel({
   const pillarsRecord = pillarsProp ?? pillarsContext?.pillars ?? {};
   const entries = Object.entries(pillarsRecord);
   const hasPillars = entries.length > 0;
+  const { resolved: resolvedCards, resolve } = useResolvedCardReferences();
+  const pillarTextsKey = React.useMemo(
+    () => JSON.stringify(Object.values(pillarsRecord)),
+    [pillarsRecord],
+  );
+
+  React.useEffect(() => {
+    const texts = Object.values(pillarsRecord);
+    if (texts.length) resolve(texts);
+  }, [resolve, pillarTextsKey]);
 
   return (
     <AnimatePresence>
@@ -69,9 +79,10 @@ export function PillarsPanel({
                   </span>
                   <div className="min-w-0 flex-1 text-sm leading-snug text-amber-950">
                     <div className="prose prose-sm dark:prose-invert max-w-none">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {markdown}
-                      </ReactMarkdown>
+                      <MarkdownWithCardRefs
+                        source={markdown}
+                        resolvedCards={resolvedCards}
+                      />
                     </div>
                   </div>
                 </motion.li>

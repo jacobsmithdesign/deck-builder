@@ -6,6 +6,7 @@ import {
   useState,
   ReactNode,
   useEffect,
+  useMemo,
 } from "react";
 import { CardRecord } from "@/lib/schemas";
 import type { DeckFeatureVector } from "@/lib/ai/features";
@@ -26,6 +27,12 @@ export interface DeckMetadata {
   display_card_uuid?: string | null;
   tags?: string[];
   creatorName?: string | null;
+  description?: string | null;
+  /** Engagement: set from server or API, updated optimistically on like. */
+  viewCount?: number;
+  likeCount?: number;
+  commentCount?: number;
+  userHasLiked?: boolean;
 }
 
 // Smaller land feature object for AI models
@@ -114,6 +121,8 @@ type ChangesMade = {
 interface CardListContextType {
   // cards
   cards: CardRecord[];
+  /** Set of card UUIDs that have been added this session (positive countChange). */
+  newlyAddedCardUuids: Set<string>;
   changesMadeState?: ChangesMade[];
   setChangesMadeState: (changes: ChangesMade[]) => void;
   setCards: (cards: CardRecord[]) => void;
@@ -215,6 +224,17 @@ export const CardListProvider = ({ children }: { children: ReactNode }) => {
     return updatedCards;
   }
 
+  // Set of card UUIDs that were added this session (have positive countChange in changesMadeState)
+  const newlyAddedCardUuids = useMemo(
+    () =>
+      new Set(
+        changesMadeState
+          .filter((c) => c.countChange > 0)
+          .map((c) => c.card.uuid),
+      ),
+    [changesMadeState],
+  );
+
   // Run this whenever changesMadeState or originalCards changes
   useEffect(() => {
     setCardsState(buildUpdatedCards(originalCards, changesMadeState));
@@ -298,6 +318,7 @@ export const CardListProvider = ({ children }: { children: ReactNode }) => {
       value={{
         // cards
         cards,
+        newlyAddedCardUuids,
         changesMadeState,
         setChangesMadeState,
         setCards,

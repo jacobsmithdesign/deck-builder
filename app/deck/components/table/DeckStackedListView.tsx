@@ -177,6 +177,7 @@ function StackedListCardRow({
   previewWidth,
   previewHeight,
   cardIndex,
+  isNewCard,
 }: {
   card: CardWithImage;
   cardId: string;
@@ -185,6 +186,7 @@ function StackedListCardRow({
   previewWidth: number;
   previewHeight: number;
   cardIndex: number;
+  isNewCard?: boolean;
 }) {
   const [previewAllowed, setPreviewAllowed] = useState(false);
 
@@ -209,6 +211,8 @@ function StackedListCardRow({
       }}
       className={cn(
         "group/card flex items-center rounded-xl transition-colors duration-150 border-b border-dark/5 last:border-b-0 relative justify-center w-full max-w-72",
+        isNewCard &&
+          "ring-2 ring-green-500 shadow-[inset_0_0_14px_rgba(34,197,94,0.25)]",
       )}
       style={{
         ["--preview-w" as string]: `${previewWidth + 8}px`,
@@ -267,7 +271,7 @@ function StackedListCardRow({
 
 export const DeckStackedListView = () => {
   const { editMode } = useEditMode();
-  const { cards, changesMadeState } = useCardList();
+  const { cards, changesMadeState, newlyAddedCardUuids } = useCardList();
   const filteredCards = useFilteredCards(cards);
   const { sortOption } = useDeckView();
   const [visibleGroups, setVisibleGroups] = useState<Set<string>>(new Set());
@@ -441,6 +445,9 @@ export const DeckStackedListView = () => {
                                       previewWidth={previewWidth}
                                       previewHeight={previewHeight}
                                       cardIndex={cardIndex}
+                                      isNewCard={newlyAddedCardUuids.has(
+                                        c.uuid,
+                                      )}
                                     />
                                   );
                                 })}

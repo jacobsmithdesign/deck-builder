@@ -62,9 +62,9 @@ export async function embedQuery(text: string): Promise<number[]> {
   const raw = text.trim();
   if (!raw) throw new Error("embedQuery requires non-empty text");
 
-  const toEmbed = await rewriteSearchQuery(raw);
-  console.log("toEmbed", toEmbed);
-  const input = `${QUERY_PROMPT}${toEmbed}`;
+  // const toEmbed = await rewriteSearchQuery(raw);
+  // console.log("toEmbed", toEmbed);
+  const input = `${QUERY_PROMPT}${text}`;
 
   const output = await getClient().featureExtraction({
     model: MODEL_ID,

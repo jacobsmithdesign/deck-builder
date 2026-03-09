@@ -6,6 +6,7 @@ import { PageTransitionProvider } from "./context/PageTransitionContext";
 import AnimateLayout from "./components/general/AnimateLayout";
 import Navbar from "./components/navbar";
 import { UserProvider } from "./context/userContext";
+import { CardPreviewProvider } from "./context/CardPreviewContext";
 import SuppressKeyWarning from "./components/SuppressKeyWarning";
 
 const geistSans = Geist({
@@ -35,11 +36,13 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           <UserProvider>
-            <SuppressKeyWarning />
-            <Navbar />
-            <PageTransitionProvider>
-              <AnimateLayout>{children}</AnimateLayout>
-            </PageTransitionProvider>
+            <CardPreviewProvider>
+              <SuppressKeyWarning />
+              <Navbar />
+              <PageTransitionProvider>
+                <AnimateLayout>{children}</AnimateLayout>
+              </PageTransitionProvider>
+            </CardPreviewProvider>
           </UserProvider>
         </body>
       </MyThemeContextProvider>
