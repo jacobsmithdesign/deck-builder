@@ -5,6 +5,7 @@ import {
   type DeckSortOption,
 } from "@/app/context/DeckViewContext";
 import { DeckFilterDropdown } from "./DeckFilterDropdown";
+import CompareDeckModal from "./CompareDeckModal";
 import SearchBox from "../primitives/SearchBox";
 import UnsavedChanges from "../overlays/UnsavedChanges";
 import AddToCollectionButton from "../primitives/AddToCollectionButton";
@@ -120,12 +121,16 @@ export default function DeckControls({
   const [sortOpen, setSortOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
+  const [compareModalOpen, setCompareModalOpen] = useState(false);
   const viewDropdownRef = useRef<HTMLDivElement>(null);
   const sortDropdownRef = useRef<HTMLDivElement>(null);
   const filterDropdownRef = useRef<HTMLDivElement>(null);
   const toolsDropdownRef = useRef<HTMLDivElement>(null);
   const [userOwnsDeck, setUserOwnsDeck] = useState<boolean>(false);
   const { setEditMode } = useEditMode();
+  const { comparisonDeck, comparisonCards, clearComparisonDeck } =
+    useCardList();
+  const hasComparison = !!comparisonDeck && comparisonCards.length >= 0;
 
   const isLoggedIn = !!profile;
   const showAddToCollection = isLoggedIn && !userOwnsDeck;
@@ -222,6 +227,23 @@ export default function DeckControls({
               <AddToCollectionButton />
             </div>
           )}
+          <AnimatePresence>
+            {hasComparison && (
+              <button
+                onClick={clearComparisonDeck}
+                className="contents"
+                aria-expanded={viewOpen}
+                aria-haspopup="true"
+              >
+                <AnimatedButton
+                  variant="raindrop"
+                  className="w-fit h-8 rounded-full bg-light/0 font-bold text-dark/80 gap-1"
+                  title="Clear Comparison"
+                  icon={<BsWindow className="w-5 h-4" />}
+                />
+              </button>
+            )}
+          </AnimatePresence>
           {/* View Button + dropdown bubbles */}
           <div className="relative" ref={viewDropdownRef}>
             <button
@@ -540,6 +562,9 @@ export default function DeckControls({
                             if (tool.id === "export-cards") {
                               onOpenExportModal?.();
                             }
+                            if (tool.id === "compare-deck") {
+                              setCompareModalOpen(true);
+                            }
                             setToolsOpen(false);
                           }}
                           title={disabled ? tool.disabledHint : undefined}
@@ -561,6 +586,10 @@ export default function DeckControls({
           </div>
         </div>
       </div>
+      <CompareDeckModal
+        isOpen={compareModalOpen}
+        onClose={() => setCompareModalOpen(false)}
+      />
     </div>
   );
 }

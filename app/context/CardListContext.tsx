@@ -7,6 +7,7 @@ import {
   ReactNode,
   useEffect,
   useMemo,
+  useCallback,
 } from "react";
 import { CardRecord } from "@/lib/schemas";
 import type { DeckFeatureVector } from "@/lib/ai/features";
@@ -136,6 +137,13 @@ interface CardListContextType {
   setDeck: (deck: DeckMetadata) => void;
   userOwnsDeck: boolean;
 
+  // comparison deck (for side-by-side compare)
+  comparisonDeck: DeckMetadata | null;
+  comparisonCards: CardRecord[];
+  setComparisonDeck: (deck: DeckMetadata | null) => void;
+  setComparisonCards: (cards: CardRecord[]) => void;
+  clearComparisonDeck: () => void;
+
   // features
   deckFeatures: DeckFeatureVector | null;
   setDeckFeatures: (features: DeckFeatureVector | null) => void;
@@ -183,6 +191,15 @@ export const CardListProvider = ({ children }: { children: ReactNode }) => {
     useState<StrengthsAndWeaknesses>(null);
   const [pillars, setPillars] = useState<Pillars>(null);
   const [difficulty, setDifficulty] = useState<Difficulty>(null);
+
+  const [comparisonDeck, setComparisonDeckState] =
+    useState<DeckMetadata | null>(null);
+  const [comparisonCards, setComparisonCards] = useState<CardRecord[]>([]);
+
+  const clearComparisonDeck = useCallback(() => {
+    setComparisonDeckState(null);
+    setComparisonCards([]);
+  }, []);
 
   // derive ownership from user profile and deck userId
   const userId = (profile as any)?.id || null;
@@ -330,6 +347,12 @@ export const CardListProvider = ({ children }: { children: ReactNode }) => {
         deck,
         setDeck,
         userOwnsDeck,
+        // comparison deck
+        comparisonDeck,
+        comparisonCards,
+        setComparisonDeck: setComparisonDeckState,
+        setComparisonCards,
+        clearComparisonDeck,
         // features
         deckFeatures,
         setDeckFeatures,

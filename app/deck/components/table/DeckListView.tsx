@@ -8,6 +8,7 @@ import {
   type DeckSortOption,
 } from "@/app/context/DeckViewContext";
 import { useFilteredCards } from "@/app/hooks/useFilteredCards";
+import { useDifferingCardUuids } from "@/app/hooks/useDifferingCardUuids";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
@@ -22,6 +23,7 @@ import {
   GroupTitle,
 } from "../primitives/Board";
 import { CardRecord } from "@/lib/schemas";
+import type { DeckMetadata } from "@/app/context/CardListContext";
 
 const typeOrder = [
   "Land",
@@ -167,16 +169,32 @@ const buildColumns = (groups: GroupedType[], numColumns: number): Column[] => {
 
 type CardWithImage = CardRecord & { imageFrontUrl?: string | null };
 
-export const DeckListView = () => {
+export type DeckListViewSlotProps = {
+  slotCards?: CardRecord[];
+  slotDeck?: DeckMetadata | null;
+  isComparisonSlot?: boolean;
+  otherSlotCards?: CardRecord[];
+};
+
+const DIFF_CARD_CLASS =
+  "bg-yellow-500/50 md:hover:bg-yellow-300/50 outline outline-yellow-500/50 opacity-90";
+
+export const DeckListView = (props: DeckListViewSlotProps = {}) => {
+  const { slotCards, slotDeck, isComparisonSlot, otherSlotCards } = props;
   const { editMode } = useEditMode();
   const { cards, changesMadeState, newlyAddedCardUuids } = useCardList();
-  const filteredCards = useFilteredCards(cards);
+  const cardsToUse = slotCards ?? cards;
+  const filteredCards = useFilteredCards(cardsToUse);
+  const differingCardUuids = useDifferingCardUuids(cardsToUse, otherSlotCards);
+  const showEditControls = editMode && !isComparisonSlot;
   const { sortOption } = useDeckView();
   const [visibleGroups, setVisibleGroups] = useState<Set<string>>(new Set());
   const [openNewCardModal, setOpenNewCardModal] = useState(false);
   const [newCardType, setNewCardType] = useState<string>("");
   const { bgColor } = useCompactView();
   const [viewportWidth, setViewportWidth] = useState<number | null>(null);
+  const { comparisonDeck, comparisonCards } = useCardList();
+  const hasComparison = !!comparisonDeck && comparisonCards.length >= 0;
 
   const groupedCardsArray = useMemo(() => {
     const groups = groupByCardType(filteredCards);
@@ -220,15 +238,27 @@ export const DeckListView = () => {
       return buildColumns(groupedCardsArray, 4);
     }
     let numColumns: number;
-    if (viewportWidth < 890) numColumns = 1;
-    else if (viewportWidth < 1150) numColumns = 2;
-    else if (viewportWidth < 1400) numColumns = 3;
-    else if (viewportWidth < 1650) numColumns = 4;
-    else if (viewportWidth < 1600) numColumns = 5;
-    else if (viewportWidth < 2000) numColumns = 6;
-    else if (viewportWidth < 2300) numColumns = 7;
-    else numColumns = 8;
-    return buildColumns(groupedCardsArray, numColumns);
+    if (hasComparison) {
+      if (viewportWidth < 1200) numColumns = 1;
+      else if (viewportWidth < 2000) numColumns = 2;
+      else if (viewportWidth < 2600) numColumns = 3;
+      else if (viewportWidth < 2950) numColumns = 4;
+      else if (viewportWidth < 3350) numColumns = 5;
+      else if (viewportWidth < 3600) numColumns = 6;
+      else if (viewportWidth < 3800) numColumns = 7;
+      else numColumns = 8;
+      return buildColumns(groupedCardsArray, numColumns);
+    } else {
+      if (viewportWidth < 890) numColumns = 1;
+      else if (viewportWidth < 1150) numColumns = 2;
+      else if (viewportWidth < 1400) numColumns = 3;
+      else if (viewportWidth < 1650) numColumns = 4;
+      else if (viewportWidth < 1850) numColumns = 5;
+      else if (viewportWidth < 2100) numColumns = 6;
+      else if (viewportWidth < 2300) numColumns = 7;
+      else numColumns = 8;
+      return buildColumns(groupedCardsArray, numColumns);
+    }
   }, [groupedCardsArray, viewportWidth]);
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -244,10 +274,10 @@ export const DeckListView = () => {
   };
 
   useEffect(() => {
-    if (!editMode) {
+    if (!showEditControls) {
       setOpenNewCardModal(false);
     }
-  }, [editMode]);
+  }, [showEditControls]);
 
   return (
     <section id="deck-list-view">
@@ -256,13 +286,15 @@ export const DeckListView = () => {
           style={{ background: bgColor }}
           className="hide-scrollbar transition-all duration-700 justify-center items-center relative rounded-t-none rounded-xl"
         >
-          <div className="z-50 h-full w-full pointer-events-none">
-            <NewCardModal
-              closeModal={toggleNewCardModal}
-              showModal={openNewCardModal}
-              cardType={newCardType}
-            />
-          </div>
+          {showEditControls && (
+            <div className="z-50 h-full w-full pointer-events-none">
+              <NewCardModal
+                closeModal={toggleNewCardModal}
+                showModal={openNewCardModal}
+                cardType={newCardType}
+              />
+            </div>
+          )}
 
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -295,6 +327,7 @@ export const DeckListView = () => {
                         >
                           <GroupTitle
                             type={group.type}
+                            count={group.cards.length}
                             visibleGroups={visibleGroups}
                             toggleGroupVisibility={toggleGroupVisibility}
                           />
@@ -348,7 +381,10 @@ export const DeckListView = () => {
                                       }}
                                       className={cn(
                                         "group/card flex justify-between w-full py-1 px-2 rounded-lg md:hover:bg-light/15 transition-colors duration-150 relative cursor-pointer",
-                                        newlyAddedCardUuids.has(c.uuid) &&
+                                        differingCardUuids.has(c.uuid) &&
+                                          DIFF_CARD_CLASS,
+                                        !differingCardUuids.has(c.uuid) &&
+                                          newlyAddedCardUuids.has(c.uuid) &&
                                           "bg-green-500/50 md:hover:bg-green-300/50 outline outline-green-500/50 dark:bg-green-900/30",
                                       )}
                                       style={{

@@ -4,8 +4,13 @@ import { ChevronDown, Minus } from "lucide-react";
 
 type GroupTitleProps = {
   type: string;
-  visibleGroups: Set<string>;
-  toggleGroupVisibility: (type: string) => void;
+  /** Card count for this category; when provided, shown next to the title (e.g. "Land (24)"). */
+  count?: number;
+  visibleGroups?: Set<string>;
+  toggleGroupVisibility?: (type: string) => void;
+  /** When provided with onToggle, avoids rerenders when other groups' visibility changes (for memoized parents). */
+  isVisible?: boolean;
+  onToggle?: () => void;
 } & React.HTMLAttributes<HTMLDivElement>;
 
 const Board = React.forwardRef<
@@ -79,17 +84,31 @@ Group.displayName = "Group";
 
 const GroupTitle = React.forwardRef<HTMLDivElement, GroupTitleProps>(
   (
-    { className, type, visibleGroups, toggleGroupVisibility, ...props },
+    {
+      className,
+      type,
+      count,
+      visibleGroups,
+      toggleGroupVisibility,
+      isVisible: isVisibleProp,
+      onToggle,
+      ...props
+    },
     ref,
   ) => {
-    const isVisible = visibleGroups.has(type);
+    const isVisible =
+      isVisibleProp !== undefined
+        ? isVisibleProp
+        : visibleGroups?.has(type) ?? false;
+    const handleClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (onToggle) onToggle();
+      else toggleGroupVisibility?.(type);
+    };
 
     return (
       <button
-        onClick={(e) => {
-          e.stopPropagation();
-          toggleGroupVisibility(type);
-        }}
+        onClick={handleClick}
         className={cn(
           "flex w-full items-center justify-between cursor-pointer transition-colors duration-150 md:hover:bg-dark/15 bg-dark/5 mx-2 py-0 px-2 rounded-md group",
           className,
@@ -104,6 +123,11 @@ const GroupTitle = React.forwardRef<HTMLDivElement, GroupTitleProps>(
           {...props}
         >
           {type}
+          {count !== undefined && (
+            <span className="font-normal text-muted-foreground ml-1.5">
+              ({count})
+            </span>
+          )}
         </div>
         <div className="md:group-hover:text-dark/80 text-dark/40 transition-colors duration-150 w-7 h-7 items-center justify-center flex">
           {isVisible ? <Minus /> : <ChevronDown />}

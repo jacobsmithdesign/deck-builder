@@ -8,6 +8,7 @@ import {
   type DeckSortOption,
 } from "@/app/context/DeckViewContext";
 import { useFilteredCards } from "@/app/hooks/useFilteredCards";
+import { useDifferingCardUuids } from "@/app/hooks/useDifferingCardUuids";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
@@ -21,6 +22,7 @@ import {
 } from "../primitives/Board";
 import { CardRecord } from "@/lib/schemas";
 import { cn } from "@/lib/utils";
+import type { DeckMetadata } from "@/app/context/CardListContext";
 
 const typeOrder = [
   "Land",
@@ -178,6 +180,7 @@ function StackedListCardRow({
   previewHeight,
   cardIndex,
   isNewCard,
+  isDiffCard,
 }: {
   card: CardWithImage;
   cardId: string;
@@ -187,6 +190,7 @@ function StackedListCardRow({
   previewHeight: number;
   cardIndex: number;
   isNewCard?: boolean;
+  isDiffCard?: boolean;
 }) {
   const [previewAllowed, setPreviewAllowed] = useState(false);
 
@@ -194,6 +198,12 @@ function StackedListCardRow({
     const t = setTimeout(() => setPreviewAllowed(true), PREVIEW_DELAY_MS);
     return () => clearTimeout(t);
   }, []);
+
+  const highlightCard = isDiffCard || isNewCard;
+  const diffStyle =
+    isDiffCard && "outline-4 outline-yellow-500 bg-yellow-500/50";
+  const newStyle =
+    !isDiffCard && isNewCard && "outline-4 outline-green-500 bg-green-500";
 
   return (
     <motion.div
@@ -220,10 +230,11 @@ function StackedListCardRow({
         className={cn(
           "relative shrink-0 rounded-xl max-w-60",
           isExpanded ? "h-full " : "h-8",
-          isNewCard && "outline-4 outline-green-500 bg-green-500",
+          diffStyle,
+          newStyle,
         )}
       >
-        {isNewCard && (
+        {isNewCard && !isDiffCard && (
           <div className="px-2 rounded-full absolute top-2 left-24 z-20 text-light bg-green-500 font-bold backdrop-blur-xs [transform:translateZ(20px)] shadow-lg">
             New
           </div>
@@ -236,7 +247,7 @@ function StackedListCardRow({
             alt=""
             className={cn(
               "object-cover w-fit object-top rounded-xl h-fit",
-              isNewCard && "opacity-90",
+              highlightCard && "opacity-90",
             )}
             style={{
               objectPosition: "0 0",
@@ -276,16 +287,31 @@ function StackedListCardRow({
   );
 }
 
-export const DeckStackedListView = () => {
+export type DeckStackedListViewSlotProps = {
+  slotCards?: CardRecord[];
+  slotDeck?: DeckMetadata | null;
+  isComparisonSlot?: boolean;
+  otherSlotCards?: CardRecord[];
+};
+
+export const DeckStackedListView = (
+  props: DeckStackedListViewSlotProps = {},
+) => {
+  const { slotCards, isComparisonSlot, otherSlotCards } = props;
   const { editMode } = useEditMode();
   const { cards, changesMadeState, newlyAddedCardUuids } = useCardList();
-  const filteredCards = useFilteredCards(cards);
+  const cardsToUse = slotCards ?? cards;
+  const filteredCards = useFilteredCards(cardsToUse);
+  const differingCardUuids = useDifferingCardUuids(cardsToUse, otherSlotCards);
+  const showEditControls = editMode && !isComparisonSlot;
   const { sortOption } = useDeckView();
   const [visibleGroups, setVisibleGroups] = useState<Set<string>>(new Set());
   const [openNewCardModal, setOpenNewCardModal] = useState(false);
   const [newCardType, setNewCardType] = useState<string>("");
   const { bgColor } = useCompactView();
   const [viewportWidth, setViewportWidth] = useState<number | null>(null);
+  const { comparisonDeck, comparisonCards } = useCardList();
+  const hasComparison = !!comparisonDeck && comparisonCards.length >= 0;
 
   const groupedCardsArray = useMemo(() => {
     const groups = groupByCardType(filteredCards);
@@ -329,16 +355,28 @@ export const DeckStackedListView = () => {
       return buildColumns(groupedCardsArray, 4);
     }
     let numColumns: number;
-    if (viewportWidth < 890) numColumns = 1;
-    else if (viewportWidth < 1150) numColumns = 2;
-    else if (viewportWidth < 1400) numColumns = 3;
-    else if (viewportWidth < 1650) numColumns = 4;
-    else if (viewportWidth < 1850) numColumns = 5;
-    else if (viewportWidth < 2100) numColumns = 6;
-    else if (viewportWidth < 2300) numColumns = 7;
-    else numColumns = 8;
-    return buildColumns(groupedCardsArray, numColumns);
-  }, [groupedCardsArray, viewportWidth]);
+    if (hasComparison) {
+      if (viewportWidth < 1200) numColumns = 1;
+      else if (viewportWidth < 2000) numColumns = 2;
+      else if (viewportWidth < 2600) numColumns = 3;
+      else if (viewportWidth < 2950) numColumns = 4;
+      else if (viewportWidth < 3350) numColumns = 5;
+      else if (viewportWidth < 3600) numColumns = 6;
+      else if (viewportWidth < 3800) numColumns = 7;
+      else numColumns = 8;
+      return buildColumns(groupedCardsArray, numColumns);
+    } else {
+      if (viewportWidth < 890) numColumns = 1;
+      else if (viewportWidth < 1150) numColumns = 2;
+      else if (viewportWidth < 1400) numColumns = 3;
+      else if (viewportWidth < 1650) numColumns = 4;
+      else if (viewportWidth < 1850) numColumns = 5;
+      else if (viewportWidth < 2100) numColumns = 6;
+      else if (viewportWidth < 2300) numColumns = 7;
+      else numColumns = 8;
+      return buildColumns(groupedCardsArray, numColumns);
+    }
+  }, [groupedCardsArray, viewportWidth, hasComparison]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -354,10 +392,10 @@ export const DeckStackedListView = () => {
   };
 
   useEffect(() => {
-    if (!editMode) {
+    if (!showEditControls) {
       setOpenNewCardModal(false);
     }
-  }, [editMode]);
+  }, [showEditControls]);
 
   return (
     <section id="deck-stacked-list-view">
@@ -366,13 +404,15 @@ export const DeckStackedListView = () => {
           style={{ background: bgColor }}
           className="hide-scrollbar transition-all duration-700 justify-center items-center relative rounded-t-none rounded-xl"
         >
-          <div className="z-50 h-full w-full pointer-events-none">
-            <NewCardModal
-              closeModal={toggleNewCardModal}
-              showModal={openNewCardModal}
-              cardType={newCardType}
-            />
-          </div>
+          {showEditControls && (
+            <div className="z-50 h-full w-full pointer-events-none">
+              <NewCardModal
+                closeModal={toggleNewCardModal}
+                showModal={openNewCardModal}
+                cardType={newCardType}
+              />
+            </div>
+          )}
 
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -405,6 +445,7 @@ export const DeckStackedListView = () => {
                         >
                           <GroupTitle
                             type={group.type}
+                            count={group.cards.length}
                             visibleGroups={visibleGroups}
                             toggleGroupVisibility={toggleGroupVisibility}
                           />
@@ -452,7 +493,11 @@ export const DeckStackedListView = () => {
                                       previewWidth={previewWidth}
                                       previewHeight={previewHeight}
                                       cardIndex={cardIndex}
-                                      isNewCard={newlyAddedCardUuids.has(
+                                      isNewCard={
+                                        !differingCardUuids.has(c.uuid) &&
+                                        newlyAddedCardUuids.has(c.uuid)
+                                      }
+                                      isDiffCard={differingCardUuids.has(
                                         c.uuid,
                                       )}
                                     />

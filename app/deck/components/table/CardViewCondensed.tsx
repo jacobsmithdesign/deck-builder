@@ -144,6 +144,7 @@ export const CardView = () => {
                 >
                   <GroupTitle
                     type={group.type}
+                    count={group.cards.length}
                     visibleGroups={visibleGroups}
                     toggleGroupVisibility={toggleGroupVisibility}
                   />

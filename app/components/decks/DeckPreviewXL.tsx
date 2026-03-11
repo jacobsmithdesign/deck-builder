@@ -15,8 +15,8 @@ import ArchetypeOverview from "./ArchetypeOverviewMini";
 import { Button } from "@/app/deck/components/primitives/button";
 
 export default function DeckPreviewXL({ deck }: { deck: CommanderDeckRecord }) {
-  const scryfallId = deck.commander.identifiers.scryfallId ?? null;
-  const [front, back, artwork] = scryfallIdToUrls(scryfallId);
+  const scryfallId = deck.commander?.identifiers?.scryfallId ?? null;
+  const [front, back, artwork] = scryfallIdToUrls(scryfallId ?? "");
   const [bgColor, setBgColor] = useState<string | null>(null);
 
   useEffect(() => {
@@ -62,7 +62,7 @@ export default function DeckPreviewXL({ deck }: { deck: CommanderDeckRecord }) {
             </Link>
             <div className="flex gap-2 items-center justify-center z-10">
               <button className="cursor-pointer font-normal bg-light/20 md:hover:bg-light/30 h-fit px-1 rounded-md whitespace-nowrap md:text-sm lg:text-base text-xs">
-                {deck.sets.name}
+                {deck.sets?.name}
               </button>
               <div className="">
                 <DeckMetrics deck={deck} />

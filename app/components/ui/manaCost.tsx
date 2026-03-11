@@ -48,7 +48,7 @@ export const ManaCost: React.FC<ManaCostProps> = ({
   const sizeClass = SIZE_CLASSES[size];
 
   return (
-    <div className="flex gap-0.5 items-center shrink-0">
+    <div className="flex gap-0.5 items-center shrink-0 ">
       {symbols.map((symbol, index) => {
         const src = getManaIconPath(symbol);
         return (
@@ -56,9 +56,13 @@ export const ManaCost: React.FC<ManaCostProps> = ({
             key={`${symbol}-${index}`}
             src={src}
             alt={symbol}
-            className={`object-contain object-center ${sizeClass}`}
-            width={size === "sm" ? 12 : size === "md" ? 16 : size === "lg" ? 20 : 24}
-            height={size === "sm" ? 12 : size === "md" ? 16 : size === "lg" ? 20 : 24}
+            className={`object-contain object-center drop-shadow-sm ${sizeClass}`}
+            width={
+              size === "sm" ? 12 : size === "md" ? 16 : size === "lg" ? 20 : 24
+            }
+            height={
+              size === "sm" ? 12 : size === "md" ? 16 : size === "lg" ? 20 : 24
+            }
           />
         );
       })}

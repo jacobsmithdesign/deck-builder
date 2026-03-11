@@ -1,9 +1,8 @@
 import { CardTitle } from "@/app/components/ui/card";
 import { CommanderCard } from "@/app/context/CommanderContext";
-import { parseDeckText } from "@/app/hooks/parseDeckText";
+import { parseAndResolveDeckList } from "@/app/hooks/parseDeckText";
 import { saveNewDeckClient } from "@/lib/api/decks/client/saveNewDeckClient";
 import { searchCommander } from "@/lib/db/searchCommander";
-import { selectCardsDataFromIds } from "@/lib/db/searchCardForDeck";
 import { Checkbox, Field } from "@headlessui/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -17,48 +16,43 @@ interface dbCardInterface {
   count: number;
   board_section: string; // "mainboard" | "sideboard" etc
 }
-type CardLine = {
-  count: number;
-  name: string;
-  uuid?: string;
-  type?: string;
-};
+
 export default function ImportDeckForm({ onCancel }: { onCancel: () => void }) {
   const [description, setDescription] = useState("");
   const [isPublic, setIsPublic] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [deckText, setDeckText] = useState<string>("");
   const [importSuccess, setImportSuccess] = useState<boolean | null>(null);
-  const [commanderOptions, setCommanderOptions] = useState<CardLine[] | null>(
-    null,
-  );
+  const [commanderOptions, setCommanderOptions] = useState<
+    { uuid: string; name: string; type?: string }[] | null
+  >(null);
   const [name, setName] = useState<string | null>(null);
   const [commander, setCommander] = useState<CommanderCard | null>(null);
   const [cardList, setCardList] = useState<dbCardInterface[] | null>(null);
 
   const router = useRouter();
 
-  // The function to handle importing the deck text: parse text, then batch-fetch
-  // full card data (same as deck editor import) and build commander options + card list.
   const handleDeckImport = async () => {
-    const result = await parseDeckText(deckText);
-    if (!result || result.length === 0) {
+    const resolved = await parseAndResolveDeckList(deckText);
+    if (!resolved) {
       setImportSuccess(false);
       return;
     }
-    const uniqueUuids = [
-      ...new Set(result.map((r) => r.uuid).filter(Boolean)),
-    ] as string[];
-    const cardRecordsByUuid = await selectCardsDataFromIds(uniqueUuids);
-    const commanderList: CardLine[] = [];
+    const { lines, recordsByUuid } = resolved;
+    const commanderList: { uuid: string; name: string; type?: string }[] = [];
     const cards: dbCardInterface[] = [];
-    for (const card of result) {
-      if (!card.uuid || !cardRecordsByUuid.has(card.uuid)) continue;
-      if (/Legendary\b(?:\s+[^\s]+)*\s+Creature\b/i.test(card.type ?? ""))
-        commanderList.push(card);
+    for (const line of lines) {
+      if (/Legendary\b(?:\s+[^\s]+)*\s+Creature\b/i.test(line.type ?? ""))
+        commanderList.push({
+          uuid: line.uuid,
+          name: line.name,
+          type: line.type,
+        });
+      const record = recordsByUuid.get(line.uuid);
+      if (!record) continue;
       cards.push({
-        card_uuid: card.uuid,
-        count: card.count,
+        card_uuid: record.uuid,
+        count: line.count,
         board_section: "mainboard",
       });
     }

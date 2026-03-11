@@ -1,6 +1,5 @@
 "use client";
 
-import CustomScrollArea from "@/app/components/ui/CustomScrollArea";
 import { useCardList } from "@/app/context/CardListContext";
 import { useCompactView } from "@/app/context/compactViewContext";
 import { useEditMode } from "@/app/context/editModeContext";
@@ -9,10 +8,17 @@ import {
   type DeckSortOption,
 } from "@/app/context/DeckViewContext";
 import { useFilteredCards } from "@/app/hooks/useFilteredCards";
+import { useDifferingCardUuids } from "@/app/hooks/useDifferingCardUuids";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  startTransition,
+} from "react";
 import NewCardModal from "../card/NewCardModal";
-import UnsavedChanges from "../overlays/UnsavedChanges";
 import DeckPerspectiveCard from "../card/perspectiveCardUI/DeckPerspectiveCard";
 import {
   BoardContent,
@@ -21,6 +27,11 @@ import {
   GroupItems,
   GroupTitle,
 } from "../primitives/Board";
+import type { DeckMetadata } from "@/app/context/CardListContext";
+import type { CardRecord } from "@/lib/schemas";
+
+/** Deck list cards are CardRecord plus resolved image and optional id (uuid used as fallback). */
+type DeckCard = CardRecord & { id?: string; imageFrontUrl?: string | null };
 
 const typeOrder = [
   "Land",
@@ -91,11 +102,157 @@ const sortGroupCards = (cards: any[] = [], sortOption: DeckSortOption) => {
   return sorted;
 };
 
-export const CardView = () => {
+/** Memoized card row to avoid rerenders when only visibility of other groups changes. */
+const CardItem = React.memo(function CardItem({
+  card,
+  showEditControls,
+  isNewCard,
+  isDiffCard,
+}: {
+  card: DeckCard;
+  showEditControls: boolean;
+  isNewCard: boolean;
+  isDiffCard: boolean;
+}) {
+  return (
+    <DeckPerspectiveCard
+      id={card.id ?? card.uuid}
+      image={card.imageFrontUrl ?? undefined}
+      label={card.name ?? undefined}
+      isEditMode={showEditControls}
+      card={card}
+      isNewCard={isNewCard}
+      isDiffCard={isDiffCard}
+    />
+  );
+});
+
+type GroupBlockProps = {
+  group: { type: string; cards: DeckCard[] };
+  index: number;
+  isVisible: boolean;
+  toggleGroupVisibility: (type: string) => void;
+  showEditControls: boolean;
+  newlyAddedCardUuids: Set<string>;
+  differingCardUuids: Set<string>;
+};
+
+/** Memoized group block so only the group whose visibility changed rerenders. */
+const GroupBlock = React.memo(function GroupBlock({
+  group,
+  index,
+  isVisible,
+  toggleGroupVisibility,
+  showEditControls,
+  newlyAddedCardUuids,
+  differingCardUuids,
+}: GroupBlockProps) {
+  const onToggle = useCallback(
+    () => toggleGroupVisibility(group.type),
+    [group.type, toggleGroupVisibility],
+  );
+  return (
+    <motion.div
+      initial={{ height: 0 }}
+      animate={{ height: "100%" }}
+      exit={{ opacity: 0, height: 0 }}
+      transition={{ duration: 0.4 }}
+    >
+      <Group key={group.type}>
+        <GroupHeader
+          className={`${index !== 0 ? "" : "border-t-0"} py-2`}
+        >
+          <GroupTitle
+            type={group.type}
+            count={group.cards.length}
+            isVisible={isVisible}
+            onToggle={onToggle}
+          />
+        </GroupHeader>
+
+        <AnimatePresence>
+          {isVisible && (
+            <motion.section
+              id={group.type}
+              key={`group-${group.type}`}
+              initial={{ height: 0 }}
+              animate={{
+                height: "auto",
+                transition: {
+                  duration: 0.2 + group.cards.length * 0.015,
+                  ease: "easeOut",
+                },
+              }}
+              exit={{ height: 0 }}
+              transition={{
+                height: {
+                  duration: 0.4,
+                  ease: "easeInOut",
+                },
+              }}
+              className="overflow-y-hidden flex px-2 scroll-mt-26"
+            >
+              <GroupItems key="group-items" className="mt-2 mb-6">
+                {group.cards.map((card, cardIndex) => (
+                  <motion.div
+                    key={card.id ?? card.uuid}
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{
+                      opacity: 0,
+                      scale: 0.95,
+                      transition: {
+                        delay: 0,
+                        duration: 0.25,
+                        ease: "easeOut",
+                      },
+                    }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 250,
+                      damping: 12,
+                      bounce: 0.1,
+                      delay: 0.015 * cardIndex,
+                      duration: 0.2,
+                    }}
+                    className="hover:z-1"
+                  >
+                    <CardItem
+                      card={card}
+                      showEditControls={showEditControls}
+                      isNewCard={
+                        !differingCardUuids.has(card.uuid) &&
+                        newlyAddedCardUuids.has(card.uuid)
+                      }
+                      isDiffCard={differingCardUuids.has(card.uuid)}
+                    />
+                  </motion.div>
+                ))}
+              </GroupItems>
+            </motion.section>
+          )}
+        </AnimatePresence>
+      </Group>
+    </motion.div>
+  );
+});
+
+export type CardViewSlotProps = {
+  slotCards?: import("@/lib/schemas").CardRecord[];
+  slotDeck?: DeckMetadata | null;
+  isComparisonSlot?: boolean;
+  otherSlotCards?: import("@/lib/schemas").CardRecord[];
+};
+
+export const CardView = (props: CardViewSlotProps = {}) => {
+  const { slotCards, isComparisonSlot, otherSlotCards } = props;
   const { editMode } = useEditMode();
   const { cards, newlyAddedCardUuids } = useCardList();
   const { sortOption, filters } = useDeckView();
-  const filteredCards = useFilteredCards(cards);
+  const cardsToUse = slotCards ?? cards;
+  const filteredCards = useFilteredCards(cardsToUse);
+  const differingCardUuids = useDifferingCardUuids(cardsToUse, otherSlotCards);
+  const showEditControls = editMode && !isComparisonSlot;
   const [visibleGroups, setVisibleGroups] = useState<Set<string>>(new Set());
   const prevTypesKeyRef = useRef<string>("");
   const [openNewCardModal, setOpenNewCardModal] = useState(false);
@@ -138,10 +295,12 @@ export const CardView = () => {
       previousCardCount += group.cards.length;
       const isLast = index === groupedCardsArray.length - 1;
       return setTimeout(() => {
-        setVisibleGroups((prev) => {
-          const next = new Set(prev);
-          next.add(group.type);
-          return next;
+        startTransition(() => {
+          setVisibleGroups((prev) => {
+            const next = new Set(prev);
+            next.add(group.type);
+            return next;
+          });
         });
         if (isLast) prevTypesKeyRef.current = typesKey;
       }, delayMs);
@@ -149,8 +308,7 @@ export const CardView = () => {
     return () => timeouts.forEach(clearTimeout);
   }, [typesKey, groupedCardsArray]);
 
-  // Toggle visibility for a single group
-  const toggleGroupVisibility = (type: string) => {
+  const toggleGroupVisibility = useCallback((type: string) => {
     setVisibleGroups((prev) => {
       const next = new Set(prev);
       if (next.has(type)) {
@@ -160,32 +318,31 @@ export const CardView = () => {
       }
       return next;
     });
-  };
+  }, []);
 
-  const hideAllGroups = () => {
+  const hideAllGroups = useCallback(() => {
     setVisibleGroups(new Set());
-  };
+  }, []);
 
-  const showAllGroups = (types: string[]) => {
+  const showAllGroups = useCallback((types: string[]) => {
     setVisibleGroups(new Set(types));
-  };
+  }, []);
 
-  // Card info modal handlers
-  const handleInspectCard = (id: string) => {
+  const handleInspectCard = useCallback((id: string) => {
     setSelectedCardId(id);
     setOpenCardInfoModal(true);
-  };
+  }, []);
 
-  const toggleNewCardModal = (type?: string) => {
-    if (type) setNewCardType(type);
+  const toggleNewCardModal = useCallback((type?: string) => {
+    if (type !== undefined) setNewCardType(type);
     setOpenNewCardModal((prev) => !prev);
-  };
+  }, []);
 
   useEffect(() => {
-    if (!editMode) {
+    if (!showEditControls) {
       setOpenNewCardModal(false);
     }
-  }, [editMode]);
+  }, [showEditControls]);
 
   return (
     <section id={"card-view"}>
@@ -201,13 +358,15 @@ export const CardView = () => {
             className="hide-scrollbar transition-all duration-700 justify-center items-center relative rounded-t-none  rounded-xl"
           >
             {/* New card modal */}
-            <div className="z-50 h-full w-full pointer-events-none">
-              <NewCardModal
-                closeModal={toggleNewCardModal}
-                showModal={openNewCardModal}
-                cardType={newCardType}
-              />
-            </div>
+            {showEditControls && (
+              <div className="z-50 h-full w-full pointer-events-none">
+                <NewCardModal
+                  closeModal={toggleNewCardModal}
+                  showModal={openNewCardModal}
+                  cardType={newCardType}
+                />
+              </div>
+            )}
 
             {/* Scrollable grouped cards */}
             <motion.div
@@ -218,87 +377,16 @@ export const CardView = () => {
               className="w-full h-full bg-light/50 rounded-xl"
             >
               {groupedCardsArray.map((group, index) => (
-                <motion.div
-                  initial={{ height: 0 }}
-                  animate={{ height: "100%" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.4 }}
-                >
-                  <Group key={group.type}>
-                    <GroupHeader
-                      className={`${index !== 0 ? "" : "border-t-0"} py-2`}
-                    >
-                      <GroupTitle
-                        type={group.type}
-                        visibleGroups={visibleGroups}
-                        toggleGroupVisibility={toggleGroupVisibility}
-                      />
-                    </GroupHeader>
-
-                    <AnimatePresence>
-                      {visibleGroups.has(group.type) && (
-                        <motion.section
-                          id={group.type}
-                          key={`group-${group.type}`}
-                          initial={{ height: 0 }}
-                          animate={{
-                            height: "auto",
-                            transition: {
-                              duration: 0.2 + group.cards.length * 0.015,
-                              ease: "easeOut",
-                            },
-                          }}
-                          exit={{ height: 0 }}
-                          transition={{
-                            height: {
-                              duration: 0.4,
-                              ease: "easeInOut",
-                            },
-                          }}
-                          className="overflow-y-hidden flex px-2 scroll-mt-26"
-                        >
-                          <GroupItems key="group-items" className="mt-2 mb-6">
-                            {group.cards.map((card, index) => (
-                              <motion.div
-                                key={card.id} // <-- stable key per card
-                                initial={{ opacity: 0, scale: 0.85 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{
-                                  opacity: 0,
-                                  scale: 0.95,
-                                  transition: {
-                                    delay: 0,
-                                    duration: 0.25,
-                                    ease: "easeOut",
-                                  },
-                                }}
-                                transition={{
-                                  type: "spring",
-                                  stiffness: 250,
-                                  damping: 12,
-                                  bounce: 0.1,
-                                  delay: 0.015 * index,
-                                  duration: 0.2,
-                                }}
-                                className="hover:z-1"
-                              >
-                                <DeckPerspectiveCard
-                                  key={card.id}
-                                  id={card.id}
-                                  image={card.imageFrontUrl}
-                                  label={card.name}
-                                  isEditMode={editMode}
-                                  card={card}
-                                  isNewCard={newlyAddedCardUuids.has(card.uuid)}
-                                />
-                              </motion.div>
-                            ))}
-                          </GroupItems>
-                        </motion.section>
-                      )}
-                    </AnimatePresence>
-                  </Group>
-                </motion.div>
+                <GroupBlock
+                  key={group.type}
+                  group={group}
+                  index={index}
+                  isVisible={visibleGroups.has(group.type)}
+                  toggleGroupVisibility={toggleGroupVisibility}
+                  showEditControls={showEditControls}
+                  newlyAddedCardUuids={newlyAddedCardUuids}
+                  differingCardUuids={differingCardUuids}
+                />
               ))}
             </motion.div>
           </BoardContent>

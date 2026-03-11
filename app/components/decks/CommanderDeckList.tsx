@@ -10,25 +10,80 @@ import DeckPreview from "./DeckPreview";
 import CustomScrollArea from "../ui/CustomScrollArea";
 import DeckPreviewXL from "./DeckPreviewXL";
 import { Button } from "@/app/deck/components/primitives/button";
-import { CommanderDeckRecord, DeckRecord } from "@/lib/schemas";
+import { CommanderDeckRecord } from "@/lib/schemas";
+import { RxMagnifyingGlass } from "react-icons/rx";
+import { cn } from "@/lib/utils";
 
 type deckViewType = {
   size: "small" | "medium" | "large";
 };
+
+/** Search form with local input state so typing doesn't re-render the whole deck list. */
+function DeckSearchForm({
+  onSearch,
+}: {
+  onSearch: (value: string) => void;
+}) {
+  const [input, setInput] = useState("");
+  return (
+    <div className="relative flex items-center gap-2">
+      <span className="absolute left-3 pointer-events-none text-dark/60">
+        <RxMagnifyingGlass className="w-4 h-4" />
+      </span>
+      <input
+        type="search"
+        placeholder="Search deck, set, or commander..."
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), onSearch(input.trim()))}
+        className={cn(
+          "pl-9 pr-3 py-1.5 rounded-full w-56 min-w-0 bg-light/65 focus:bg-light",
+          "shadow-inner text-base text-dark placeholder:text-dark/60 outline-none",
+          "outline outline-dark/20 focus:outline-dark/40",
+        )}
+        aria-label="Search deck, set, or commander"
+      />
+      <Button
+        type="button"
+        variant="frosted"
+        onClick={() => onSearch(input.trim())}
+        className="rounded-full outline outline-dark/20 shrink-0"
+      >
+        Search
+      </Button>
+    </div>
+  );
+}
+
 export default function CommanderDeckList() {
   const [loading, setLoading] = useState<boolean>(false);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [decks, setDecks] = useState<CommanderDeckRecord[]>([]);
   const loadMoreRef = useRef<HTMLDivElement>(null);
-  const [hoveredDeckId, setHoveredDeckId] = useState<string | null>(null); // Set the hovered deck id to control details display'
   const [deckView, setDeckView] = useState<deckViewType>({ size: "large" });
-  // queries the supabase database for decks that use the commander
+  const [searchQuery, setSearchQuery] = useState("");
+  const [includeUserDecks, setIncludeUserDecks] = useState(false);
+
+  const runSearch = useCallback((value: string) => {
+    setSearchQuery(value);
+    setPage(0);
+  }, []);
+
+  // When filters change, reset to first page
+  useEffect(() => {
+    setPage(0);
+  }, [searchQuery, includeUserDecks]);
+
   const fetchAllCommanderDecks = useCallback(async () => {
     setLoading(true);
     try {
+      const params = new URLSearchParams();
+      params.set("page", String(page));
+      if (searchQuery) params.set("search", searchQuery);
+      if (includeUserDecks) params.set("includeUserDecks", "true");
       const res = await fetch(
-        `/api/supabase/decks/fetch-commander-decks?page=${page}`,
+        `/api/supabase/decks/fetch-commander-decks?${params.toString()}`,
       );
       const json = await res.json();
 
@@ -39,8 +94,9 @@ export default function CommanderDeckList() {
       }
 
       setDecks((prev) => {
+        if (page === 0) return json.data ?? [];
         const byId = new Map(prev.map((d) => [d.id, d]));
-        for (const row of json.data ?? []) byId.set(row.id, row); // upsert
+        for (const row of json.data ?? []) byId.set(row.id, row);
         return Array.from(byId.values());
       });
 
@@ -50,7 +106,7 @@ export default function CommanderDeckList() {
     } finally {
       setLoading(false);
     }
-  }, [page]);
+  }, [page, searchQuery, includeUserDecks]);
 
   useEffect(() => {
     fetchAllCommanderDecks();
@@ -76,24 +132,39 @@ export default function CommanderDeckList() {
 
   return (
     <CardContainer className="w-full h-full flex flex-col text-dark/90 relative overflow-clip">
-      <CardHeader className="p-1 md:px-4 bg-light/50 m-1 rounded-lg flex ">
-        <CardTitle>Commander Decks</CardTitle>
-        <div className="flex gap-2 bg-dark/10 w-fit p-1 rounded-full outline outline-dark/20 ">
-          <p className="pl-2">View</p>
-          <Button
-            variant="frosted"
-            onClick={() => setDeckView({ size: "medium" })}
-            className="rounded-full outline-dark/20 outline"
-          >
-            Medium
-          </Button>
-          <Button
-            variant="frosted"
-            onClick={() => setDeckView({ size: "large" })}
-            className="rounded-full outline-dark/20 outline"
-          >
-            Large
-          </Button>
+      <CardHeader className="p-1 md:px-4 bg-light/50 m-1 rounded-lg flex flex-col gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <CardTitle>Commander Decks</CardTitle>
+          <div className="flex gap-2 bg-dark/10 w-fit p-1 rounded-full outline outline-dark/20 ">
+            <p className="pl-2">View</p>
+            <Button
+              variant="frosted"
+              onClick={() => setDeckView({ size: "medium" })}
+              className="rounded-full outline-dark/20 outline"
+            >
+              Medium
+            </Button>
+            <Button
+              variant="frosted"
+              onClick={() => setDeckView({ size: "large" })}
+              className="rounded-full outline-dark/20 outline"
+            >
+              Large
+            </Button>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <DeckSearchForm onSearch={runSearch} />
+          <label className="flex items-center gap-2 cursor-pointer select-none text-dark/90">
+            <input
+              type="checkbox"
+              checked={includeUserDecks}
+              onChange={(e) => setIncludeUserDecks(e.target.checked)}
+              className="rounded border-dark/30 text-green-600 focus:ring-green-500/50"
+              aria-label="Include user-created decks in search"
+            />
+            <span className="text-sm">Include user-created decks</span>
+          </label>
         </div>
       </CardHeader>
 

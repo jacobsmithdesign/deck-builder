@@ -148,6 +148,41 @@ export async function selectCardsDataFromIds(
   return map;
 }
 
+/** Max names per request for name-based fetch. */
+const NAME_BATCH_SIZE = 150;
+
+/**
+ * Fetch full card data for many card names. Used for import so we resolve by
+ * name (not UUID), since the same card can have multiple printings/UUIDs.
+ * Returns a Map from lowercase name to CardRecord; one record per name (first
+ * printing when multiple exist).
+ */
+export async function selectCardsDataFromNames(
+  names: string[],
+): Promise<Map<string, CardRecord>> {
+  const unique = [...new Set(names)].filter(Boolean);
+  if (unique.length === 0) return new Map();
+
+  const map = new Map<string, CardRecord>();
+  for (let i = 0; i < unique.length; i += NAME_BATCH_SIZE) {
+    const chunk = unique.slice(i, i + NAME_BATCH_SIZE);
+    const { data, error } = await supabase
+      .from("cards")
+      .select(CARDS_SELECT)
+      .in("name", chunk);
+
+    if (error) {
+      console.error("selectCardsDataFromNames chunk error:", error);
+      continue;
+    }
+    for (const row of data ?? []) {
+      const key = (row.name ?? "").toLowerCase();
+      if (!map.has(key)) map.set(key, rowToCardRecord(row));
+    }
+  }
+  return map;
+}
+
 /**
  * Fetches all public decks that use the given commander UUID.
  * @param commanderUuid UUID of the selected commander card

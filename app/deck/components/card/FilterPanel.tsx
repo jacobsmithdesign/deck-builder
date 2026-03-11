@@ -41,7 +41,7 @@ export const FilterPanel = ({
               "px-2 py-1 text-xs rounded-md transition cursor-pointer",
               selected.includes(option)
                 ? "bg-darksecondary/80 text-white border-blue-600"
-                : "bg-light/60 text-dark border-dark/20"
+                : "bg-light/60 text-dark border-dark/20",
             )}
           >
             {option}

@@ -7,8 +7,11 @@ import { useCardList } from "@/app/context/CardListContext";
 import { useCommander } from "@/app/context/CommanderContext";
 import { useEditMode } from "@/app/context/editModeContext";
 import { useCompactView } from "@/app/context/compactViewContext";
-import { parseDeckText, type CardLine } from "@/app/hooks/parseDeckText";
-import { selectCardsDataFromIds } from "@/lib/db/searchCardForDeck";
+import {
+  parseAndResolveDeckList,
+  type CardLine,
+  type ResolvedDeckLine,
+} from "@/app/hooks/parseDeckText";
 import { CardRecord } from "@/lib/schemas";
 import { RaindropContainer } from "../primitives/RaindropContainer";
 import { Button } from "../primitives/button";
@@ -63,7 +66,7 @@ type ParsedState = {
   lines: ResolvedLine[];
   newLines: ResolvedLine[];
   duplicateLines: ResolvedLine[];
-  cardRecordsByUuid: Map<string, CardRecord>;
+  cardRecordsByName: Map<string, CardRecord>;
   /** Count of new card lines rejected for commander color identity. */
   unsupportedCount: number;
 };
@@ -155,6 +158,7 @@ function ImportCardList({
               >
                 <GroupTitle
                   type={group.type}
+                  count={group.cards.length}
                   visibleGroups={visibleGroups}
                   toggleGroupVisibility={toggleGroupVisibility}
                 />
@@ -252,11 +256,11 @@ export function ImportCardsModal({ isOpen, onClose }: ImportCardsModalProps) {
     new Set(TYPE_ORDER),
   );
 
-  const deckUuidSet = useCallback(() => {
+  const deckNameSet = useMemo(() => {
     const set = new Set<string>();
-    for (const c of deckCards) set.add(c.uuid);
+    for (const c of deckCards) set.add((c.name ?? "").toLowerCase());
     return set;
-  }, [deckCards])();
+  }, [deckCards]);
 
   const handleParse = useCallback(async () => {
     const trimmed = deckText.trim();
@@ -269,23 +273,23 @@ export function ImportCardsModal({ isOpen, onClose }: ImportCardsModalProps) {
     setParseError(null);
     setParsed(null);
     try {
-      const result = await parseDeckText(trimmed);
-      if (!result || result.length === 0) {
+      const resolved = await parseAndResolveDeckList(trimmed);
+      if (!resolved) {
         setParseError(
           "No valid cards found. Use format: 1x Card Name or 2 Card Name",
         );
         return;
       }
-      const uniqueUuids = [
-        ...new Set(result.map((r) => r.uuid).filter(Boolean)),
-      ] as string[];
-      const cardRecordsByUuid = await selectCardsDataFromIds(uniqueUuids);
-      const linesWithRecords: ResolvedLine[] = result
-        .filter((line) => line.uuid && cardRecordsByUuid.has(line.uuid))
+      const { lines, recordsByUuid } = resolved;
+      const linesWithRecords: ResolvedLine[] = lines
         .map((line) => ({
           ...line,
-          cardRecord: cardRecordsByUuid.get(line.uuid!),
-        }));
+          cardRecord: recordsByUuid.get(line.uuid),
+        }))
+        .filter(
+          (line): line is ResolvedDeckLine & { cardRecord: CardRecord } =>
+            Boolean(line.cardRecord),
+        );
 
       if (linesWithRecords.length === 0) {
         setParseError("Could not resolve any cards. Check card names.");
@@ -295,7 +299,8 @@ export function ImportCardsModal({ isOpen, onClose }: ImportCardsModalProps) {
       const newLinesRaw: ResolvedLine[] = [];
       const duplicateLines: ResolvedLine[] = [];
       for (const line of linesWithRecords) {
-        if (deckUuidSet.has(line.uuid!)) duplicateLines.push(line);
+        if (deckNameSet.has((line.name ?? "").toLowerCase()))
+          duplicateLines.push(line);
         else newLinesRaw.push(line);
       }
       const newLines: ResolvedLine[] = [];
@@ -316,7 +321,7 @@ export function ImportCardsModal({ isOpen, onClose }: ImportCardsModalProps) {
         lines: linesWithRecords,
         newLines,
         duplicateLines,
-        cardRecordsByUuid,
+        cardRecordsByName: recordsByUuid,
         unsupportedCount,
       });
       const allTypes = new Set(TYPE_ORDER);
@@ -328,7 +333,7 @@ export function ImportCardsModal({ isOpen, onClose }: ImportCardsModalProps) {
     } finally {
       setLoading(false);
     }
-  }, [deckText, deckUuidSet]);
+  }, [deckText, deckNameSet, commanderIdentity]);
 
   const canImport =
     parsed &&

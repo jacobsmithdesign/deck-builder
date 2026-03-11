@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Card } from "@/app/components/ui/card";
 import Image from "next/image";
 import { useEffect, useRef } from "react";
@@ -31,15 +32,18 @@ interface DeckPerspectiveCardProps {
   card: CardRecord;
   /** Whether this card was newly added this session (green border + glow). */
   isNewCard?: boolean;
+  /** Whether this card differs from the other deck in compare view (yellow border + bg + opacity). */
+  isDiffCard?: boolean;
 }
 
-const DeckPerspectiveCard: React.FC<DeckPerspectiveCardProps> = ({
+const DeckPerspectiveCardInner: React.FC<DeckPerspectiveCardProps> = ({
   id,
   image,
   label,
   isEditMode = false,
   card,
   isNewCard = false,
+  isDiffCard = false,
 }) => {
   const [hovered, setHovered] = useState(false);
   const [deleteClicked, setDeleteClicked] = useState(false);
@@ -73,7 +77,7 @@ const DeckPerspectiveCard: React.FC<DeckPerspectiveCardProps> = ({
           {/* These are the menus that appear as an overlay on the card */}
           <div className="w-full h-full absolute z-10 transition-transform duration-300 ease-out  [transform-style:preserve-3d] flex items-center justify-center">
             {/* New card bubble */}
-            {isNewCard && (
+            {isNewCard && !isDiffCard && (
               <div className="px-2 rounded-full absolute top-10 left-6 z-20 text-light bg-green-500 font-bold backdrop-blur-xs [transform:translateZ(20px)] shadow-lg">
                 New
               </div>
@@ -91,7 +95,10 @@ const DeckPerspectiveCard: React.FC<DeckPerspectiveCardProps> = ({
             <Card
               className={cn(
                 "m-1",
-                isNewCard &&
+                isDiffCard &&
+                  "outline-2 outline-yellow-500 bg-yellow-500/50 rounded-xl",
+                !isDiffCard &&
+                  isNewCard &&
                   "outline-2 outline-green-500 bg-green-500 rounded-xl",
               )}
             >
@@ -103,7 +110,9 @@ const DeckPerspectiveCard: React.FC<DeckPerspectiveCardProps> = ({
                   alt={`Image of ${label} card`}
                   className={cn(
                     "w-52 rounded-xl select-none shadow-inner ",
-                    isNewCard && "shadow-green-500 opacity-90",
+                    (isDiffCard || isNewCard) && "opacity-90",
+                    isDiffCard && "shadow-yellow-500",
+                    !isDiffCard && isNewCard && "shadow-green-500",
                   )}
                 />
               ) : (
@@ -232,4 +241,5 @@ const DeckPerspectiveCard: React.FC<DeckPerspectiveCardProps> = ({
   );
 };
 
+const DeckPerspectiveCard = React.memo(DeckPerspectiveCardInner);
 export default DeckPerspectiveCard;
