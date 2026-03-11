@@ -55,6 +55,7 @@ export const DeckFeatureVectorSchema = z.object({
     B: z.number(),
     R: z.number(),
     G: z.number(),
+    C: z.number(),
   }),
   coloured_mana_curve: z.object({
     W: z.number(),
@@ -62,6 +63,7 @@ export const DeckFeatureVectorSchema = z.object({
     B: z.number(),
     R: z.number(),
     G: z.number(),
+    C: z.number(),
   }),
 
   // ── new sections ────────────────────────────────────────────────────────────
@@ -196,8 +198,15 @@ const COLORS = ["W", "U", "B", "R", "G"] as const;
 type Color = (typeof COLORS)[number];
 type ColorCounts = Record<Color, number>;
 
+/** Mana counts including colorless {C} for pool and curve. */
+export type ManaCounts = ColorCounts & { C: number };
+
 function emptyColorCounts(): ColorCounts {
   return { W: 0, U: 0, B: 0, R: 0, G: 0 };
+}
+
+function emptyManaCounts(): ManaCounts {
+  return { W: 0, U: 0, B: 0, R: 0, G: 0, C: 0 };
 }
 
 // Count colored pips in mana_cost (hybrids/phyrexian supported); ignore {C}, {X}, numbers.
@@ -548,7 +557,7 @@ export function buildFeatures(deck: DeckLite): DeckFeatureVector {
   }
 
   // Lands pass: mana pool (colored sources) + {C} supply
-  const mana_pool = emptyColorCounts();
+  const mana_pool = emptyManaCounts();
   for (const { card, count } of lands) {
     const perLand = landSourcesFromText(card.text, commanderColors);
     for (const c of COLORS) mana_pool[c] += perLand[c] * count;
@@ -566,11 +575,15 @@ export function buildFeatures(deck: DeckLite): DeckFeatureVector {
     cSupply += count * countColorlessSupplyForCard(card.type, card.text);
   }
 
-  // Coloured mana curve (pips across spells)
-  const coloured_mana_curve = emptyColorCounts();
+  mana_pool.C = cSupply;
+
+  // Coloured mana curve (pips across spells) including {C}
+  const coloured_mana_curve = emptyManaCounts();
   for (const { card, count } of nonlands) {
     const pips = countColoredPips(card.mana_cost);
     for (const c of COLORS) coloured_mana_curve[c] += pips[c] * count;
+    const cPips = (card.mana_cost?.match(/\{C\}/g) ?? []).length;
+    coloured_mana_curve.C += cPips * count;
   }
 
   // Interaction density (keep legacy scalar for compatibility)

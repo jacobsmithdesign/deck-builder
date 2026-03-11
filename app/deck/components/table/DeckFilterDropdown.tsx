@@ -290,6 +290,51 @@ export function DeckFilterDropdown({
                   />
                 </RaindropContainer>
               </motion.div>
+              {/* Card text (oracle / rules text) */}
+              <motion.div
+                initial={{
+                  opacity: 0,
+                  scale: 0.85,
+                }}
+                animate={{
+                  opacity: 1,
+                  scale: 1,
+                  transition: {
+                    type: "spring",
+                    stiffness: 350,
+                    damping: 15,
+                    bounce: 1,
+                    delay: 0.12,
+                  },
+                }}
+                exit={{
+                  opacity: 0,
+                  scale: 0,
+                  transition: { duration: 0.15, delay: 0 },
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 450,
+                  damping: 15,
+                  bounce: 0.5,
+                  delay: 0,
+                }}
+              >
+                <RaindropContainer className="flex flex-col gap-1 rounded-xl p-1">
+                  <label className="text-md font-semibold text-dark/80 px-1">
+                    Card text
+                  </label>
+                  <input
+                    type="text"
+                    value={filters.cardText}
+                    onChange={(e) => update({ cardText: e.target.value })}
+                    placeholder="Search in rules text…"
+                    className={cn(
+                      "w-full rounded-lg border border-dark/20 bg-light/80 px-3 py-2 text-sm text-dark placeholder:text-dark/50 focus:outline-dark/30 focus:outline",
+                    )}
+                  />
+                </RaindropContainer>
+              </motion.div>
               {/* Colours */}
               <motion.div
                 initial={{

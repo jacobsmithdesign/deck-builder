@@ -13,6 +13,7 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import NewCardModal from "../card/NewCardModal";
 import { cn } from "@/lib/utils";
+import { ManaCost } from "@/app/components/ui/manaCost";
 import {
   BoardContent,
   Group,
@@ -364,9 +365,13 @@ export const DeckListView = () => {
                                           </span>
                                         )}
                                       </div>
-                                      <span className="shrink-0 text-muted-foreground font-bold tabular-nums md:text-base text-sm w-8 text-right">
-                                        {card.mana_value}
-                                      </span>
+                                      <div className="shrink-0 flex items-center justify-end w-10">
+                                        <ManaCost
+                                          manaCost={card.mana_cost}
+                                          colorIdentity={card.color_identity}
+                                          size="md"
+                                        />
+                                      </div>
                                       {c.imageFrontUrl && (
                                         <div
                                           className={cn(

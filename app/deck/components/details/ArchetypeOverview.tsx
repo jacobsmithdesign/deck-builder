@@ -203,10 +203,10 @@ export default function ArchetypeOverview() {
                         key={axis}
                         type="button"
                         onClick={() => setSelectedIndex(i)}
-                        className={`w-full text-left rounded-2xl transition-colors pl-1 py-1 cursor-pointer ${selectedIndex === i ? `rounded-r-none` : " "} `}
+                        className={`w-full text-left rounded-2xl transition-all mr-1  py-1 cursor-pointer ${selectedIndex === i ? `rounded-r-none` : "pr-1"} `}
                       >
                         <div
-                          className={`flex items-center gap-2 py-1 px-2 rounded-xl  md:hover:bg-light/10  ${selectedIndex === i ? `rounded-r-none bg-lightsecondary/30 drop-shadow-xl` : ""}
+                          className={`flex items-center gap-2 py-1 px-2 rounded-xl  transition-all ${selectedIndex === i ? `rounded-r-none bg-light/30 drop-shadow-xl md:hover:bg-light/40 mr-0` : "md:hover:bg-light/20"}
                   `}
                         >
                           <span
@@ -230,7 +230,7 @@ export default function ArchetypeOverview() {
                 </aside>
 
                 {/* Right: selected archetype explanation with animation */}
-                <div className="flex-1 rounded-2xl overflow-hidden bg-lightsecondary/30 drop-shadow-xl min-w-0">
+                <div className="flex-1 rounded-2xl overflow-hidden bg-light/30 drop-shadow-xl min-w-0">
                   {explanationArray.length > 0 && selected ? (
                     <AnimatePresence mode="wait">
                       <motion.div
@@ -242,7 +242,7 @@ export default function ArchetypeOverview() {
                           duration: 0.2,
                           ease: [0.25, 0.1, 0.25, 1],
                         }}
-                        className="p-4 h-full overflow-auto rounded-xl"
+                        className="p-4 h-fit overflow-auto rounded-xl"
                       >
                         <h3
                           className={`rounded-lg w-fit text-lg font-bold px-2 mb-2 ${getArchetypeScoreColor(selected.score)}`}

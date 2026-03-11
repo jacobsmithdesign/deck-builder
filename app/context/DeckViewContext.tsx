@@ -21,6 +21,7 @@ export type ColourFilterMode = "exactly" | "including" | "atMost";
 
 export interface DeckFiltersState {
   cardName: string;
+  cardText: string;
   colours: {
     mode: ColourFilterMode;
     values: string[];
@@ -33,6 +34,7 @@ export interface DeckFiltersState {
 
 export const DEFAULT_DECK_FILTERS: DeckFiltersState = {
   cardName: "",
+  cardText: "",
   colours: { mode: "including", values: [] },
   manaValue: { min: "", max: "" },
   power: { min: "", max: "" },
@@ -76,6 +78,7 @@ export const DeckViewProvider = ({ children }: { children: ReactNode }) => {
 
   const hasActiveFilters =
     filters.cardName.trim() !== "" ||
+    filters.cardText.trim() !== "" ||
     filters.colours.values.length > 0 ||
     filters.manaValue.min !== "" ||
     filters.manaValue.max !== "" ||

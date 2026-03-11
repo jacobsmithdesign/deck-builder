@@ -1,69 +1,66 @@
+type ManaSize = "sm" | "md" | "lg" | "xl";
+
 interface ManaCostProps {
   manaCost?: string | null; // e.g. "{2}{W}{U}"
   colorIdentity?: string[] | null; // e.g. ["G", "W"]
+  size?: ManaSize;
+}
+
+const SIZE_CLASSES: Record<ManaSize, string> = {
+  sm: "h-3 w-3 min-w-[0.75rem]",
+  md: "h-4 w-4 min-w-[1rem]",
+  lg: "h-5 w-5 min-w-[1.25rem]",
+  xl: "h-6 w-6 min-w-[1.5rem]",
+};
+
+/**
+ * Resolve public path for a mana symbol to match card-symbols file naming:
+ * - Numbers (0–20) and X, Y, Z: "3.svg", "X.svg"
+ * - Everything else (W, U, B, R, G, C, 1/W, W/P, 1/2, S, T, etc.): "{W}.svg", "{1/W}.svg"
+ */
+function getManaIconPath(symbol: string): string {
+  const isNumeric = /^\d+$/.test(symbol);
+  const isGeneric = ["X", "Y", "Z"].includes(symbol.toUpperCase());
+  if (isNumeric || isGeneric) {
+    const name = isGeneric ? symbol.toUpperCase() : symbol;
+    return `/card-symbols/${name}.svg`;
+  }
+  return `/card-symbols/{${symbol}}.svg`;
 }
 
 export const ManaCost: React.FC<ManaCostProps> = ({
   manaCost,
   colorIdentity,
+  size = "md",
 }) => {
   let symbols: string[] | undefined;
 
   if (manaCost) {
-    // Extract mana symbols from the cost string
     symbols = manaCost
       ?.match(/\{([^}]+)\}/g)
       ?.map((s) => s.replace(/[{}]/g, ""));
   } else if (colorIdentity && colorIdentity.length > 0) {
-    // Use colour identity directly
     symbols = [...colorIdentity];
   }
 
   if (!symbols) return null;
 
-  return (
-    <div className="flex gap-1 items-center text-sm rounded-full">
-      {symbols.map((symbol, index) => {
-        if (!isNaN(Number(symbol))) {
-          // Numeric cost
-          return (
-            <div
-              key={`${symbol}-${index}`}
-              className="sm:w-4 sm:h-4 w-3 h-3 rounded-full bg-manaAny flex items-center justify-center text-dark font-normal text-xs"
-            >
-              {symbol}
-            </div>
-          );
-        } else {
-          // Coloured mana
-          let color = "";
-          switch (symbol.toUpperCase()) {
-            case "W":
-              color = "bg-manaWhite border border-yellow-400";
-              break;
-            case "U":
-              color = "bg-manaBlue border border-cyan-600/60";
-              break;
-            case "B":
-              color = "bg-manaBlack border border-zinc-700/60";
-              break;
-            case "R":
-              color = "bg-manaRed border border-amber-700/60";
-              break;
-            case "G":
-              color = "bg-manaGreen border border-lime-600/60";
-              break;
-            default:
-              color = "bg-gray-500/80 border border-gray-700/60";
-          }
+  const sizeClass = SIZE_CLASSES[size];
 
-          return (
-            <div
-              key={`${symbol}-${index}`}
-              className={`sm:w-4 sm:h-4 w-3 h-3 rounded-full ${color} flex items-center justify-center text-white font-bold`}
-            />
-          );
-        }
+  return (
+    <div className="flex gap-0.5 items-center shrink-0">
+      {symbols.map((symbol, index) => {
+        const src = getManaIconPath(symbol);
+        return (
+          <img
+            key={`${symbol}-${index}`}
+            src={src}
+            alt={symbol}
+            className={`object-contain object-center ${sizeClass}`}
+            width={size === "sm" ? 12 : size === "md" ? 16 : size === "lg" ? 20 : 24}
+            height={size === "sm" ? 12 : size === "md" ? 16 : size === "lg" ? 20 : 24}
+          />
+        );
       })}
     </div>
   );

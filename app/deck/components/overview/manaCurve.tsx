@@ -6,8 +6,8 @@ import { useEffect, useState } from "react";
 import { RaindropContainer } from "../primitives/RaindropContainer";
 import { useCompactView } from "@/app/context/compactViewContext";
 
-type Color = "W" | "U" | "B" | "R" | "G" | "A";
-const COLOR_ORDER: Color[] = ["W", "U", "B", "R", "G", "A"];
+type Color = "W" | "U" | "B" | "R" | "G" | "C";
+const COLOR_ORDER: Color[] = ["W", "U", "B", "R", "G", "C"];
 const COST_BUCKETS = ["0-1", "2", "3", "4", "5", "6+"] as const;
 const MODES: Array<"pool" | "curve" | "cost"> = ["pool", "curve", "cost"];
 
@@ -17,7 +17,7 @@ const fillClasses: Record<Color, string> = {
   B: "bg-manaBlack/60",
   R: "bg-manaRed",
   G: "bg-manaGreen",
-  A: "bg-manaAny",
+  C: "bg-stone-400",
 };
 
 const trackCurve: Record<Color, string> = {
@@ -26,7 +26,7 @@ const trackCurve: Record<Color, string> = {
   B: "bg-manaBlackBg/10",
   R: "bg-manaRedBg/10",
   G: "bg-manaGreenBg/10",
-  A: "bg-manaAnyBg/10",
+  C: "bg-stone-200/20",
 };
 
 const trackPool: Record<Color, string> = {
@@ -35,7 +35,7 @@ const trackPool: Record<Color, string> = {
   B: "bg-manaBlackBg/10",
   R: "bg-manaRedBg/10",
   G: "bg-manaGreenBg/10",
-  A: "bg-manaAnyBg/10",
+  C: "bg-stone-200/20",
 };
 
 export function ManaCurve({

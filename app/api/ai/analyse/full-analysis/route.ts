@@ -201,6 +201,8 @@ export async function GET(req: NextRequest) {
           });
 
         const cardText = buildCardText(cards);
+        const commanderText = buildCardText([commander]);
+        console.log("cardText", cardText);
 
         // One unified prompt (overview + difficulty)
         write("progress", { step: "Analysing deck", progress: 65 });
@@ -243,12 +245,10 @@ export async function GET(req: NextRequest) {
                   Rate interaction intensity based on the frequency of interactions with the board.
                   Rate complexity based on the variety of cards and the potential for multiple interactions with the board.
 
-                  
-
-                  If you name a card, write it as [[Card Name]] in explained responses. E.g. Ulalek, Fused Atrocity -> [[Ulalek, Fused Atrocity]]
+                                    If you name a card, write it as [[Card Name]] in explained responses. E.g. Ulalek, Fused Atrocity -> [[Ulalek, Fused Atrocity]]
                   
                   DECK INFO:
-                  Commander: ${commander}
+                  Commander: ${commanderText}
                   Land feature extraction: ${LANDFEATURES}
                   Cards: ${cardText}
                 `.trim();

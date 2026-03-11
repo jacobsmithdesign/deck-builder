@@ -8,6 +8,7 @@ const COLORS: Array<keyof DeckFeatureVector["coloured_mana_curve"]> = [
   "B",
   "R",
   "G",
+  "C",
 ];
 
 const MANA: Array<keyof DeckFeatureVector["mana_pool"]> = [
@@ -16,6 +17,7 @@ const MANA: Array<keyof DeckFeatureVector["mana_pool"]> = [
   "B",
   "R",
   "G",
+  "C",
 ];
 
 const colorClasses: Record<string, string> = {
@@ -24,6 +26,7 @@ const colorClasses: Record<string, string> = {
   B: "bg-neutral-600", // black
   R: "bg-red-400", // red
   G: "bg-emerald-300", // green
+  C: "bg-stone-400", // colorless
 };
 
 const bgColorClasses: Record<string, string> = {
@@ -32,6 +35,7 @@ const bgColorClasses: Record<string, string> = {
   B: "bg-neutral-400/25", // black
   R: "bg-red-300/25", // red
   G: "bg-emerald-200/25", // green
+  C: "bg-stone-200/25", // colorless
 };
 
 export function ColouredManaCurve({
@@ -49,8 +53,8 @@ export function ColouredManaCurve({
   const pool = deckFeatures?.mana_pool;
   const total = COLORS.reduce((sum, c) => sum + (curve?.[c] ?? 0), 0) || 1; // avoid /0
   const maxCurve = Math.max(...COLORS.map((c) => curve?.[c] ?? 0));
-  const maxPool = Math.max(...COLORS.map((c) => curve?.[c] ?? 0));
-  const ORDER = ["W", "U", "B", "R", "G"] as const;
+  const maxPool = Math.max(...COLORS.map((c) => pool?.[c] ?? 0));
+  const ORDER = ["W", "U", "B", "R", "G", "C"] as const;
   return (
     <div
       className={`flex flex-col gap-1 w-full bg-light/60 p-1  outline outline-dark/20 transition-all duration-250 ${

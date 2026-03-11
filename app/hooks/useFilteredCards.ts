@@ -33,6 +33,13 @@ function applyDeckFilters(
     );
   }
 
+  const textQ = filters.cardText.trim().toLowerCase();
+  if (textQ) {
+    result = result.filter((c) =>
+      (c.text ?? "").toLowerCase().includes(textQ),
+    );
+  }
+
   const colourValues = filters.colours.values;
   if (colourValues.length > 0) {
     const mode = filters.colours.mode;
